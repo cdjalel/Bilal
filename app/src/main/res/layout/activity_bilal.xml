@@ -10,17 +10,6 @@
         android:layout_height="fill_parent"
         android:gravity="center_horizontal">
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="10dp"
-            android:layout_span="3" />
-    </TableRow>
-
-    <TableRow
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:gravity="center_horizontal">
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -28,7 +17,7 @@
             android:text=""
             android:id="@+id/textViewCity"
             android:layout_gravity="center_horizontal"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_margin="1dp"
             android:layout_span="3" />
     </TableRow>
@@ -39,7 +28,7 @@
         android:gravity="center_horizontal">
         <Space
             android:layout_width="20dp"
-            android:layout_height="10dp" />
+            android:layout_height="5dp" />
     </TableRow>
 
     <TableRow
@@ -54,7 +43,7 @@
             android:text=""
             android:id="@+id/textViewDate"
             android:layout_gravity="center_horizontal"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_span="3" />
     </TableRow>
 
@@ -83,7 +72,7 @@
             android:layout_column="0"
             android:gravity="left|top"
             android:width="90dp"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_margin="1dp"
             android:layout_gravity="left|top" />
 
@@ -95,7 +84,7 @@
             android:gravity="center_horizontal|top"
             android:layout_column="1"
             android:width="90dp"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_margin="1dp" />
 
         <TextView
@@ -107,7 +96,7 @@
             android:gravity="right|top"
             android:layout_column="2"
             android:width="90dp"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_margin="1dp" />
     </TableRow>
 
@@ -118,7 +107,7 @@
         android:layout_margin="1dp">
         <Space
             android:layout_width="20dp"
-            android:layout_height="10dp"/>
+            android:layout_height="5dp"/>
     </TableRow>
 
     <TableRow
@@ -135,7 +124,7 @@
             android:id="@+id/textViewSunriseEN"
             android:layout_column="0"
             android:gravity="left|top" android:width="90dp"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_margin="1dp" />
 
         <TextView
@@ -147,7 +136,7 @@
             android:gravity="center_horizontal|top"
             android:layout_column="1"
             android:width="90dp"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_margin="1dp" />
 
         <TextView
@@ -158,7 +147,7 @@
             android:id="@+id/textViewSunriseAR"
             android:width="90dp"
             android:layout_column="2"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:gravity="right|top"
             android:layout_margin="1dp" />
     </TableRow>
@@ -170,7 +159,7 @@
         android:gravity="center_horizontal">
         <Space
             android:layout_width="20dp"
-            android:layout_height="10dp"/>
+            android:layout_height="5dp"/>
     </TableRow>
 
     <TableRow
@@ -189,7 +178,7 @@
             android:layout_column="0"
             android:gravity="left|top"
             android:width="90dp"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_margin="1dp" />
 
         <TextView
@@ -201,7 +190,7 @@
             android:gravity="center_horizontal|top"
             android:layout_column="1"
             android:width="90dp"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_margin="1dp" />
 
         <TextView
@@ -213,7 +202,7 @@
             android:gravity="right|top"
             android:width="90dp"
             android:layout_column="2"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_margin="1dp" />
     </TableRow>
 
@@ -223,7 +212,7 @@
         android:gravity="center_horizontal">
         <Space
             android:layout_width="20dp"
-            android:layout_height="10dp"/>
+            android:layout_height="5dp"/>
     </TableRow>
 
     <TableRow
@@ -241,7 +230,7 @@
             android:layout_column="0"
             android:gravity="left|top"
             android:width="90dp"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_margin="1dp" />
 
         <TextView
@@ -253,7 +242,7 @@
             android:gravity="center_horizontal|top"
             android:layout_column="1"
             android:width="90dp"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_margin="1dp" />
 
         <TextView
@@ -264,7 +253,7 @@
             android:id="@+id/textViewAsrAR"
             android:width="90dp"
             android:layout_column="2"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:gravity="right|top"
             android:layout_margin="1dp" />
     </TableRow>
@@ -275,7 +264,7 @@
         android:gravity="center_horizontal">
         <Space
             android:layout_width="20dp"
-            android:layout_height="10dp"/>
+            android:layout_height="5dp"/>
     </TableRow>
 
     <TableRow
@@ -293,7 +282,7 @@
             android:layout_column="0"
             android:gravity="left|top"
             android:width="90dp"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_margin="1dp" />
 
         <TextView
@@ -305,7 +294,7 @@
             android:gravity="center_horizontal|top"
             android:layout_column="1"
             android:width="90dp"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_margin="1dp" />
 
         <TextView
@@ -317,7 +306,7 @@
             android:gravity="right|top"
             android:width="90dp"
             android:layout_column="2"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_margin="1dp" />
     </TableRow>
 
@@ -327,7 +316,7 @@
         android:gravity="center_horizontal">
         <Space
             android:layout_width="20dp"
-            android:layout_height="10dp"/>
+            android:layout_height="5dp"/>
     </TableRow>
 
     <TableRow
@@ -345,7 +334,7 @@
             android:layout_column="0"
             android:gravity="left|top"
             android:width="90dp"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_margin="1dp" />
 
         <TextView
@@ -357,7 +346,7 @@
             android:gravity="center_horizontal|top"
             android:layout_column="1"
             android:width="90dp"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_margin="1dp" />
 
         <TextView
@@ -368,7 +357,7 @@
             android:id="@+id/textViewIshaAR"
             android:width="90dp"
             android:layout_column="2"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:gravity="right|top"
             android:layout_margin="1dp" />
     </TableRow>
@@ -398,7 +387,7 @@
             android:width="90dp"
             android:id="@+id/textViewNextFajrEN"
             android:visibility="invisible"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_margin="1dp" />
 
         <TextView
@@ -411,7 +400,7 @@
             android:layout_column="1"
             android:width="90dp"
             android:visibility="invisible"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_margin="1dp" />
 
         <TextView
@@ -423,7 +412,7 @@
             android:layout_column="2"
             android:id="@+id/textViewNextFajrAR"
             android:visibility="invisible"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_gravity="right|top"
             android:layout_margin="1dp" />
     </TableRow>
