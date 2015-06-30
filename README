@@ -2,9 +2,17 @@ Overview
 ========
 Bilal is a free software that displays Muslim Prayer times on Android phones and tablets. It uses a Java version of the PrayerTime package that is part of Islamic Tools Library from the Arab Eyes project.
 
-Bilal is an unpolished code that was developed in a rush for academic purposes to demonstrate some Android features (Alarm, Notification, Wear support etc.). So it is quite incomplete. The initial releasr only shows prayer times for one hard coded city, following one hard coded calculation method. Both parameters, can be changes easily in the code for test purposes.
+Bilal is an unpolished code that was developed in a rush for academic purposes to demonstrate some Android features (Alarm, Notification, Wear support etc.). So it is quite incomplete. The initial release only shows prayer times for one hard coded city, following one hard coded calculation method. Both parameters can be changed easily in the code for test purposes.
 
 It was open sourced under GPLv3 in the hope that volunteers can contribute changes to improve it. See the TODO file for that.
+
+Screenshots
+===========
+
+![alt tag](https://cloud.githubusercontent.com/assets/5300525/8423272/a62ad386-1ede-11e5-87c9-1c11eeb4ef0d.png)
+
+![alt tag](https://cloud.githubusercontent.com/assets/5300525/8423273/a64e318c-1ede-11e5-97e9-132cf7c15d3c.png)
+
 
 Testing
 =======
