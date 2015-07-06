@@ -1,9 +1,9 @@
 - Improve UI (layout, icons, background).
 - Start app on phone boot to arm the next notification.
-- Use Android Location API to find current locatin automatically. Some code is there but commented out as it was not tested.
+- Use Android Location API to find current location automatically. Some code is there but commented out as it was not tested.
 - Make location and calculation method configurable by user.
-- Make user preferences persistant.
-- Fallback on a preconfigured set of locations (coubtries/cities lis as in the minbar program), when Android Location API fails.
-- Add Athan sound to notification.
+- Make user preferences persistent.
+- Fallback on a pre-configured set of locations (countries/cities lis as in the minbar program), when Android Location API fails.
 - Make Athan sound user configurable by offering a list of famous athans to choose from.
 - Add Qibla direction feature using device compass.
+- Update athan alarm if system time changes

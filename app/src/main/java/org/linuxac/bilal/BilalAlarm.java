@@ -39,9 +39,9 @@ public class BilalAlarm extends BroadcastReceiver
 
         Log.d(BilalActivity.TAG, "Alarm is ON: " + message);
 
-        // ask Activity to update prayer times
-        Intent updateIntent = new Intent(BilalActivity.UPDATE_MESSAGE);
-        context.sendBroadcast(updateIntent);
+        // Play athan
+        Intent audioIntent = new Intent(context, AthanAudio.class);
+        context.startService(audioIntent);
 
         // Build intent for notification content
         int notificationId = 0;
@@ -51,12 +51,20 @@ public class BilalAlarm extends BroadcastReceiver
         PendingIntent nextPrayerPendingIntent =
                 PendingIntent.getActivity(context, 0, nextPrayerIntent, 0);
 
+        // Use another intent to stop athan from notification button
+        PendingIntent cancelAthanPendingIntent =
+                CancelAthanActivity.getCancelAthanIntent(notificationId, context);
+
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(context)
                         .setSmallIcon(R.mipmap.ic_launcher)
                         .setContentTitle(BilalActivity.TAG)
                         .setContentText(message)
-                        .setContentIntent(nextPrayerPendingIntent);
+                        .setContentIntent(nextPrayerPendingIntent)
+                        .setCategory(NotificationCompat.CATEGORY_ALARM)
+                        .setAutoCancel(true)
+                        .setDeleteIntent(cancelAthanPendingIntent)
+                        .addAction(R.drawable.ic_clear, "وقف الآذان", cancelAthanPendingIntent);
 
         // Get an instance of the NotificationManager service
         NotificationManagerCompat notificationManager =
@@ -64,5 +72,9 @@ public class BilalAlarm extends BroadcastReceiver
 
         // Build the notification and issues it with notification manager.
         notificationManager.notify(notificationId, notificationBuilder.build());
+
+        // ask Activity to update display to next prayer. TODO: delay highlighting of next prayer
+        Intent updateIntent = new Intent(BilalActivity.UPDATE_MESSAGE);
+        context.sendBroadcast(updateIntent);
     }
 }
