@@ -9,9 +9,8 @@ It was open sourced under GPLv3 in the hope that volunteers can contribute chang
 Screenshots
 ===========
 
-![](https://cloud.githubusercontent.com/assets/5300525/8423272/a62ad386-1ede-11e5-87c9-1c11eeb4ef0d.png)
-
-![](https://cloud.githubusercontent.com/assets/5300525/8423273/a64e318c-1ede-11e5-97e9-132cf7c15d3c.png)
+![bilal-screenshot-phone](https://cloud.githubusercontent.com/assets/5300525/8514511/fb1d6576-2388-11e5-8939-be2b9c22b761.png)
+![bilal-screenshot-watch](https://cloud.githubusercontent.com/assets/5300525/8423273/a64e318c-1ede-11e5-97e9-132cf7c15d3c.png)
 
 
 Testing
