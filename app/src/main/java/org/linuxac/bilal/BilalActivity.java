@@ -258,18 +258,13 @@ public class BilalActivity extends ActionBarActivity implements
         for (i = 0; i < Prayer.NB_PRAYERS + 1; i++) {
             for (j = 0; j < 3; j++) {
                 mTextViewPrayers[i][j].setTypeface(null, Typeface.NORMAL);
-                mTextViewPrayers[i][j].setTextColor(Color.rgb(0, 0, 0));
+                //mTextViewPrayers[i][j].setTextColor(Color.rgb(0, 0, 0));
             }
-        }
-
-        // tomorrow's Fajr is only shown once today's Isha passed
-        for (j = 0; j < 3; j++) {
-            mTextViewPrayers[Prayer.NB_PRAYERS][j].setVisibility(TextView.INVISIBLE);
         }
     }
 
     protected void updatePrayerTimes() {
-        int i, j;
+        int i, j, c;
         String cityName;
 
         // TODO: use location from user preferences, if not then start with settings
@@ -302,58 +297,66 @@ public class BilalActivity extends ActionBarActivity implements
 
         /* Call the main function to fill the Prayer times */
         Prayer prayer = new Prayer();
+        GregorianCalendar[] ptCal = new GregorianCalendar[Prayer.NB_PRAYERS + 1];
         PrayerTime[] pt = prayer.getPrayerTimes(loc, conf, today);
-        for (i = 0; i < Prayer.NB_PRAYERS; i++) {
-            mTextViewPrayers[i][1].setText(
-                    String.format(" %3d:%02d\n", pt[i].hour, pt[i].minute));
-            Log.d(TAG, mTextViewPrayers[i][0].getText().toString() + " "
-                    + mTextViewPrayers[i][1].getText().toString() );
-        }
-
-        // Find next prayer and set alarm
-        GregorianCalendar next = null;
-        GregorianCalendar[] ptCal = new GregorianCalendar[Prayer.NB_PRAYERS];
         for (i = 0; i < Prayer.NB_PRAYERS; i++) {
             ptCal[i] = (GregorianCalendar)nowCal.clone();
             ptCal[i].set(Calendar.HOUR_OF_DAY, pt[i].hour);
             ptCal[i].set(Calendar.MINUTE, pt[i].minute);
             ptCal[i].set(Calendar.SECOND, pt[i].second);
-            Log.d(TAG, mTextViewPrayers[i][0].getText().toString() + " " +
-                    DateFormat.getDateTimeInstance().format(ptCal[i].getTime()));
+            mTextViewPrayers[i][1].setText(
+                    String.format("%02d:%02d\n", pt[i].hour, pt[i].minute));
+            Log.d(TAG, mTextViewPrayers[i][0].getText().toString() + " "
+                    + mTextViewPrayers[i][1].getText().toString() );
         }
+        PrayerTime nextPT = prayer.getNextDayFajr(loc, conf, today);
+        ptCal[i] = (GregorianCalendar)nowCal.clone();
+        ptCal[i].add(Calendar.DATE, 1);
+        ptCal[i].set(Calendar.HOUR_OF_DAY, nextPT.hour);
+        ptCal[i].set(Calendar.MINUTE, nextPT.minute);
+        ptCal[i].set(Calendar.SECOND, nextPT.second);
+        mTextViewPrayers[i][1].setText(
+                String.format("%02d:%02d\n", nextPT.hour, nextPT.minute));
+        Log.d(TAG, mTextViewPrayers[i][0].getText().toString() + " "
+                + mTextViewPrayers[i][1].getText().toString() );
 
+        // Find current and next prayers
+        GregorianCalendar next;
         for (i = 0; i < Prayer.NB_PRAYERS; i++) {
-            if (ptCal[i].after(nowCal)) {
-                if (i == 1) {
-                    i++;            // skip sunset which isn't a prayer
-                }
-                next = ptCal[i];
+            if (nowCal.before(ptCal[i])) {
                 break;
             }
         }
 
-        if (next == null) {
-            // next prayer is tomorrow's Fajr
-            PrayerTime nextPT = prayer.getNextDayFajr(loc, conf, today);
-            // then i == Prayer.NB_PRAYERS
-            mTextViewPrayers[i][1].setText(
-                    String.format(" %3d:%02d\n", nextPT.hour, nextPT.minute));
-            for (j = 0; j < 3; j++) {
-                mTextViewPrayers[i][j].setVisibility(TextView.VISIBLE);
-            }
-
-            next = (GregorianCalendar)nowCal.clone();
-            next.add(Calendar.DATE, 1);
-            next.set(Calendar.HOUR_OF_DAY, nextPT.hour);
-            next.set(Calendar.MINUTE, nextPT.minute);
-            next.set(Calendar.SECOND, nextPT.second);
+        switch (i) {
+            case 0:
+                next = ptCal[c = 0];
+                break;
+            case 1:
+                // sunset is skipped. TODO make this a user setting
+                i = 2;
+                // FALLTHROUGH
+            case 2:
+                c = 0;
+                next = ptCal[2];
+                break;
+            case 3:
+            case 4:
+            case 5:
+            case Prayer.NB_PRAYERS:
+            default:
+                c = i-1;
+                next = ptCal[i];
+                break;
         }
 
-        // highlight next prayer
+        Log.d(TAG, "Current prayer is " + mTextViewPrayers[c][2].getText().toString());
         Log.d(TAG, "Next prayer is " + mTextViewPrayers[i][2].getText().toString());
+
+        // highlight current prayer
         for (j = 0; j < 3; j++) {
-            mTextViewPrayers[i][j].setTypeface(null, Typeface.BOLD);
-            mTextViewPrayers[i][j].setTextColor(Color.rgb(0, 200, 0));
+            mTextViewPrayers[c][j].setTypeface(null, Typeface.BOLD);
+//            mTextViewPrayers[c][j].setTextColor(Color.rgb(0, 200, 0));
         }
 
         // prepare alarm message in AR only

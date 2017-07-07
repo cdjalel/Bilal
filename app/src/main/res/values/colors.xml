@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<resources>
+    <color name="colorPrimary">#795548</color>
+    <color name="colorPrimaryDark">#533a31</color>
+    <color name="colorPrimarylight">#d7ccc8</color>
+    <color name="colorAccent">#795548</color>
+
+    <color name="colorLocation">#b71513</color>
+    <color name="colorDate">#b71513</color>
+    <color name="colorPrayerTime">#63403c</color>
+    <!--<color name="colorPrayerTime">#ff680d02</color>-->
+</resources>
