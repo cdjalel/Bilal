@@ -26,16 +26,20 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.location.Location;
 
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+//import android.support.design.widget.FloatingActionButton;
+//import android.support.design.widget.Snackbar;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+//import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -50,9 +54,8 @@ import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-//import android.widget.Toast;
 
-public class BilalActivity extends ActionBarActivity implements
+public class MainActivity extends AppCompatActivity implements
         ConnectionCallbacks, OnConnectionFailedListener {
 
     public final static String NOTIFY_MESSAGE = "org.linuxac.bilal.NOTIFY";
@@ -72,7 +75,18 @@ public class BilalActivity extends ActionBarActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_bilal);
+        setContentView(R.layout.activity_main);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        /*FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+            }
+        });*/
 
         if (!isGooglePlayServicesAvailable()) {
             Log.e(TAG, "Google Play services unavailable.");
@@ -88,7 +102,7 @@ public class BilalActivity extends ActionBarActivity implements
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_bilal, menu);
+        getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
@@ -149,7 +163,7 @@ public class BilalActivity extends ActionBarActivity implements
     protected void onResume() {
         super.onResume();
         if (!mReceiverIsRegistered) {
-            registerReceiver(mReceiver, new IntentFilter(BilalActivity.UPDATE_MESSAGE));
+            registerReceiver(mReceiver, new IntentFilter(MainActivity.UPDATE_MESSAGE));
             mReceiverIsRegistered = true;
         }
         updatePrayerTimes();
@@ -186,7 +200,7 @@ public class BilalActivity extends ActionBarActivity implements
             //Toast.makeText(this, R.string.no_location_detected, Toast.LENGTH_LONG).show();
             Log.w(TAG, "onConnected: No location detected");
         }
-        updatePrayerTimes();
+//        updatePrayerTimes();
     }
 
     @Override
@@ -246,11 +260,13 @@ public class BilalActivity extends ActionBarActivity implements
         mTextViewPrayers = tvp.clone();
     }
 
-    protected void initPrayerViews(GregorianCalendar nowCal) {
+    protected void initPrayerViews(GregorianCalendar calendar, Date date) {
         int i, j;
 
+        mTextViewDate.setText(DateFormat.getDateInstance().format(date));
+
         // change Dhuhur to Jumuaa if needed.
-        if (nowCal.get(Calendar.DAY_OF_WEEK) == Calendar.FRIDAY) {
+        if (calendar.get(Calendar.DAY_OF_WEEK) == Calendar.FRIDAY) {
             mTextViewPrayers[2][0].setText(getString(R.string.jumu3a_ar));
             mTextViewPrayers[2][2].setText(getString(R.string.jumu3a_en));
         }
@@ -258,13 +274,11 @@ public class BilalActivity extends ActionBarActivity implements
         for (i = 0; i < Prayer.NB_PRAYERS + 1; i++) {
             for (j = 0; j < 3; j++) {
                 mTextViewPrayers[i][j].setTypeface(null, Typeface.NORMAL);
-                //mTextViewPrayers[i][j].setTextColor(Color.rgb(0, 0, 0));
             }
         }
     }
 
     protected void updatePrayerTimes() {
-        int i, j, c;
         String cityName;
 
         // TODO: use location from user preferences, if not then start with settings
@@ -281,23 +295,37 @@ public class BilalActivity extends ActionBarActivity implements
             loc = new PTLocation(36.28639, 7.95111, 1, 0, 697, 1010, 10);
             cityName = "Souk Ahras";
         }
-        mTextViewCity.setText(cityName);
+        mTextViewCity.setText(cityName);        // TODO pass to initPrayerViews()
 
         Method conf = new Method();
         conf.setMethod(Method.MUSLIM_LEAGUE);
         conf.round = 0;
 
         GregorianCalendar nowCal = new GregorianCalendar();
-        Log.d(TAG, "Current time: " + DateFormat.getDateTimeInstance().format(nowCal.getTime()));
-
         Date today = nowCal.getTime();
-        mTextViewDate.setText(DateFormat.getDateInstance().format(today));
+        Log.d(TAG, "Current time: " + DateFormat.getDateTimeInstance().format(today));
 
-        initPrayerViews(nowCal);
+        initPrayerViews(nowCal, today);
+        GregorianCalendar[] ptCal = setPrayerTimes(loc, conf, nowCal, today);
 
-        /* Call the main function to fill the Prayer times */
+        CurrentPrayer current = new CurrentPrayer(nowCal, ptCal).find();
+        emphasizeCurrentPrayer(current.getIndex());
+        scheduleNextPrayerAthan(current.getNextIndex(), current.getNextCal());
+    }
+
+    private void emphasizeCurrentPrayer(int c) {
+        for (int j = 0; j < 3; j++) {
+            mTextViewPrayers[c][j].setTypeface(null, Typeface.BOLD);
+        }
+    }
+
+    @NonNull
+    private GregorianCalendar[] setPrayerTimes(PTLocation loc, Method conf, GregorianCalendar nowCal, Date today) {
+        int i;
         Prayer prayer = new Prayer();
         GregorianCalendar[] ptCal = new GregorianCalendar[Prayer.NB_PRAYERS + 1];
+
+        /* Call the main library function to fill the Prayer times */
         PrayerTime[] pt = prayer.getPrayerTimes(loc, conf, today);
         for (i = 0; i < Prayer.NB_PRAYERS; i++) {
             ptCal[i] = (GregorianCalendar)nowCal.clone();
@@ -319,62 +347,87 @@ public class BilalActivity extends ActionBarActivity implements
                 String.format("%02d:%02d\n", nextPT.hour, nextPT.minute));
         Log.d(TAG, mTextViewPrayers[i][0].getText().toString() + " "
                 + mTextViewPrayers[i][1].getText().toString() );
+        return ptCal;
+    }
 
-        // Find current and next prayers
-        GregorianCalendar next;
-        for (i = 0; i < Prayer.NB_PRAYERS; i++) {
-            if (nowCal.before(ptCal[i])) {
-                break;
-            }
-        }
-
-        switch (i) {
-            case 0:
-                next = ptCal[c = 0];
-                break;
-            case 1:
-                // sunset is skipped. TODO make this a user setting
-                i = 2;
-                // FALLTHROUGH
-            case 2:
-                c = 0;
-                next = ptCal[2];
-                break;
-            case 3:
-            case 4:
-            case 5:
-            case Prayer.NB_PRAYERS:
-            default:
-                c = i-1;
-                next = ptCal[i];
-                break;
-        }
-
-        Log.d(TAG, "Current prayer is " + mTextViewPrayers[c][2].getText().toString());
-        Log.d(TAG, "Next prayer is " + mTextViewPrayers[i][2].getText().toString());
-
-        // highlight current prayer
-        for (j = 0; j < 3; j++) {
-            mTextViewPrayers[c][j].setTypeface(null, Typeface.BOLD);
-//            mTextViewPrayers[c][j].setTextColor(Color.rgb(0, 200, 0));
-        }
-
-        // prepare alarm message in AR only
-        if (i == Prayer.NB_PRAYERS) {
-            i = 0;              // Removes "next" from "next fajr"
+    private void scheduleNextPrayerAthan(int prayer, GregorianCalendar next)
+    {
+        // prepare alarm message. TODO: AR only?
+        if (prayer == Prayer.NB_PRAYERS) {
+            prayer = 0;              // Removes "next" from "next fajr"
         }
         String message = getString(R.string.hana_ar) + " " +
-                mTextViewPrayers[i][0].getText().toString() + " " +
-                mTextViewPrayers[i][1].getText().toString();
+                mTextViewPrayers[prayer][0].getText().toString() + " " +
+                mTextViewPrayers[prayer][1].getText().toString();
 
         // Schedule alarm
-        Intent alarmIntent = new Intent(BilalActivity.this, BilalAlarm.class);
+        Intent alarmIntent = new Intent(MainActivity.this, AthanBroadcastReceiver.class);
         alarmIntent.putExtra(NOTIFY_MESSAGE, message);
-        PendingIntent sender = PendingIntent.getBroadcast(BilalActivity.this, 0, alarmIntent,
+        PendingIntent sender = PendingIntent.getBroadcast(MainActivity.this, 0, alarmIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager am = (AlarmManager)getSystemService(ALARM_SERVICE);
         am.set(AlarmManager.RTC_WAKEUP, next.getTimeInMillis(), sender);
         Log.d(TAG, "Alarm scheduled for " +
                 DateFormat.getDateTimeInstance().format(next.getTime()));
+    }
+
+    private class CurrentPrayer {
+        private GregorianCalendar nowCal;
+        private GregorianCalendar[] ptCal;
+        private int i;
+        private int c;
+        private GregorianCalendar next;
+
+        public CurrentPrayer(GregorianCalendar nowCal, GregorianCalendar... ptCal) {
+            this.nowCal = nowCal;
+            this.ptCal = ptCal;
+        }
+
+        public int getNextIndex() {
+            return i;
+        }
+
+        public int getIndex() {
+            return c;
+        }
+
+        public GregorianCalendar getNextCal() {
+            return next;
+        }
+
+        public CurrentPrayer find() {
+            // Find current and next prayers
+            for (i = 0; i < Prayer.NB_PRAYERS; i++) {
+                if (nowCal.before(ptCal[i])) {
+                    break;
+                }
+            }
+
+            switch (i) {
+                case 0:
+                    next = ptCal[c = 0];
+                    break;
+                case 1:
+                    // sunset is skipped. TODO make this a user setting
+                    i = 2;
+                    // FALLTHROUGH
+                case 2:
+                    c = 0;
+                    next = ptCal[2];
+                    break;
+                case 3:
+                case 4:
+                case 5:
+                case Prayer.NB_PRAYERS:
+                default:
+                    c = i-1;
+                    next = ptCal[i];
+                    break;
+            }
+
+            Log.d(TAG, "Current prayer is " + mTextViewPrayers[c][2].getText().toString());
+            Log.d(TAG, "Next prayer is " + mTextViewPrayers[i][2].getText().toString());
+            return this;
+        }
     }
 }

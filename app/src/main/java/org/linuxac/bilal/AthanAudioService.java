@@ -30,16 +30,15 @@ import android.os.PowerManager;
 import android.util.Log;
 
 import java.io.IOException;
-import java.net.URI;
 
 
-public class AthanAudio extends Service implements MediaPlayer.OnPreparedListener,
+public class AthanAudioService extends Service implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener, AudioManager.OnAudioFocusChangeListener  {
     MediaPlayer audioPlayer = null;
 
 	public void onCreate(){
 	    super.onCreate();
-	    Log.d(BilalActivity.TAG, "Audio service created!");
+	    Log.d(MainActivity.TAG, "Audio service created!");
 	}
 
     private void initMediaPlayer() {
@@ -50,13 +49,13 @@ public class AthanAudio extends Service implements MediaPlayer.OnPreparedListene
                 audioPlayer.setDataSource(getApplicationContext(), Uri.parse(path));
             } catch (IOException e) {
                 e.printStackTrace();
-                Log.e(BilalActivity.TAG, e.getMessage(), e);
+                Log.e(MainActivity.TAG, e.getMessage(), e);
             }
             audioPlayer.setOnPreparedListener(this);
             audioPlayer.setOnErrorListener(this);
             audioPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
             audioPlayer.prepareAsync(); // prepare async to not block main thread
-            Log.d(BilalActivity.TAG, "Audio player started asynchronously!");
+            Log.d(MainActivity.TAG, "Audio player started asynchronously!");
         }
     }
 
@@ -68,9 +67,9 @@ public class AthanAudio extends Service implements MediaPlayer.OnPreparedListene
     /** Called when MediaPlayer is ready */
     public void onPrepared(MediaPlayer player) {
         audioPlayer.start();
-        Log.d(BilalActivity.TAG, "Audio started playing!");
+        Log.d(MainActivity.TAG, "Audio started playing!");
         if(!audioPlayer.isPlaying()) {
-	        Log.d(BilalActivity.TAG, "Problem in playing audio");
+	        Log.d(MainActivity.TAG, "Problem in playing audio");
 	    }
     }
 
@@ -78,8 +77,8 @@ public class AthanAudio extends Service implements MediaPlayer.OnPreparedListene
     public boolean onError(MediaPlayer mp, int what, int extra) {
         // TODO ... react appropriately ...
         // The MediaPlayer has moved to the Error state, must be reset!
-        Log.e(BilalActivity.TAG, "what=" + what + " extra=" + extra);
-        return false; // TODO change to true if error is handed by this fnct.
+        Log.e(MainActivity.TAG, "what=" + what + " extra=" + extra);
+        return false; // TODO change to true if error is handled by here.
     }
 
     public void onAudioFocusChange(int focusChange) {

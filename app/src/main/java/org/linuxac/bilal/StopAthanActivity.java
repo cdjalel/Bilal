@@ -26,9 +26,8 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 
-public class CancelAthanActivity extends Activity {
+public class StopAthanActivity extends Activity {
 
     public static final String NOTIFICATION_ID = "org.linuxac.bilal.NOTIFICATION_ID";
 
@@ -37,7 +36,7 @@ public class CancelAthanActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         // stop athan audio
-        Intent stopAudioIntent = new Intent(CancelAthanActivity.this, AthanAudio.class);
+        Intent stopAudioIntent = new Intent(StopAthanActivity.this, AthanAudioService.class);
         stopService(stopAudioIntent);
 
         // cancel notification
@@ -47,8 +46,8 @@ public class CancelAthanActivity extends Activity {
         finish(); // since finish() is called in onCreate(), onDestroy() will be called immediately
     }
 
-    public static PendingIntent getCancelAthanIntent(int notificationId, Context context) {
-        Intent intent = new Intent(context, CancelAthanActivity.class);
+    public static PendingIntent getIntent(int notificationId, Context context) {
+        Intent intent = new Intent(context, StopAthanActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.putExtra(NOTIFICATION_ID, notificationId);
         return PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);

@@ -5,17 +5,20 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
-	<application
+    <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:supportsRtl="true"
         android:theme="@style/AppTheme" >
+        <!--android:roundIcon="@mipmap/ic_launcher_round"-->
 
-		<receiver android:name="org.linuxac.bilal.BilalAlarm" />
+        <receiver android:name="org.linuxac.bilal.AthanBroadcastReceiver" />
 
         <activity
-            android:name=".BilalActivity"
-            android:label="@string/app_name" >
+            android:name=".MainActivity"
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme.NoActionBar" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -23,12 +26,12 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".CancelAthanActivity"
+            android:name=".StopAthanActivity"
             android:launchMode="singleTask"
             android:taskAffinity=""
             android:excludeFromRecents="true">
         </activity>
-        <service android:name="AthanAudio" android:enabled="true"> </service>
+        <service android:name=".AthanAudioService" android:enabled="true"> </service>
     </application>
 
 </manifest>

@@ -28,43 +28,43 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 
-public class BilalAlarm extends BroadcastReceiver
+public class AthanBroadcastReceiver extends BroadcastReceiver
 {
     public final static String EXTRA_EVENT_ID = "org.linuxac.bilal.EVENT_ID";
 
     @Override
     public void onReceive(Context context, Intent intent)
     {
-        String message = intent.getStringExtra(BilalActivity.NOTIFY_MESSAGE);
+        String message = intent.getStringExtra(MainActivity.NOTIFY_MESSAGE);
 
-        Log.d(BilalActivity.TAG, "Alarm is ON: " + message);
+        Log.d(MainActivity.TAG, "Athan alarm is ON: " + message);
 
-        // Play athan
-        Intent audioIntent = new Intent(context, AthanAudio.class);
+        // Play athan audio
+        Intent audioIntent = new Intent(context, AthanAudioService.class);
         context.startService(audioIntent);
 
         // Build intent for notification content
         int notificationId = 0;
         int eventId = 0;
-        Intent nextPrayerIntent = new Intent(context, BilalActivity.class);
+        Intent nextPrayerIntent = new Intent(context, MainActivity.class);
         nextPrayerIntent.putExtra(EXTRA_EVENT_ID, eventId);
         PendingIntent nextPrayerPendingIntent =
                 PendingIntent.getActivity(context, 0, nextPrayerIntent, 0);
 
         // Use another intent to stop athan from notification button
-        PendingIntent cancelAthanPendingIntent =
-                CancelAthanActivity.getCancelAthanIntent(notificationId, context);
+        PendingIntent stopAthanPendingIntent =
+                StopAthanActivity.getIntent(notificationId, context);
 
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(context)
                         .setSmallIcon(R.mipmap.ic_launcher)
-                        .setContentTitle(BilalActivity.TAG)
+                        .setContentTitle(MainActivity.TAG)
                         .setContentText(message)
                         .setContentIntent(nextPrayerPendingIntent)
                         .setCategory(NotificationCompat.CATEGORY_ALARM)
                         .setAutoCancel(true)
-                        .setDeleteIntent(cancelAthanPendingIntent)
-                        .addAction(R.drawable.ic_clear, "وقف الآذان", cancelAthanPendingIntent);
+                        .setDeleteIntent(stopAthanPendingIntent)
+                        .addAction(R.drawable.ic_clear, "وقف الآذان", stopAthanPendingIntent);
 
         // Get an instance of the NotificationManager service
         NotificationManagerCompat notificationManager =
@@ -73,8 +73,8 @@ public class BilalAlarm extends BroadcastReceiver
         // Build the notification and issues it with notification manager.
         notificationManager.notify(notificationId, notificationBuilder.build());
 
-        // ask Activity to update display to next prayer. TODO: delay highlighting of next prayer
-        Intent updateIntent = new Intent(BilalActivity.UPDATE_MESSAGE);
+        // ask Activity to update display to current prayer.
+        Intent updateIntent = new Intent(MainActivity.UPDATE_MESSAGE);
         context.sendBroadcast(updateIntent);
     }
 }
