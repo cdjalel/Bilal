@@ -28,53 +28,63 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 
-public class AthanBroadcastReceiver extends BroadcastReceiver
+public class AthanAlarmReceiver extends BroadcastReceiver
 {
     public final static String EXTRA_EVENT_ID = "org.linuxac.bilal.EVENT_ID";
 
     @Override
     public void onReceive(Context context, Intent intent)
     {
-        String message = intent.getStringExtra(MainActivity.NOTIFY_MESSAGE);
-
-        Log.d(MainActivity.TAG, "Athan alarm is ON: " + message);
-
         // Play athan audio
         Intent audioIntent = new Intent(context, AthanAudioService.class);
         context.startService(audioIntent);
 
-        // Build intent for notification content
+
+        String athanMessage = context.getString(R.string.time_for) + " " +
+                intent.getStringExtra(AthanManager.MESSAGE_NOTIFY_ATHAN);
+        Log.d(MainActivity.TAG, "Athan alarm is ON: " + athanMessage);
+
+        // TODO: make it configurable
+        notifyAthan(context, athanMessage);
+
+        // Broadcast to MainActivity so it updates its current prayer if on screen
+        Intent updateIntent = new Intent(MainActivity.MESSAGE_UPDATE_VIEWS);
+        context.sendBroadcast(updateIntent);
+
+        // Re-arm athan alarm.
+        AthanManager.updatePrayerTimes(context);
+    }
+
+    private void notifyAthan(Context context, String athanMessage)
+    {
+        // Build intent to start MainActivity when notification is touched
         int notificationId = 0;
         int eventId = 0;
-        Intent nextPrayerIntent = new Intent(context, MainActivity.class);
-        nextPrayerIntent.putExtra(EXTRA_EVENT_ID, eventId);
-        PendingIntent nextPrayerPendingIntent =
-                PendingIntent.getActivity(context, 0, nextPrayerIntent, 0);
 
-        // Use another intent to stop athan from notification button
-        PendingIntent stopAthanPendingIntent =
-                StopAthanActivity.getIntent(notificationId, context);
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.putExtra(EXTRA_EVENT_ID, eventId);
+        PendingIntent activity = PendingIntent.getActivity(context, 0, intent, 0);
 
+        // Use another intent to stop athan from notification (button or swipe left)
+        // TODO add stop from volume down
+        PendingIntent stopAudioIntent = StopAthanActivity.getIntent(notificationId, context);
+
+        String actionMsg = context.getString(R.string.stop_athan);
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(context)
                         .setSmallIcon(R.mipmap.ic_launcher)
                         .setContentTitle(MainActivity.TAG)
-                        .setContentText(message)
-                        .setContentIntent(nextPrayerPendingIntent)
+                        .setContentText(athanMessage)
+                        .setContentIntent(activity)
                         .setCategory(NotificationCompat.CATEGORY_ALARM)
                         .setAutoCancel(true)
-                        .setDeleteIntent(stopAthanPendingIntent)
-                        .addAction(R.drawable.ic_clear, "وقف الآذان", stopAthanPendingIntent);
+                        .setDeleteIntent(stopAudioIntent)
+                        .addAction(R.drawable.ic_clear, actionMsg, stopAudioIntent);
 
         // Get an instance of the NotificationManager service
-        NotificationManagerCompat notificationManager =
-                NotificationManagerCompat.from(context);
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
 
-        // Build the notification and issues it with notification manager.
+        // Build the notification and issue it
         notificationManager.notify(notificationId, notificationBuilder.build());
-
-        // ask Activity to update display to current prayer.
-        Intent updateIntent = new Intent(MainActivity.UPDATE_MESSAGE);
-        context.sendBroadcast(updateIntent);
     }
 }

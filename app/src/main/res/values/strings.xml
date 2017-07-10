@@ -1,8 +1,20 @@
 <resources>
     <string name="app_name">Bilal</string>
     <string name="action_settings">Settings</string>
-    <string name="hana_ar">حان وقت صلاة</string>
     <string name="title_activity_bilal">Bilal</string>
     <string name="jumu3a_ar">الجمعة</string>
     <string name="jumu3a_en">Jumuaa</string>
+    <string name="time_for">Time for prayer</string>
+    <string name="fajr">Fajr</string>
+    <string name="dhuhur">Dhuhur</string>
+    <string name="asr">Asr</string>
+    <string name="maghrib">Maghrib</string>
+    <string name="isha">Isha</string>
+    <string name="hana_ar">حان وقت صلاة</string>
+    <string name="nextfajr">Next fajr</string>
+    <string name="not_available">Prayer times not available</string>
+    <string name="stop_athan">Stop Athan</string>
+    <string name="dhuhur_ar">الظهر</string>
+    <string name="dhuhur_en">Dhuhur</string>
+    <string name="shuruk">Sunset</string>
 </resources>

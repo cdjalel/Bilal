@@ -20,8 +20,6 @@
 
 package org.linuxac.bilal;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -30,7 +28,6 @@ import android.graphics.Typeface;
 import android.location.Location;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 //import android.support.design.widget.FloatingActionButton;
 //import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -52,26 +49,27 @@ import org.arabeyes.prayertime.*;
 
 import java.text.DateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 
 public class MainActivity extends AppCompatActivity implements
         ConnectionCallbacks, OnConnectionFailedListener {
 
-    public final static String NOTIFY_MESSAGE = "org.linuxac.bilal.NOTIFY";
-    public final static String UPDATE_MESSAGE = "org.linuxac.bilal.UPDATE";
+    public static final String MESSAGE_UPDATE_VIEWS = "org.linuxac.bilal.UPDATE";
 
-    protected static final String TAG = "Bilal";
+    protected static final String TAG = "MainActivity";
+
     protected GoogleApiClient mGoogleApiClient;
     protected Location mLastLocation;
 
-    protected Boolean mReceiverIsRegistered;
-    protected BroadcastReceiver mReceiver;
+    protected Boolean mReceiverRegistered = false;
+    protected BroadcastReceiver mUpdateViewsReceiver = null;
+
+    protected boolean mIsJumu3a = false;
 
     protected TextView mTextViewCity;
     protected TextView mTextViewDate;
     protected TextView[][] mTextViewPrayers;
-
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,9 +91,13 @@ public class MainActivity extends AppCompatActivity implements
             finish();
             return;
         }
-
         buildGoogleApiClient();     // needed for Location
-        initReceiver();
+
+        // TODO loads prefs
+
+        if (AthanManager.sAlarmIsEnabled) {
+            initReceiver();
+        }
         loadViews();
     }
 
@@ -115,6 +117,15 @@ public class MainActivity extends AppCompatActivity implements
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            AthanManager.sAlarmIsEnabled = !AthanManager.sAlarmIsEnabled;
+            if (AthanManager.sAlarmIsEnabled) {
+                initReceiver();
+                AthanManager.enableAthan(this);
+            }
+            else {
+                deleteReceiver();
+                AthanManager.disableAthan(this);
+            }
             return true;
         }
 
@@ -128,9 +139,7 @@ public class MainActivity extends AppCompatActivity implements
     private boolean isGooglePlayServicesAvailable() {
         int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
         if (ConnectionResult.SUCCESS == resultCode) {
-            if (Log.isLoggable(TAG, Log.DEBUG)) { // TODO copy elsewhere
-                Log.d(TAG, "Google Play services is available.");
-            }
+            Log.d(TAG, "Google Play services unavailable.");
             return true;
         } else {
             Log.e(TAG, "Google Play services is unavailable.");
@@ -144,6 +153,27 @@ public class MainActivity extends AppCompatActivity implements
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
+    }
+
+    private void initReceiver() {
+        mReceiverRegistered = false;
+        mUpdateViewsReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Log.d(TAG, "Receiver kicked by action: " + intent.getAction());
+                // prayer times have been update by the Alarm Receiver which is the action sender
+                updatePrayerViews();
+            }
+        };
+    }
+
+    private void deleteReceiver() {
+        if (mReceiverRegistered) {
+            assert(null != mUpdateViewsReceiver);
+            unregisterReceiver(mUpdateViewsReceiver);
+            mReceiverRegistered = false;
+        }
+        mUpdateViewsReceiver = null;
     }
 
     @Override
@@ -162,31 +192,26 @@ public class MainActivity extends AppCompatActivity implements
 
     protected void onResume() {
         super.onResume();
-        if (!mReceiverIsRegistered) {
-            registerReceiver(mReceiver, new IntentFilter(MainActivity.UPDATE_MESSAGE));
-            mReceiverIsRegistered = true;
+        Log.d(TAG, "onResume: rcvr reg = " + mReceiverRegistered);
+
+        if (AthanManager.sAlarmIsEnabled && !mReceiverRegistered) {
+            assert(null != mUpdateViewsReceiver);
+            registerReceiver(mUpdateViewsReceiver, new IntentFilter(MESSAGE_UPDATE_VIEWS));
+            mReceiverRegistered = true;
         }
-        updatePrayerTimes();
+        AthanManager.updatePrayerTimes(this);
+        updatePrayerViews();
     }
 
     protected void onPause() {
         super.onPause();
-        if (mReceiverIsRegistered) {
-            unregisterReceiver(mReceiver);
-            mReceiverIsRegistered = false;
-        }
-    }
+        Log.d(TAG, "onPause: rcvr reg = " + mReceiverRegistered);
 
-    private void initReceiver() {
-        mReceiverIsRegistered = false;
-        mReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                // Extract data included in the Intent
-                Log.d(TAG, "update prayer times");
-                updatePrayerTimes();
-            }
-        };
+        if (mReceiverRegistered) {
+            assert(null != mUpdateViewsReceiver);
+            unregisterReceiver(mUpdateViewsReceiver);
+            mReceiverRegistered = false;
+        }
     }
 
     @Override
@@ -200,7 +225,9 @@ public class MainActivity extends AppCompatActivity implements
             //Toast.makeText(this, R.string.no_location_detected, Toast.LENGTH_LONG).show();
             Log.w(TAG, "onConnected: No location detected");
         }
-//        updatePrayerTimes();
+        else {
+            Log.w(TAG, "onConnected: location detected");
+        }
     }
 
     @Override
@@ -209,6 +236,7 @@ public class MainActivity extends AppCompatActivity implements
         // onConnectionFailed.
         Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = " + result.getErrorCode());
     }
+
     @Override
     public void onConnectionSuspended(int cause) {
         // The connection to Google Play services was lost for some reason. We call connect() to
@@ -220,7 +248,7 @@ public class MainActivity extends AppCompatActivity implements
     protected void loadViews() {
         mTextViewCity = (TextView) findViewById(R.id.textViewCity);
         mTextViewDate = (TextView) findViewById(R.id.textViewDate);
-        TextView[][] tvp = {
+        mTextViewPrayers = new TextView[][] {
             {
                     (TextView) findViewById(R.id.textViewFajrAR),
                     (TextView) findViewById(R.id.textViewFajr),
@@ -257,177 +285,47 @@ public class MainActivity extends AppCompatActivity implements
                     (TextView) findViewById(R.id.textViewNextFajrEN)
             }
         };
-        mTextViewPrayers = tvp.clone();
     }
 
-    protected void initPrayerViews(GregorianCalendar calendar, Date date) {
+    protected void setPrayerTimesViews(String cityName, PrayerTimes prayerTimes) {
         int i, j;
 
-        mTextViewDate.setText(DateFormat.getDateInstance().format(date));
+        mTextViewCity.setText(cityName);
 
-        // change Dhuhur to Jumuaa if needed.
-        if (calendar.get(Calendar.DAY_OF_WEEK) == Calendar.FRIDAY) {
-            mTextViewPrayers[2][0].setText(getString(R.string.jumu3a_ar));
-            mTextViewPrayers[2][2].setText(getString(R.string.jumu3a_en));
+        if (null == prayerTimes) {
+            mTextViewDate.setText(getString(R.string.not_available));
+            return;
         }
+
+        GregorianCalendar today = prayerTimes.getCurrent();
+        mTextViewDate.setText(DateFormat.getDateInstance().format(today.getTime()));
 
         for (i = 0; i < Prayer.NB_PRAYERS + 1; i++) {
+            mTextViewPrayers[i][1].setText(prayerTimes.format(i));
+        }
+
+        // change Dhuhur to Jumuaa if needed.
+        if (today.get(Calendar.DAY_OF_WEEK) == Calendar.FRIDAY) {
+            mTextViewPrayers[2][0].setText(getString(R.string.jumu3a_ar));
+            mTextViewPrayers[2][2].setText(getString(R.string.jumu3a_en));
+            mIsJumu3a = true;
+        }
+        else if (mIsJumu3a) {
+            mTextViewPrayers[2][0].setText(getString(R.string.dhuhur_ar));
+            mTextViewPrayers[2][2].setText(getString(R.string.dhuhur_en));
+            mIsJumu3a = false;
+        }
+
+        // emphasize Current Prayer
+        for (i = 0; i < Prayer.NB_PRAYERS + 1; i++) {
             for (j = 0; j < 3; j++) {
-                mTextViewPrayers[i][j].setTypeface(null, Typeface.NORMAL);
+                mTextViewPrayers[i][j].setTypeface(null,
+                        i == prayerTimes.getCurrentIndex() ? Typeface.BOLD_ITALIC : Typeface.NORMAL);
             }
         }
     }
 
-    protected void updatePrayerTimes() {
-        String cityName;
-
-        // TODO: use location from user preferences, if not then start with settings
-        // activity for user selection from a list with auto detection as an option
-        PTLocation loc;
-        if (mLastLocation != null) {
-            double latitude = mLastLocation.getLatitude();
-            double longitude = mLastLocation.getLongitude();
-            loc = new PTLocation(latitude, longitude, 1, 0, 697, 1010, 10);
-            cityName = "Lat: " + latitude + " - Long:" + longitude;
-        }
-        else {
-            // http://dateandtime.info/citycoordinates.php?id=2479215
-            loc = new PTLocation(36.28639, 7.95111, 1, 0, 697, 1010, 10);
-            cityName = "Souk Ahras";
-        }
-        mTextViewCity.setText(cityName);        // TODO pass to initPrayerViews()
-
-        Method conf = new Method();
-        conf.setMethod(Method.MUSLIM_LEAGUE);
-        conf.round = 0;
-
-        GregorianCalendar nowCal = new GregorianCalendar();
-        Date today = nowCal.getTime();
-        Log.d(TAG, "Current time: " + DateFormat.getDateTimeInstance().format(today));
-
-        initPrayerViews(nowCal, today);
-        GregorianCalendar[] ptCal = setPrayerTimes(loc, conf, nowCal, today);
-
-        CurrentPrayer current = new CurrentPrayer(nowCal, ptCal).find();
-        emphasizeCurrentPrayer(current.getIndex());
-        scheduleNextPrayerAthan(current.getNextIndex(), current.getNextCal());
-    }
-
-    private void emphasizeCurrentPrayer(int c) {
-        for (int j = 0; j < 3; j++) {
-            mTextViewPrayers[c][j].setTypeface(null, Typeface.BOLD);
-        }
-    }
-
-    @NonNull
-    private GregorianCalendar[] setPrayerTimes(PTLocation loc, Method conf, GregorianCalendar nowCal, Date today) {
-        int i;
-        Prayer prayer = new Prayer();
-        GregorianCalendar[] ptCal = new GregorianCalendar[Prayer.NB_PRAYERS + 1];
-
-        /* Call the main library function to fill the Prayer times */
-        PrayerTime[] pt = prayer.getPrayerTimes(loc, conf, today);
-        for (i = 0; i < Prayer.NB_PRAYERS; i++) {
-            ptCal[i] = (GregorianCalendar)nowCal.clone();
-            ptCal[i].set(Calendar.HOUR_OF_DAY, pt[i].hour);
-            ptCal[i].set(Calendar.MINUTE, pt[i].minute);
-            ptCal[i].set(Calendar.SECOND, pt[i].second);
-            mTextViewPrayers[i][1].setText(
-                    String.format("%02d:%02d\n", pt[i].hour, pt[i].minute));
-            Log.d(TAG, mTextViewPrayers[i][0].getText().toString() + " "
-                    + mTextViewPrayers[i][1].getText().toString() );
-        }
-        PrayerTime nextPT = prayer.getNextDayFajr(loc, conf, today);
-        ptCal[i] = (GregorianCalendar)nowCal.clone();
-        ptCal[i].add(Calendar.DATE, 1);
-        ptCal[i].set(Calendar.HOUR_OF_DAY, nextPT.hour);
-        ptCal[i].set(Calendar.MINUTE, nextPT.minute);
-        ptCal[i].set(Calendar.SECOND, nextPT.second);
-        mTextViewPrayers[i][1].setText(
-                String.format("%02d:%02d\n", nextPT.hour, nextPT.minute));
-        Log.d(TAG, mTextViewPrayers[i][0].getText().toString() + " "
-                + mTextViewPrayers[i][1].getText().toString() );
-        return ptCal;
-    }
-
-    private void scheduleNextPrayerAthan(int prayer, GregorianCalendar next)
-    {
-        // prepare alarm message. TODO: AR only?
-        if (prayer == Prayer.NB_PRAYERS) {
-            prayer = 0;              // Removes "next" from "next fajr"
-        }
-        String message = getString(R.string.hana_ar) + " " +
-                mTextViewPrayers[prayer][0].getText().toString() + " " +
-                mTextViewPrayers[prayer][1].getText().toString();
-
-        // Schedule alarm
-        Intent alarmIntent = new Intent(MainActivity.this, AthanBroadcastReceiver.class);
-        alarmIntent.putExtra(NOTIFY_MESSAGE, message);
-        PendingIntent sender = PendingIntent.getBroadcast(MainActivity.this, 0, alarmIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
-        AlarmManager am = (AlarmManager)getSystemService(ALARM_SERVICE);
-        am.set(AlarmManager.RTC_WAKEUP, next.getTimeInMillis(), sender);
-        Log.d(TAG, "Alarm scheduled for " +
-                DateFormat.getDateTimeInstance().format(next.getTime()));
-    }
-
-    private class CurrentPrayer {
-        private GregorianCalendar nowCal;
-        private GregorianCalendar[] ptCal;
-        private int i;
-        private int c;
-        private GregorianCalendar next;
-
-        public CurrentPrayer(GregorianCalendar nowCal, GregorianCalendar... ptCal) {
-            this.nowCal = nowCal;
-            this.ptCal = ptCal;
-        }
-
-        public int getNextIndex() {
-            return i;
-        }
-
-        public int getIndex() {
-            return c;
-        }
-
-        public GregorianCalendar getNextCal() {
-            return next;
-        }
-
-        public CurrentPrayer find() {
-            // Find current and next prayers
-            for (i = 0; i < Prayer.NB_PRAYERS; i++) {
-                if (nowCal.before(ptCal[i])) {
-                    break;
-                }
-            }
-
-            switch (i) {
-                case 0:
-                    next = ptCal[c = 0];
-                    break;
-                case 1:
-                    // sunset is skipped. TODO make this a user setting
-                    i = 2;
-                    // FALLTHROUGH
-                case 2:
-                    c = 0;
-                    next = ptCal[2];
-                    break;
-                case 3:
-                case 4:
-                case 5:
-                case Prayer.NB_PRAYERS:
-                default:
-                    c = i-1;
-                    next = ptCal[i];
-                    break;
-            }
-
-            Log.d(TAG, "Current prayer is " + mTextViewPrayers[c][2].getText().toString());
-            Log.d(TAG, "Next prayer is " + mTextViewPrayers[i][2].getText().toString());
-            return this;
-        }
+    private void updatePrayerViews() {
+        setPrayerTimesViews(AthanManager.sCityName, AthanManager.sPrayerTimes);
     }
 }

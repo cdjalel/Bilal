@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">بلال</string>
+    <string name="time_for">حان الآن وقت صلاة</string>
+    <string name="title_activity_bilal">بلال</string>
+    <string name="jumu3a_en">الجمعة</string>
+    <string name="isha">العشاء</string>
+    <string name="maghrib">المغرب</string>
+    <string name="hana_ar">حان وقت صلاة</string>
+    <string name="fajr">الفجر</string>
+    <string name="dhuhur">الظهر</string>
+    <string name="asr">العصر</string>
+    <string name="action_settings">الإعدادات</string>
+    <string name="jumu3a_ar">الجمعة</string>
+    <string name="nextfajr">فجر الغد</string>
+    <string name="not_available">أوقات الصلاة غير متوفرة</string>
+    <string name="stop_athan">وقف الآذان</string>
+    <string name="dhuhur_ar">الظهر</string>
+    <string name="dhuhur_en">Dhuhur</string>
+</resources>
