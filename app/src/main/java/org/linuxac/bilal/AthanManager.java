@@ -77,6 +77,14 @@ public class AthanManager {
         disableBootAndTimeChangeReceiver(context);
     }
 
+    public static void showBootAndTimeChangeReceiver(Context context)
+    {
+        ComponentName receiver = new ComponentName(context, BootAndTimeChangeReceiver.class);
+        PackageManager pm = context.getPackageManager();
+        Log.d(TAG, "BootAndTimeChangeReceiver EnabledSetting = " +
+                pm.getComponentEnabledSetting(receiver));
+    }
+
     private static void enableBootAndTimeChangeReceiver(Context context)
     {
         ComponentName receiver = new ComponentName(context, BootAndTimeChangeReceiver.class);
@@ -108,6 +116,8 @@ public class AthanManager {
 
     public static void updatePrayerTimes(Context context)
     {
+        AthanManager.showBootAndTimeChangeReceiver(context);
+
         // TODO: use case: 1st run opens settings to let user pick a location (from DB or
         // TODO automatically). Then Athan is enabled by default until user turns it off.
         // TODO Prayer time calc. method is also set automatically (from DB based on location
@@ -121,9 +131,15 @@ public class AthanManager {
         // TODO: use location & method from user preferences
 
         GregorianCalendar nowCal = new GregorianCalendar();
+        boolean keepAlarm = false;
         if (sameDay(sLastTime, nowCal)) {
+            int oldCurrent = sPrayerTimes.getCurrentIndex();
             sPrayerTimes.updateCurrent(nowCal);
-            Log.d(TAG, "Call it a day!");
+            if (sAlarmIsEnabled && oldCurrent == sPrayerTimes.getCurrentIndex()) {
+                keepAlarm = true;
+                Log.d(TAG, "Keep old alarm.");
+            }
+            Log.d(TAG, "Call it a day :)");
         }
         else {
             Log.d(TAG, "Last time: " + DateFormat.getDateTimeInstance().format(sLastTime.getTime()));
@@ -137,7 +153,7 @@ public class AthanManager {
         Log.d(TAG, "Current prayer: " + getPrayerName(context, sPrayerTimes.getCurrentIndex()));
         Log.d(TAG, "Next prayer: " + getPrayerName(context, sPrayerTimes.getNextIndex()));
 
-        if (sAlarmIsEnabled) {
+        if (sAlarmIsEnabled && !keepAlarm) {
             scheduleAthanAlarm(context);
         }
     }
@@ -179,7 +195,7 @@ public class AthanManager {
                 // use "fajr" instead of "next fajr"
                 // FALLTHROUGH
             case 0:
-                prayerNameResId = R.string.fajr;
+                prayerNameResId = R.string.fajr_en;
                 break;
             case 1:
                 prayerNameResId = R.string.shuruk;
@@ -224,7 +240,7 @@ public class AthanManager {
         String notificationMsg = getPrayerName(context, sPrayerTimes.getNextIndex()) + " " +
                 sPrayerTimes.format(sPrayerTimes.getNext());
 
-        // Schedule alarm
+        // Cancel old alarm and schedule a new one
         cancelAthanAlarm(context);
 
         Intent intent = new Intent(context, AthanAlarmReceiver.class);
