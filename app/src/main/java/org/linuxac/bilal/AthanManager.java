@@ -77,7 +77,7 @@ public class AthanManager {
         disableBootAndTimeChangeReceiver(context);
     }
 
-    public static void showBootAndTimeChangeReceiver(Context context)
+    private static void logBootAndTimeChangeReceiver(Context context)
     {
         ComponentName receiver = new ComponentName(context, BootAndTimeChangeReceiver.class);
         PackageManager pm = context.getPackageManager();
@@ -116,7 +116,7 @@ public class AthanManager {
 
     public static void updatePrayerTimes(Context context)
     {
-        AthanManager.showBootAndTimeChangeReceiver(context);
+        AthanManager.logBootAndTimeChangeReceiver(context);
 
         // TODO: use case: 1st run opens settings to let user pick a location (from DB or
         // TODO automatically). Then Athan is enabled by default until user turns it off.
