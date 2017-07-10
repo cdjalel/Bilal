@@ -22,9 +22,8 @@ package org.linuxac.bilal;
 
 import org.arabeyes.prayertime.Prayer;
 
-import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
-import java.util.Locale;
 
 
 public class PrayerTimes {
@@ -64,7 +63,8 @@ public class PrayerTimes {
 
     public static String format(GregorianCalendar cal)
     {
-        return DateFormat.getTimeInstance(DateFormat.SHORT, Locale.GERMAN).format(cal.getTime());
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:m");
+        return sdf.format(cal.getTime());
     }
 
     public String format(int i)
