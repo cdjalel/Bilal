@@ -40,5 +40,7 @@
     <string name="nextfajr_ar">فجر الغد</string>
     <string name="nextfajr_en">Next fajr</string>
     <string name="nextfajr">@string/nextfajr_ar</string>
+    <string name="pref_default_display_name">محمد علي</string>
+    <string name="pref_header_notifications">التنبيهات</string>
 
 </resources>
