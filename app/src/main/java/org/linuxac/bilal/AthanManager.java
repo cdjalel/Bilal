@@ -33,6 +33,9 @@ import org.arabeyes.prayertime.Method;
 import org.arabeyes.prayertime.PTLocation;
 import org.arabeyes.prayertime.Prayer;
 import org.arabeyes.prayertime.PrayerTime;
+import org.linuxac.bilal.helpers.PrayerTimes;
+import org.linuxac.bilal.receivers.AthanAlarmReceiver;
+import org.linuxac.bilal.receivers.BootAndTimeChangeReceiver;
 
 import java.text.DateFormat;
 import java.util.Calendar;
@@ -61,20 +64,31 @@ public class AthanManager {
     }
 
     public static final String MESSAGE_NOTIFY_ATHAN = "org.linuxac.bilal.NOTIFY";
-    public static boolean sAlarmIsEnabled = false;   // 1st enabled by user after location is set
+    private static boolean sAlarmIsEnabled = false;   // 1st enabled by user after location is set
     protected static PendingIntent sAlarmIntent = null;
 
+    public static boolean isAlarmEnabled() {return sAlarmIsEnabled; }
 
     public static void enableAthan(Context context)
     {
+        if (BuildConfig.DEBUG && sAlarmIsEnabled) {
+            Log.d(TAG, "Athan alarm already enabled!");
+            return;
+        }
         enableBootAndTimeChangeReceiver(context);
         scheduleAthanAlarm(context);
+        sAlarmIsEnabled = true;
     }
 
     public static void disableAthan(Context context)
     {
+        if (BuildConfig.DEBUG && !sAlarmIsEnabled) {
+            Log.d(TAG, "Athan alarm already disabled!");
+            return;
+        }
         cancelAthanAlarm(context);
         disableBootAndTimeChangeReceiver(context);
+        sAlarmIsEnabled = false;
     }
 
     private static void logBootAndTimeChangeReceiver(Context context)

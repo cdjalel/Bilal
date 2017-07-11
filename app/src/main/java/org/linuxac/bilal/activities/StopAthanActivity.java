@@ -18,7 +18,7 @@
  *
  */
 
-package org.linuxac.bilal;
+package org.linuxac.bilal.activities;
 
 import android.app.Activity;
 import android.app.NotificationManager;
@@ -26,6 +26,8 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+
+import org.linuxac.bilal.AthanAudioService;
 
 public class StopAthanActivity extends Activity {
 

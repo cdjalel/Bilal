@@ -18,20 +18,23 @@
  *
  */
 
-package org.linuxac.bilal;
+package org.linuxac.bilal.receivers;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import org.linuxac.bilal.AthanManager;
+
 public class BootAndTimeChangeReceiver extends BroadcastReceiver {
+
+    protected static final String TAG = "Boot&TimeChangeReceiver";
 
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
-
-        Log.d(MainActivity.TAG, "BootAndTimeChangeReceiver: " + action);
+        Log.d(TAG, action);
 
         /*if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
             // special handling for boot?

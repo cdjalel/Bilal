@@ -18,7 +18,7 @@
  *
  */
 
-package org.linuxac.bilal;
+package org.linuxac.bilal.activities;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -30,8 +30,10 @@ import android.location.Location;
 import android.os.Bundle;
 //import android.support.design.widget.FloatingActionButton;
 //import android.support.design.widget.Snackbar;
+
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -46,6 +48,9 @@ import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListe
 import com.google.android.gms.location.LocationServices;
 
 import org.arabeyes.prayertime.*;
+import org.linuxac.bilal.AthanManager;
+import org.linuxac.bilal.R;
+import org.linuxac.bilal.helpers.PrayerTimes;
 
 import java.text.DateFormat;
 import java.util.Calendar;
@@ -95,9 +100,7 @@ public class MainActivity extends AppCompatActivity implements
 
         // TODO loads prefs
 
-        if (AthanManager.sAlarmIsEnabled) {
-            initReceiver();
-        }
+        initReceiver();
         loadViews();
     }
 
@@ -117,15 +120,6 @@ public class MainActivity extends AppCompatActivity implements
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            AthanManager.sAlarmIsEnabled = !AthanManager.sAlarmIsEnabled;
-            if (AthanManager.sAlarmIsEnabled) {
-                initReceiver();
-                AthanManager.enableAthan(this);
-            }
-            else {
-                deleteReceiver();
-                AthanManager.disableAthan(this);
-            }
             return true;
         }
 
@@ -167,14 +161,14 @@ public class MainActivity extends AppCompatActivity implements
         };
     }
 
-    private void deleteReceiver() {
-        if (mReceiverRegistered) {
-            assert(null != mUpdateViewsReceiver);
-            unregisterReceiver(mUpdateViewsReceiver);
-            mReceiverRegistered = false;
-        }
-        mUpdateViewsReceiver = null;
-    }
+//    private void deleteReceiver() {
+//        if (mReceiverRegistered) {
+//            assert(null != mUpdateViewsReceiver);
+//            unregisterReceiver(mUpdateViewsReceiver);
+//            mReceiverRegistered = false;
+//        }
+//        mUpdateViewsReceiver = null;
+//    }
 
     @Override
     protected void onStart() {
@@ -194,8 +188,7 @@ public class MainActivity extends AppCompatActivity implements
         super.onResume();
         Log.d(TAG, "onResume: rcvr reg = " + mReceiverRegistered);
 
-        if (AthanManager.sAlarmIsEnabled && !mReceiverRegistered) {
-            assert(null != mUpdateViewsReceiver);
+        if (AthanManager.isAlarmEnabled() && !mReceiverRegistered) {
             registerReceiver(mUpdateViewsReceiver, new IntentFilter(MESSAGE_UPDATE_VIEWS));
             mReceiverRegistered = true;
         }

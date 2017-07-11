@@ -18,7 +18,7 @@
  *
  */
 
-package org.linuxac.bilal;
+package org.linuxac.bilal.receivers;
 
 import android.app.PendingIntent;
 import android.content.Context;
@@ -28,8 +28,15 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 
+import org.linuxac.bilal.AthanAudioService;
+import org.linuxac.bilal.AthanManager;
+import org.linuxac.bilal.activities.MainActivity;
+import org.linuxac.bilal.R;
+import org.linuxac.bilal.activities.StopAthanActivity;
+
 public class AthanAlarmReceiver extends BroadcastReceiver
 {
+    protected static final String TAG = "AthanAlarmReceiver";
     public final static String EXTRA_EVENT_ID = "org.linuxac.bilal.EVENT_ID";
 
     @Override
@@ -42,7 +49,7 @@ public class AthanAlarmReceiver extends BroadcastReceiver
 
         String athanMessage = context.getString(R.string.time_for) + " " +
                 intent.getStringExtra(AthanManager.MESSAGE_NOTIFY_ATHAN);
-        Log.d(MainActivity.TAG, "Athan alarm is ON: " + athanMessage);
+        Log.d(TAG, "Athan alarm is ON: " + athanMessage);
 
         // TODO: make it configurable
         notifyAthan(context, athanMessage);
@@ -73,7 +80,7 @@ public class AthanAlarmReceiver extends BroadcastReceiver
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(context)
                         .setSmallIcon(R.mipmap.ic_launcher)
-                        .setContentTitle(MainActivity.TAG)
+                        .setContentTitle(TAG) // TODO check on UI
                         .setContentText(athanMessage)
                         .setContentIntent(activity)
                         .setCategory(NotificationCompat.CATEGORY_ALARM)

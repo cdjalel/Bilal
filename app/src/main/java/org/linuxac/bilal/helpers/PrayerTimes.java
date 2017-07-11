@@ -18,7 +18,7 @@
  *
  */
 
-package org.linuxac.bilal;
+package org.linuxac.bilal.helpers;
 
 import org.arabeyes.prayertime.Prayer;
 

@@ -8,7 +8,7 @@
     android:background="@drawable/background"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:showIn="@layout/activity_main"
-    tools:context=".MainActivity">
+    tools:context=".activities.MainActivity">
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline"
