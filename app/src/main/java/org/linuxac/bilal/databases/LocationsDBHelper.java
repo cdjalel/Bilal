@@ -18,8 +18,8 @@
  *  along with Bilal.  If not, see <http://www.gnu.org/licenses/>.
  *
  *  Superclass SQLiteAssetHelper is:
- *  Copyright (C) 2011 readyState Software Ltd
- *  Copyright (C) 2007 The Android Open Source Project
+ *  Copyright © 2011 readyState Software Ltd
+ *  Copyright © 2007 The Android Open Source Project
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 
 package org.linuxac.bilal.databases;
 
