@@ -31,12 +31,15 @@ import android.os.Bundle;
 //import android.support.design.widget.FloatingActionButton;
 //import android.support.design.widget.Snackbar;
 
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.TextView;
 //import android.widget.Toast;
 
@@ -48,9 +51,10 @@ import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListe
 import com.google.android.gms.location.LocationServices;
 
 import org.arabeyes.prayertime.*;
-import org.linuxac.bilal.AthanManager;
+import org.linuxac.bilal.AlarmManager;
 import org.linuxac.bilal.R;
 import org.linuxac.bilal.helpers.PrayerTimes;
+import org.linuxac.bilal.helpers.UserSettings;
 
 import java.text.DateFormat;
 import java.util.Calendar;
@@ -59,8 +63,7 @@ import java.util.GregorianCalendar;
 public class MainActivity extends AppCompatActivity implements
         ConnectionCallbacks, OnConnectionFailedListener {
 
-    public static final String MESSAGE_UPDATE_VIEWS = "org.linuxac.bilal.UPDATE";
-
+    public static final String UPDATE_VIEWS = "org.linuxac.bilal.UPDATE";
     protected static final String TAG = "MainActivity";
 
     protected GoogleApiClient mGoogleApiClient;
@@ -98,7 +101,24 @@ public class MainActivity extends AppCompatActivity implements
         }
         buildGoogleApiClient();     // needed for Location
 
-        // TODO loads prefs
+        // TODO: use case: 1st run opens settings to let user pick a location (from DB or
+        // TODO automatically). Then Athan is enabled by default until user turns it off.
+        // TODO Prayer time calc. method is also set automatically (from DB based on location
+        // TODO country), unless manually overidden by user, or when DB data is missing, UI must
+        // TODO ask user explicitly
+        // The other two entry points of the app, which run when MainActivity usually does not, are:
+        //      - the alarm receiver called at prayer time
+        //      - the boot complete and time change receiver
+        // Both receivers will call AthanAlarm.updatePrayerTimes to schedule next alarm if
+        // the Athan notification is enabled. As the latter needs to check this setting we need to
+        // load its default a priori. This is done only here, as it is a mandatory execution path
+        // before enabling both receivers by enabling Athan notification in the Settings activity.
+
+        PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
+        PreferenceManager.setDefaultValues(this, R.xml.pref_notification, false);
+        PreferenceManager.setDefaultValues(this, R.xml.pref_data_sync, false);
+
+        // TODO force SettingsActivity on 1st run with an intermediate explanatory dialogue
 
         initReceiver();
         loadViews();
@@ -162,6 +182,8 @@ public class MainActivity extends AppCompatActivity implements
         };
     }
 
+
+
 //    private void deleteReceiver() {
 //        if (mReceiverRegistered) {
 //            assert(null != mUpdateViewsReceiver);
@@ -187,22 +209,17 @@ public class MainActivity extends AppCompatActivity implements
 
     protected void onResume() {
         super.onResume();
-        Log.d(TAG, "onResume: rcvr reg = " + mReceiverRegistered);
-
-        if (AthanManager.isAlarmEnabled() && !mReceiverRegistered) {
-            registerReceiver(mUpdateViewsReceiver, new IntentFilter(MESSAGE_UPDATE_VIEWS));
+        if (UserSettings.isAlarmEnabled(this) && !mReceiverRegistered) {
+            registerReceiver(mUpdateViewsReceiver, new IntentFilter(UPDATE_VIEWS));
             mReceiverRegistered = true;
         }
-        AthanManager.updatePrayerTimes(this);
+        AlarmManager.updatePrayerTimes(this, false);
         updatePrayerViews();
     }
 
     protected void onPause() {
         super.onPause();
-        Log.d(TAG, "onPause: rcvr reg = " + mReceiverRegistered);
-
         if (mReceiverRegistered) {
-            assert(null != mUpdateViewsReceiver);
             unregisterReceiver(mUpdateViewsReceiver);
             mReceiverRegistered = false;
         }
@@ -281,25 +298,27 @@ public class MainActivity extends AppCompatActivity implements
         };
     }
 
-    protected void setPrayerTimesViews(String cityName, PrayerTimes prayerTimes) {
+
+
+    private void updatePrayerViews()
+    {
         int i, j;
 
-        mTextViewCity.setText(cityName);
-
-        if (null == prayerTimes) {
-            mTextViewDate.setText(getString(R.string.not_available));
+        if (null == AlarmManager.sPrayerTimes) {
+            mTextViewCity.setText(getString(R.string.not_available));
             return;
         }
 
-        GregorianCalendar today = prayerTimes.getCurrent();
-        mTextViewDate.setText(DateFormat.getDateInstance().format(today.getTime()));
+        GregorianCalendar now = new GregorianCalendar();
+        mTextViewCity.setText(AlarmManager.sCityName);
+        mTextViewDate.setText(DateFormat.getDateInstance().format(now.getTime()));
 
         for (i = 0; i < Prayer.NB_PRAYERS + 1; i++) {
-            mTextViewPrayers[i][1].setText(prayerTimes.format(i));
+            mTextViewPrayers[i][1].setText(AlarmManager.sPrayerTimes.format(i));
         }
 
         // change Dhuhur to Jumuaa if needed.
-        if (today.get(Calendar.DAY_OF_WEEK) == Calendar.FRIDAY) {
+        if (now.get(Calendar.DAY_OF_WEEK) == Calendar.FRIDAY) {
             mTextViewPrayers[2][0].setText(getString(R.string.jumu3a_ar));
             mTextViewPrayers[2][2].setText(getString(R.string.jumu3a_en));
             mIsJumu3a = true;
@@ -310,16 +329,36 @@ public class MainActivity extends AppCompatActivity implements
             mIsJumu3a = false;
         }
 
-        // emphasize Current Prayer
+        // Norma typeface for all times
         for (i = 0; i < Prayer.NB_PRAYERS + 1; i++) {
             for (j = 0; j < 3; j++) {
-                mTextViewPrayers[i][j].setTypeface(null,
-                        i == prayerTimes.getCurrentIndex() ? Typeface.BOLD_ITALIC : Typeface.NORMAL);
+                mTextViewPrayers[i][j].setTypeface(null, Typeface.NORMAL);
+            }
+        }
+
+        // signal the important prayer, current if its time is recent, next otherwise
+        GregorianCalendar current = AlarmManager.sPrayerTimes.getCurrent();
+        if ((now.getTimeInMillis() - current.getTimeInMillis()) <= (5 * 60 * 1000)) {
+            // blink Current Prayers
+            int idx = AlarmManager.sPrayerTimes.getCurrentIndex();
+            Animation anim = new AlphaAnimation(0.0f, 1.0f);
+            anim.setDuration(500);
+            anim.setRepeatMode(Animation.REVERSE);
+            anim.setRepeatCount(Animation.INFINITE);
+            for (j = 0; j < 3; j++) {
+                mTextViewPrayers[idx][j].setTypeface(null, Typeface.BOLD );
+                mTextViewPrayers[idx][j].startAnimation(anim);
+            }
+        }
+        else {
+            // Bold Next Prayers
+            int idx = AlarmManager.sPrayerTimes.getNextIndex();
+            for (i = 0; i < Prayer.NB_PRAYERS + 1; i++) {
+                for (j = 0; j < 3; j++) {
+                    mTextViewPrayers[idx][j].setTypeface(null, Typeface.BOLD);
+                }
             }
         }
     }
 
-    private void updatePrayerViews() {
-        setPrayerTimesViews(AthanManager.sCityName, AthanManager.sPrayerTimes);
-    }
 }

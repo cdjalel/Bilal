@@ -21,6 +21,7 @@
 package org.linuxac.bilal;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -29,49 +30,55 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
 
-import org.linuxac.bilal.activities.MainActivity;
+import org.linuxac.bilal.helpers.UserSettings;
+import org.linuxac.bilal.receivers.AlarmReceiver;
 
 import java.io.IOException;
 
 
-public class AthanAudioService extends Service implements MediaPlayer.OnPreparedListener,
+public class AthanService extends Service implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener, AudioManager.OnAudioFocusChangeListener  {
     protected static final String TAG = "AthanAudioService";
-    MediaPlayer audioPlayer = null;
+    public static final String EXTRA_EVENT_ID = "org.linuxac.bilal.EVENT_ID";
 
-	public void onCreate(){
-	    super.onCreate();
-	    Log.d(TAG, "onCreate()");
-	}
+    private MediaPlayer mAudioPlayer = null;
+    private int mPrayer;
+
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        mPrayer = intent.getIntExtra(AlarmReceiver.PRAYER_INDEX, 0);
+        initMediaPlayer();
+        return Service.START_STICKY;
+    }
 
     private void initMediaPlayer() {
-        if (null == audioPlayer) {
-            String path = "android.resource://" + getPackageName() + "/" + R.raw.athan;
-            audioPlayer = new MediaPlayer();
+        if (null == mAudioPlayer) {
+            mAudioPlayer = new MediaPlayer();
+            Context context = this; //getApplicationContext();      // TODO: why not this?
+            String path = "android.resource://" + getPackageName() + "/" +
+                    UserSettings.getMuezzin(context, mPrayer);
+            Log.d(TAG, "athan file: " + path);
+
             try {
-                audioPlayer.setDataSource(getApplicationContext(), Uri.parse(path));
+                mAudioPlayer.setDataSource(context, Uri.parse(path));
+                mAudioPlayer.setOnErrorListener(this);
+                mAudioPlayer.setWakeMode(context, PowerManager.PARTIAL_WAKE_LOCK);
+//            mAudioPlayer.prepareAsync(); // prepare async to not block main thread
+                mAudioPlayer.prepare(); // prepare async to not block main thread
             } catch (IOException e) {
                 e.printStackTrace();
                 Log.e(TAG, e.getMessage(), e);
+                return;
             }
-            audioPlayer.setOnPreparedListener(this);
-            audioPlayer.setOnErrorListener(this);
-            audioPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
-            audioPlayer.prepareAsync(); // prepare async to not block main thread
+            mAudioPlayer.setOnPreparedListener(this);
             Log.d(TAG, "Audio player started asynchronously!");
         }
     }
 
-	public int onStartCommand(Intent intent, int flags, int startId) {
-        initMediaPlayer();
-        return Service.START_STICKY;
-	}
-
     /** Called when MediaPlayer is ready */
     public void onPrepared(MediaPlayer player) {
-        audioPlayer.start();
+        mAudioPlayer.start();
         Log.d(TAG, "Audio started playing!");
-        if(!audioPlayer.isPlaying()) {
+        if(!mAudioPlayer.isPlaying()) {
 	        Log.d(TAG, "Problem in playing audio");
 	    }
     }
@@ -88,43 +95,44 @@ public class AthanAudioService extends Service implements MediaPlayer.OnPrepared
         switch (focusChange) {
             case AudioManager.AUDIOFOCUS_GAIN:
                 // resume playback
-                if (audioPlayer == null) initMediaPlayer();
-                else if (!audioPlayer.isPlaying()) audioPlayer.start();
-                audioPlayer.setVolume(1.0f, 1.0f);
+                if (mAudioPlayer == null) initMediaPlayer();
+                else if (!mAudioPlayer.isPlaying()) mAudioPlayer.start();
+                mAudioPlayer.setVolume(1.0f, 1.0f);
                 break;
 
             case AudioManager.AUDIOFOCUS_LOSS:
                 // Lost focus for an unbounded amount of time: stop playback and release media player
-                if (audioPlayer.isPlaying()) audioPlayer.stop();
-                audioPlayer.release();
-                audioPlayer = null;
+                if (mAudioPlayer.isPlaying()) mAudioPlayer.stop();
+                mAudioPlayer.release();
+                mAudioPlayer = null;
                 break;
 
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
                 // Lost focus for a short time, but we have to stop
                 // playback. We don't release the media player because playback
                 // is likely to resume
-                if (audioPlayer.isPlaying()) audioPlayer.pause();
+                if (mAudioPlayer.isPlaying()) mAudioPlayer.pause();
                 break;
 
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
                 // Lost focus for a short time, but it's ok to keep playing
                 // at an attenuated level
-                if (audioPlayer.isPlaying()) audioPlayer.setVolume(0.1f, 0.1f);
+                if (mAudioPlayer.isPlaying()) mAudioPlayer.setVolume(0.1f, 0.1f);
                 break;
         }
     }
 
 	public void onStop() {
-		if (audioPlayer != null) {
-            if (audioPlayer.isPlaying()) audioPlayer.stop();
-            audioPlayer.release();
-            audioPlayer = null;
+
+		if (mAudioPlayer != null) {
+            if (mAudioPlayer.isPlaying()) mAudioPlayer.stop();
+            mAudioPlayer.release();
+            mAudioPlayer = null;
         }
-	}
+    }
 	
 	public void onPause() {
-        if (audioPlayer.isPlaying()) audioPlayer.stop();
+        if (mAudioPlayer.isPlaying()) mAudioPlayer.stop();
 	}
 	
 	public void onDestroy() {

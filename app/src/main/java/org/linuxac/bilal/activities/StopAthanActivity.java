@@ -27,7 +27,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
-import org.linuxac.bilal.AthanAudioService;
+import org.linuxac.bilal.AthanService;
 
 public class StopAthanActivity extends Activity {
 
@@ -38,8 +38,8 @@ public class StopAthanActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         // stop athan audio
-        Intent stopAudioIntent = new Intent(StopAthanActivity.this, AthanAudioService.class);
-        stopService(stopAudioIntent);
+        Intent stopIntent = new Intent(StopAthanActivity.this, AthanService.class);
+        stopService(stopIntent);
 
         // cancel notification
         NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);

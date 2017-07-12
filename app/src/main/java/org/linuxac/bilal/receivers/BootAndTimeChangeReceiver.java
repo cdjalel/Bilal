@@ -25,7 +25,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import org.linuxac.bilal.AthanManager;
+import org.linuxac.bilal.AlarmManager;
 
 public class BootAndTimeChangeReceiver extends BroadcastReceiver {
 
@@ -40,6 +40,6 @@ public class BootAndTimeChangeReceiver extends BroadcastReceiver {
             // special handling for boot?
         }*/
 
-        AthanManager.updatePrayerTimes(context);
+        AlarmManager.updatePrayerTimes(context, false);
     }
 }

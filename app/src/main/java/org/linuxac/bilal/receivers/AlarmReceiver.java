@@ -21,72 +21,77 @@
 package org.linuxac.bilal.receivers;
 
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.BroadcastReceiver;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 
-import org.linuxac.bilal.AthanAudioService;
-import org.linuxac.bilal.AthanManager;
-import org.linuxac.bilal.activities.MainActivity;
+import org.linuxac.bilal.AlarmManager;
+import org.linuxac.bilal.AthanService;
 import org.linuxac.bilal.R;
+import org.linuxac.bilal.activities.MainActivity;
 import org.linuxac.bilal.activities.StopAthanActivity;
+import org.linuxac.bilal.helpers.UserSettings;
 
-public class AthanAlarmReceiver extends BroadcastReceiver
+public class AlarmReceiver extends BroadcastReceiver
 {
-    protected static final String TAG = "AthanAlarmReceiver";
-    public final static String EXTRA_EVENT_ID = "org.linuxac.bilal.EVENT_ID";
+    protected static final String TAG = "AlarmReceiver";
+    public static final String PRAYER_INDEX = "org.linuxac.bilal";
 
     @Override
     public void onReceive(Context context, Intent intent)
     {
-        // Play athan audio
-        Intent audioIntent = new Intent(context, AthanAudioService.class);
-        context.startService(audioIntent);
+        String alarmTxt = intent.getStringExtra(AlarmManager.ALARM_TXT);
+        Log.d(TAG, "Athan alarm is ON: " + alarmTxt);
 
+        int index = Integer.parseInt(alarmTxt.substring(0,1));          // 1st char = prayer index
 
-        String athanMessage = context.getString(R.string.time_for) + " " +
-                intent.getStringExtra(AthanManager.MESSAGE_NOTIFY_ATHAN);
-        Log.d(TAG, "Athan alarm is ON: " + athanMessage);
+        if (UserSettings.isAthanEnabled(context)) {
+            Intent audioIntent = new Intent(context, AthanService.class);
+            audioIntent.putExtra(PRAYER_INDEX, index);
+            context.startService(audioIntent);
+        }
 
-        // TODO: make it configurable
-        notifyAthan(context, athanMessage);
+        if (UserSettings.isNotificationEnabled(context)) {
+            String notificationTxt =  alarmTxt.substring(1);
+            showNotification(context, notificationTxt);
+        }
 
-        // Broadcast to MainActivity so it updates its current prayer if on screen
-        Intent updateIntent = new Intent(MainActivity.MESSAGE_UPDATE_VIEWS);
+        if (UserSettings.isVibrateEnabled(context)) {
+            // TODO: vibrate
+        }
+
+        // Broadcast to MainActivity so it updates its screen if on
+        Intent updateIntent = new Intent(MainActivity.UPDATE_VIEWS);
         context.sendBroadcast(updateIntent);
 
-        // Re-arm athan alarm.
-        AthanManager.updatePrayerTimes(context);
+        // Re-arm alarm.
+        AlarmManager.updatePrayerTimes(context, false);
     }
 
-    private void notifyAthan(Context context, String athanMessage)
+    private void showNotification(Context context, String contentTxt)
     {
-        // Build intent to start MainActivity when notification is touched
         int notificationId = 0;
-        int eventId = 0;
 
+        // Use one intent to show MainActivity and another intent to stop athan (by notification
+        // button or swipe left, TODO add stop from volume down too)
         Intent intent = new Intent(context, MainActivity.class);
-        intent.putExtra(EXTRA_EVENT_ID, eventId);
         PendingIntent activity = PendingIntent.getActivity(context, 0, intent, 0);
-
-        // Use another intent to stop athan from notification (button or swipe left)
-        // TODO add stop from volume down
         PendingIntent stopAudioIntent = StopAthanActivity.getIntent(notificationId, context);
 
-        String actionMsg = context.getString(R.string.stop_athan);
+        String actionTxt = context.getString(R.string.stop_athan);
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(context)
                         .setSmallIcon(R.mipmap.ic_launcher)
-                        .setContentTitle(TAG) // TODO check on UI
-                        .setContentText(athanMessage)
+                        .setContentTitle(context.getString(R.string.time_for))
+                        .setContentText(contentTxt)
                         .setContentIntent(activity)
                         .setCategory(NotificationCompat.CATEGORY_ALARM)
                         .setAutoCancel(true)
                         .setDeleteIntent(stopAudioIntent)
-                        .addAction(R.drawable.ic_clear, actionMsg, stopAudioIntent);
+                        .addAction(R.drawable.ic_clear, actionTxt, stopAudioIntent); //  XML vector
 
         // Get an instance of the NotificationManager service
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);

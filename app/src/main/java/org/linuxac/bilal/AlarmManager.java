@@ -20,7 +20,6 @@
 
 package org.linuxac.bilal;
 
-import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
@@ -34,70 +33,64 @@ import org.arabeyes.prayertime.PTLocation;
 import org.arabeyes.prayertime.Prayer;
 import org.arabeyes.prayertime.PrayerTime;
 import org.linuxac.bilal.helpers.PrayerTimes;
-import org.linuxac.bilal.receivers.AthanAlarmReceiver;
+import org.linuxac.bilal.helpers.UserSettings;
+import org.linuxac.bilal.receivers.AlarmReceiver;
 import org.linuxac.bilal.receivers.BootAndTimeChangeReceiver;
 
-import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
 import static android.content.Context.ALARM_SERVICE;
 
-public class AthanManager {
+public class AlarmManager {
+    private static final String TAG = "AlarmManager";
 
-    protected static final String TAG = "AthanManager";
-
-    protected static boolean sLocationIsSet = false;    // must be set by user on 1st UI run
+    private static boolean sLocationIsSet = false;    // TODO rm as it's a setting
     public static String sCityName = "Souk Ahras";
     public static PTLocation sPTLocation = new PTLocation(36.28639, 7.95111, 1, 0, 697, 1010, 10);
     // http://dateandtime.info/citycoordinates.php?id=2479215
 
-    public static Method sCalculationMethod;
-
-    protected static final GregorianCalendar sLongLongTimeAgo = new GregorianCalendar(0,0,0); 
-    protected static GregorianCalendar sLastTime = sLongLongTimeAgo;
+    private static Method sCalculationMethod;   // TODO rm as it's a setting
     static {
         sCalculationMethod = new Method();
         sCalculationMethod.setMethod(Method.MUSLIM_LEAGUE);
         sCalculationMethod.round = 0;
+        sLocationIsSet = true;
     }
 
-    public static final String MESSAGE_NOTIFY_ATHAN = "org.linuxac.bilal.NOTIFY";
-    private static boolean sAlarmIsEnabled = false;   // 1st enabled by user after location is set
-    protected static PendingIntent sAlarmIntent = null;
+    private static final GregorianCalendar sLongLongTimeAgo = new GregorianCalendar(0,0,0);
+    private static GregorianCalendar sLastTime = sLongLongTimeAgo;
+    public static PrayerTimes sPrayerTimes = null;
 
-    public static boolean isAlarmEnabled() {return sAlarmIsEnabled; }
+    public static final String ALARM_TXT = "org.linuxac.bilal.ALARM_TXT";
+    private static PendingIntent sAlarmIntent = null;
 
-    public static void enableAthan(Context context)
+    private AlarmManager() {}
+
+    public static void enableAlarm(Context context)
     {
-        if (BuildConfig.DEBUG && sAlarmIsEnabled) {
-            Log.d(TAG, "Athan alarm already enabled!");
-            return;
-        }
+        Log.d(TAG, "Enabling Alarm.");
         enableBootAndTimeChangeReceiver(context);
-        scheduleAthanAlarm(context);
-        sAlarmIsEnabled = true;
+        updatePrayerTimes(context, true);
     }
 
-    public static void disableAthan(Context context)
+    public static void disableAlarm(Context context)
     {
-        if (BuildConfig.DEBUG && !sAlarmIsEnabled) {
-            Log.d(TAG, "Athan alarm already disabled!");
-            return;
-        }
-        cancelAthanAlarm(context);
+        Log.d(TAG, "Disabling Alarm.");
+        cancelAlarm(context);
         disableBootAndTimeChangeReceiver(context);
-        sAlarmIsEnabled = false;
     }
+/*
 
-    private static void logBootAndTimeChangeReceiver(Context context)
+    private static void logBootAndTimeChangeReceiverSetting(Context context)
     {
         ComponentName receiver = new ComponentName(context, BootAndTimeChangeReceiver.class);
         PackageManager pm = context.getPackageManager();
-        Log.d(TAG, "BootAndTimeChangeReceiver EnabledSetting = " +
+        Log.d(TAG, "BootAndTimeChangeReceiver Setting = " +
                 pm.getComponentEnabledSetting(receiver));
     }
+*/
 
     private static void enableBootAndTimeChangeReceiver(Context context)
     {
@@ -119,7 +112,6 @@ public class AthanManager {
                 PackageManager.DONT_KILL_APP);
     }
 
-    public static PrayerTimes sPrayerTimes = null;
 
     private static boolean sameDay(GregorianCalendar a, GregorianCalendar b)
     {
@@ -128,36 +120,37 @@ public class AthanManager {
                 a.get(Calendar.DATE) == b.get(Calendar.DATE);
     }
 
-    public static void updatePrayerTimes(Context context)
-    {
-        AthanManager.logBootAndTimeChangeReceiver(context);
 
-        // TODO: use case: 1st run opens settings to let user pick a location (from DB or
-        // TODO automatically). Then Athan is enabled by default until user turns it off.
-        // TODO Prayer time calc. method is also set automatically (from DB based on location
-        // TODO country), unless manually overidden by user, or when DB data is missing, UI must
-        // TODO ask user explicitly
+    /*
+     * Here be dragons. See comment in MainActivity.onCreate()
+     */
+    public static void updatePrayerTimes(Context context, boolean enableAlarm)
+    {
+        Log.d(TAG, "IN (..., "+ enableAlarm +")");
+
+//        AlarmManager.logBootAndTimeChangeReceiverSetting(context);
+
         if (!sLocationIsSet) {
-            Log.d(TAG, "Location not set!");
-//            return;
+            Log.d(TAG, "Location not set! Nothing todo until user starts UI.");
+            return;
         }
 
         // TODO: use location & method from user preferences
 
+        // In SettingsActivity, listener calls us before setting is commited to shared prefs.
+        boolean setAlarm = enableAlarm ? true : UserSettings.isAlarmEnabled(context);
         GregorianCalendar nowCal = new GregorianCalendar();
-        boolean keepAlarm = false;
         if (sameDay(sLastTime, nowCal)) {
-            int oldCurrent = sPrayerTimes.getCurrentIndex();
+            int oldNext = sPrayerTimes.getNextIndex();
             sPrayerTimes.updateCurrent(nowCal);
-            if (sAlarmIsEnabled && oldCurrent == sPrayerTimes.getCurrentIndex()) {
-                keepAlarm = true;
+            if (setAlarm && !enableAlarm && oldNext == sPrayerTimes.getNextIndex()) {
+                setAlarm = false;
                 Log.d(TAG, "Keep old alarm.");
             }
             Log.d(TAG, "Call it a day :)");
         }
         else {
-            Log.d(TAG, "Last time: " + DateFormat.getDateTimeInstance().format(sLastTime.getTime()));
-            Log.d(TAG, "Now: " + DateFormat.getDateTimeInstance().format(nowCal.getTime()));
+            Log.d(TAG, "Last time: " + sPrayerTimes.format(sLastTime));
             GregorianCalendar[] ptCal = getPrayerTimes(context, nowCal);
             sPrayerTimes = new PrayerTimes(nowCal, ptCal);
             sLastTime = nowCal;
@@ -167,8 +160,8 @@ public class AthanManager {
         Log.d(TAG, "Current prayer: " + getPrayerName(context, sPrayerTimes.getCurrentIndex()));
         Log.d(TAG, "Next prayer: " + getPrayerName(context, sPrayerTimes.getNextIndex()));
 
-        if (sAlarmIsEnabled && !keepAlarm) {
-            scheduleAthanAlarm(context);
+        if (setAlarm) {
+            scheduleAlarm(context);
         }
     }
 
@@ -227,44 +220,48 @@ public class AthanManager {
                 prayerNameResId = R.string.isha;
                 break;
             default:
-                assert(false);
+                if (BuildConfig.DEBUG) {
+                    Log.e(TAG, "Invalid prayer index: " + prayer);
+                    return "";
+                }
                 break;
         }
 
         return context.getString(prayerNameResId) ;
     }
 
-    private static void cancelAthanAlarm(Context context)
+    private static void cancelAlarm(Context context)
     {
         if (null != sAlarmIntent) {
             sAlarmIntent.cancel();
-            AlarmManager alarmMgr = (AlarmManager)context.getSystemService(ALARM_SERVICE);
+            android.app.AlarmManager alarmMgr = (android.app.AlarmManager)context.getSystemService(ALARM_SERVICE);
             alarmMgr.cancel(sAlarmIntent);
-            Log.d(TAG, "Old Athan alarm cancelled.");
+            Log.d(TAG, "Old alarm cancelled.");
         }
         else {
-            Log.d(TAG, "No Athan alarm to be cancelled.");
+            Log.d(TAG, "No alarm to be cancelled.");
         }
         sAlarmIntent = null;
     }
 
-    protected static void scheduleAthanAlarm(Context context)
+    protected static void scheduleAlarm(Context context)
     {
+        int next = sPrayerTimes.getNextIndex();
+        String time = sPrayerTimes.format(next);
         // prepare alarm message to be displayed in a notification when it's triggered.
-        String notificationMsg = getPrayerName(context, sPrayerTimes.getNextIndex()) + " " +
-                sPrayerTimes.format(sPrayerTimes.getNext());
+        String alarmTxt = sPrayerTimes.getNextIndex() + getPrayerName(context, next) + ": " + time;
 
         // Cancel old alarm and schedule a new one
-        cancelAthanAlarm(context);
+        cancelAlarm(context); // TODO duplicate with FLAG_CANCEL_CURRENT below?
 
-        Intent intent = new Intent(context, AthanAlarmReceiver.class);
-        intent.putExtra(MESSAGE_NOTIFY_ATHAN, notificationMsg);
+        Intent intent = new Intent(context, AlarmReceiver.class);
+        intent.putExtra(ALARM_TXT, alarmTxt);
         sAlarmIntent = PendingIntent.getBroadcast(context, 0, intent,
                 PendingIntent.FLAG_CANCEL_CURRENT);
 
-        GregorianCalendar next = sPrayerTimes.getNext();
-        AlarmManager alarmMgr = (AlarmManager)context.getSystemService(ALARM_SERVICE);
-        alarmMgr.set(AlarmManager.RTC_WAKEUP, next.getTimeInMillis(), sAlarmIntent);
-        Log.d(TAG, "New Athan Alarm set for " + DateFormat.getDateTimeInstance().format(next.getTime()));
+        android.app.AlarmManager alarmMgr = (android.app.AlarmManager)context.getSystemService(ALARM_SERVICE);
+        alarmMgr.set(android.app.AlarmManager.RTC_WAKEUP, sPrayerTimes.getNext().getTimeInMillis(),
+                sAlarmIntent);
+        Log.d(TAG, "New Alarm set for " + time);
     }
 }

@@ -38,7 +38,7 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".receivers.AthanAlarmReceiver" />
+        <receiver android:name=".receivers.AlarmReceiver" />
         <receiver
             android:name=".receivers.BootAndTimeChangeReceiver"
             android:enabled="false"> <!-- disabled until user sets location -->
@@ -50,7 +50,7 @@
         </receiver>
 
         <service
-            android:name=".AthanAudioService"
+            android:name=".AthanService"
             android:enabled="true"></service>
 
         <activity android:name=".activities.CitySearchActivity"></activity>
