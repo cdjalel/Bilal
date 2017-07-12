@@ -63,7 +63,7 @@ public class PrayerTimes {
 
     public static String format(GregorianCalendar cal)
     {
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:m");
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
         return sdf.format(cal.getTime());
     }
 
