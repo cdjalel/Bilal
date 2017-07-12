@@ -108,21 +108,31 @@
     <!-- Example settings for Notifications -->
     <string name="pref_header_notifications">Notifications</string>
 
-    <string name="pref_title_athan_audio">Athan audio</string>
+    <string name="pref_title_prayer_time">Prayer time</string>
 
-    <string name="pref_title_athan_voice">Athan voice</string>
-    <string-array name="pref_athan_voice_list_titles">
-        <item>Mecca</item>
-        <item>Al-Madinah</item>
-        <item>Al-Quds</item>
-        <item>Al-Jazair</item>
+    <string name="pref_title_athan">Athan</string>
+
+    <string name="pref_title_muezzin">Muezzin</string>
+    <string-array name="pref_muezzin_list_titles">
+        <item>Abdulbaset Abdesamad - Egypt</item>
+        <item>Ali Mullah - Mecca</item>
+        <item>Naser Alqatami - Al-Riyadh</item>
+        <item>Abdulmajeed Aserehy - Al-Madinah</item>
+        <item>İsmail Coşar - Turkey</item>
+        <item>Kefah Issa - Palestine</item>
+        <item>Riad Aït-Hamou - Algeria</item>
     </string-array>
-    <string-array name="pref_athan_voice_list_values">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
+    <string-array name="pref_muezzin_list_values">
+        <item>ABDELBASET</item>
+        <item>ALIMULLA</item>
+        <item>ALQATAMI</item>
+        <item>ASEREHY</item>
+        <item>JOSHAR</item>
+        <item>KEFAH</item>
+        <item>RIAD</item>
     </string-array>
+
+    <string name="pref_title_notification">System notification</string>
 
     <string name="pref_title_vibrate">Vibrate</string>
 
