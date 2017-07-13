@@ -20,6 +20,7 @@
 
 package org.linuxac.bilal;
 
+import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
@@ -43,8 +44,8 @@ import java.util.GregorianCalendar;
 
 import static android.content.Context.ALARM_SERVICE;
 
-public class AlarmManager {
-    private static final String TAG = "AlarmManager";
+public class AlarmScheduler {
+    private static final String TAG = "AlarmScheduler";
 
     private static boolean sLocationIsSet = false;    // TODO rm as it's a setting
     public static String sCityName = "Souk Ahras";
@@ -61,12 +62,12 @@ public class AlarmManager {
 
     private static final GregorianCalendar sLongLongTimeAgo = new GregorianCalendar(0,0,0);
     private static GregorianCalendar sLastTime = sLongLongTimeAgo;
-    public static PrayerTimes sPrayerTimes = null;
+    public static PrayerTimes sPrayerTimes = null;      // TODO privatize & add getters
 
     public static final String ALARM_TXT = "org.linuxac.bilal.ALARM_TXT";
     private static PendingIntent sAlarmIntent = null;
 
-    private AlarmManager() {}
+    private AlarmScheduler() {}
 
     public static void enableAlarm(Context context)
     {
@@ -122,30 +123,31 @@ public class AlarmManager {
 
 
     /*
-     * Here be dragons. See comment in MainActivity.onCreate()
+     * Here be dragons. This is an app entry point. All bets are off!
+     * See comment in MainActivity.onCreate()
      */
     public static void updatePrayerTimes(Context context, boolean enableAlarm)
     {
-        Log.d(TAG, "IN (..., "+ enableAlarm +")");
+        Log.i(TAG, "updatePrayerTimes(..., " + enableAlarm + ")");
 
-//        AlarmManager.logBootAndTimeChangeReceiverSetting(context);
+//        logBootAndTimeChangeReceiverSetting(context);
 
+        // TODO UserSettings.getLocation
+        // TODO UserSettings.getMethod
         if (!sLocationIsSet) {
-            Log.d(TAG, "Location not set! Nothing todo until user starts UI.");
+            Log.w(TAG, "Location not set! Nothing todo until user starts UI.");
             return;
         }
 
-        // TODO: use location & method from user preferences
-
-        // In SettingsActivity, listener calls us before setting is commited to shared prefs.
-        boolean setAlarm = enableAlarm ? true : UserSettings.isAlarmEnabled(context);
+        // In SettingsActivity, listener calls us before setting is committed to shared prefs.
+        boolean setAlarm = enableAlarm || UserSettings.isAlarmEnabled(context);
         GregorianCalendar nowCal = new GregorianCalendar();
         if (sameDay(sLastTime, nowCal)) {
             int oldNext = sPrayerTimes.getNextIndex();
             sPrayerTimes.updateCurrent(nowCal);
             if (setAlarm && !enableAlarm && oldNext == sPrayerTimes.getNextIndex()) {
                 setAlarm = false;
-                Log.d(TAG, "Keep old alarm.");
+                Log.i(TAG, "Keep old alarm.");
             }
             Log.d(TAG, "Call it a day :)");
         }
@@ -158,7 +160,7 @@ public class AlarmManager {
 
         Log.d(TAG, "Current time: " + sPrayerTimes.format(nowCal));
         Log.d(TAG, "Current prayer: " + getPrayerName(context, sPrayerTimes.getCurrentIndex()));
-        Log.d(TAG, "Next prayer: " + getPrayerName(context, sPrayerTimes.getNextIndex()));
+        Log.i(TAG, "Next prayer: " + getPrayerName(context, sPrayerTimes.getNextIndex()));
 
         if (setAlarm) {
             scheduleAlarm(context);
@@ -230,38 +232,35 @@ public class AlarmManager {
         return context.getString(prayerNameResId) ;
     }
 
+    private static PendingIntent createAlarmIntent(Context context)
+    {
+        int next = sPrayerTimes.getNextIndex();
+        // prepare alarm message to be displayed in a notification when it's triggered.
+        String alarmTxt = sPrayerTimes.getNextIndex() + getPrayerName(context, next);
+        Intent intent = new Intent(context, AlarmReceiver.class);
+        intent.putExtra(ALARM_TXT, alarmTxt);
+        return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+    }
+
     private static void cancelAlarm(Context context)
     {
         if (null != sAlarmIntent) {
             sAlarmIntent.cancel();
-            android.app.AlarmManager alarmMgr = (android.app.AlarmManager)context.getSystemService(ALARM_SERVICE);
-            alarmMgr.cancel(sAlarmIntent);
-            Log.d(TAG, "Old alarm cancelled.");
         }
         else {
-            Log.d(TAG, "No alarm to be cancelled.");
+            sAlarmIntent = createAlarmIntent(context);
         }
+        AlarmManager alarmMgr = (AlarmManager) context.getSystemService(ALARM_SERVICE);
+        alarmMgr.cancel(sAlarmIntent);
         sAlarmIntent = null;
+        Log.i(TAG, "Old alarm cancelled.");
     }
 
     protected static void scheduleAlarm(Context context)
     {
-        int next = sPrayerTimes.getNextIndex();
-        String time = sPrayerTimes.format(next);
-        // prepare alarm message to be displayed in a notification when it's triggered.
-        String alarmTxt = sPrayerTimes.getNextIndex() + getPrayerName(context, next) + ": " + time;
-
-        // Cancel old alarm and schedule a new one
-        cancelAlarm(context); // TODO duplicate with FLAG_CANCEL_CURRENT below?
-
-        Intent intent = new Intent(context, AlarmReceiver.class);
-        intent.putExtra(ALARM_TXT, alarmTxt);
-        sAlarmIntent = PendingIntent.getBroadcast(context, 0, intent,
-                PendingIntent.FLAG_CANCEL_CURRENT);
-
-        android.app.AlarmManager alarmMgr = (android.app.AlarmManager)context.getSystemService(ALARM_SERVICE);
-        alarmMgr.set(android.app.AlarmManager.RTC_WAKEUP, sPrayerTimes.getNext().getTimeInMillis(),
-                sAlarmIntent);
-        Log.d(TAG, "New Alarm set for " + time);
+        sAlarmIntent = createAlarmIntent(context);
+        AlarmManager alarmMgr = (AlarmManager)context.getSystemService(ALARM_SERVICE);
+        alarmMgr.set(AlarmManager.RTC_WAKEUP, sPrayerTimes.getNext().getTimeInMillis(), sAlarmIntent);
+        Log.i(TAG, "New Alarm set for " + sPrayerTimes.format(sPrayerTimes.getNextIndex()));
     }
 }

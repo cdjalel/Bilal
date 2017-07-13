@@ -28,7 +28,7 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 
-import org.linuxac.bilal.AlarmManager;
+import org.linuxac.bilal.AlarmScheduler;
 import org.linuxac.bilal.AthanService;
 import org.linuxac.bilal.R;
 import org.linuxac.bilal.activities.MainActivity;
@@ -43,8 +43,8 @@ public class AlarmReceiver extends BroadcastReceiver
     @Override
     public void onReceive(Context context, Intent intent)
     {
-        String alarmTxt = intent.getStringExtra(AlarmManager.ALARM_TXT);
-        Log.d(TAG, "Athan alarm is ON: " + alarmTxt);
+        String alarmTxt = intent.getStringExtra(AlarmScheduler.ALARM_TXT);
+        Log.i(TAG, "Athan alarm is ON: " + alarmTxt);
 
         int index = Integer.parseInt(alarmTxt.substring(0,1));          // 1st char = prayer index
 
@@ -68,7 +68,7 @@ public class AlarmReceiver extends BroadcastReceiver
         context.sendBroadcast(updateIntent);
 
         // Re-arm alarm.
-        AlarmManager.updatePrayerTimes(context, false);
+        AlarmScheduler.updatePrayerTimes(context, false);
     }
 
     private void showNotification(Context context, String contentTxt)

@@ -36,7 +36,7 @@ import android.support.v7.app.ActionBar;
 import android.util.Log;
 import android.view.MenuItem;
 
-import org.linuxac.bilal.AlarmManager;
+import org.linuxac.bilal.AlarmScheduler;
 import org.linuxac.bilal.R;
 
 import java.util.List;
@@ -235,10 +235,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 Log.d(TAG, "sPrefPrayerTimeListener: " + newValue.toString());
                 if (newValue.toString().equals("true")) {
-                    AlarmManager.enableAlarm(preference.getContext());
+                    AlarmScheduler.enableAlarm(preference.getContext());
                 }
                 else {
-                    AlarmManager.disableAlarm(preference.getContext());
+                    AlarmScheduler.disableAlarm(preference.getContext());
                 }
                 return sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, newValue);
             }

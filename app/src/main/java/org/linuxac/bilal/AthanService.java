@@ -45,9 +45,20 @@ public class AthanService extends Service implements MediaPlayer.OnPreparedListe
     private int mPrayer;
 
     public int onStartCommand(Intent intent, int flags, int startId) {
-        mPrayer = intent.getIntExtra(AlarmReceiver.PRAYER_INDEX, 0);
+        if (null != AlarmScheduler.sPrayerTimes) {
+            mPrayer = AlarmScheduler.sPrayerTimes.getNextIndex();
+        }
+        else if (null != intent) {
+            Log.w(TAG, "onStartCommand: AlarmScheduler.sPrayerTimes == null");
+            mPrayer = intent.getIntExtra(AlarmReceiver.PRAYER_INDEX, 0);
+        }
+        else {
+            Log.w(TAG, "onStartCommand: AlarmScheduler.sPrayerTimes == null");
+            Log.w(TAG, "onStartCommand: intent == null");
+            mPrayer = 2;        // 80% chance correct :)
+        }
         initMediaPlayer();
-        return Service.START_STICKY;
+        return Service.START_NOT_STICKY;
     }
 
     private void initMediaPlayer() {
@@ -56,30 +67,27 @@ public class AthanService extends Service implements MediaPlayer.OnPreparedListe
             Context context = this; //getApplicationContext();      // TODO: why not this?
             String path = "android.resource://" + getPackageName() + "/" +
                     UserSettings.getMuezzin(context, mPrayer);
-            Log.d(TAG, "athan file: " + path);
 
             try {
                 mAudioPlayer.setDataSource(context, Uri.parse(path));
+                mAudioPlayer.setOnPreparedListener(this);
                 mAudioPlayer.setOnErrorListener(this);
                 mAudioPlayer.setWakeMode(context, PowerManager.PARTIAL_WAKE_LOCK);
-//            mAudioPlayer.prepareAsync(); // prepare async to not block main thread
-                mAudioPlayer.prepare(); // prepare async to not block main thread
+                mAudioPlayer.prepareAsync(); // prepare async to not block main thread
+                Log.d(TAG, "Audio player started asynchronously!");
             } catch (IOException e) {
                 e.printStackTrace();
                 Log.e(TAG, e.getMessage(), e);
-                return;
             }
-            mAudioPlayer.setOnPreparedListener(this);
-            Log.d(TAG, "Audio player started asynchronously!");
         }
     }
 
     /** Called when MediaPlayer is ready */
     public void onPrepared(MediaPlayer player) {
         mAudioPlayer.start();
-        Log.d(TAG, "Audio started playing!");
+        Log.i(TAG, "Audio started playing!");
         if(!mAudioPlayer.isPlaying()) {
-	        Log.d(TAG, "Problem in playing audio");
+	        Log.w(TAG, "Problem in playing audio");
 	    }
     }
 

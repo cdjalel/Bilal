@@ -25,7 +25,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import org.linuxac.bilal.AlarmManager;
+import org.linuxac.bilal.AlarmScheduler;
 
 public class BootAndTimeChangeReceiver extends BroadcastReceiver {
 
@@ -34,12 +34,12 @@ public class BootAndTimeChangeReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
-        Log.d(TAG, action);
+        Log.i(TAG, action);
 
         /*if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
             // special handling for boot?
         }*/
 
-        AlarmManager.updatePrayerTimes(context, false);
+        AlarmScheduler.updatePrayerTimes(context, false);
     }
 }
