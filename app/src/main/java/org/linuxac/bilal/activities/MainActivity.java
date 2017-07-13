@@ -66,6 +66,10 @@ public class MainActivity extends AppCompatActivity implements
     public static final String UPDATE_VIEWS = "org.linuxac.bilal.UPDATE";
     protected static final String TAG = "MainActivity";
 
+    protected static int BLINK_INTERVAL = 5 * 60 * 1000;
+    protected static int BLINK_DURATION = 500;
+    protected static int BLINK_COUNT    = BLINK_INTERVAL/BLINK_DURATION;
+
     protected GoogleApiClient mGoogleApiClient;
     protected Location mLastLocation;
 
@@ -78,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements
     protected TextView mTextViewCity;
     protected TextView mTextViewDate;
     protected TextView[][] mTextViewPrayers;
-    
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -337,17 +341,20 @@ public class MainActivity extends AppCompatActivity implements
 
         // signal the new important prayer, which is the current if its time is recent, next otherwise
         GregorianCalendar current = AlarmScheduler.sPrayerTimes.getCurrent();
-        if ((now.getTimeInMillis() - current.getTimeInMillis()) <= (5 * 60 * 1000)) {
+        long elapsed = now.getTimeInMillis() - current.getTimeInMillis();
+        if (elapsed >= 0 && elapsed <= BLINK_INTERVAL) {
             // blink Current Prayers
             mImportant = AlarmScheduler.sPrayerTimes.getCurrentIndex();
             Animation anim = new AlphaAnimation(0.0f, 1.0f);
-            anim.setDuration(500);
+            anim.setDuration(BLINK_DURATION);
             anim.setRepeatMode(Animation.REVERSE);
-            anim.setRepeatCount(120);
+            anim.setRepeatCount(BLINK_COUNT);
             for (j = 0; j < 3; j++) {
                 mTextViewPrayers[mImportant][j].setTypeface(null, Typeface.BOLD );
                 mTextViewPrayers[mImportant][j].startAnimation(anim);
             }
+
+            // TODO add touch listener to stop blinking and open map of nearest mosques
         }
         else {
             // Bold Next Prayers
