@@ -27,7 +27,7 @@ import java.util.GregorianCalendar;
 
 
 public class PrayerTimes {
-    private GregorianCalendar[] all;        // TODO optimize memory, use PrayerTime[] & rework before()
+    private GregorianCalendar[] all;
     private GregorianCalendar current;
     private GregorianCalendar next;
     private int c;                          // current prayer index
@@ -87,7 +87,7 @@ public class PrayerTimes {
                 c = 0;
                 break;
             case 1:
-                // sunset is skipped. TODO make skipping a user setting
+                // sunset is skipped.
                 n = 2;
                 // FALLTHROUGH
             case 2:
