@@ -20,13 +20,18 @@
 
 package org.linuxac.bilal.helpers;
 
+import android.util.Log;
+
 import org.arabeyes.prayertime.Prayer;
+import org.linuxac.bilal.BuildConfig;
 
 import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
+import java.util.Locale;
 
 
 public class PrayerTimes {
+    private static final String TAG = "PrayerTimes";
     private GregorianCalendar[] all;
     private GregorianCalendar current;
     private GregorianCalendar next;
@@ -59,17 +64,27 @@ public class PrayerTimes {
         return next;
     }
 
-    public GregorianCalendar get(int i) { assert(i>=0 && i<all.length); return all[i]; }
+    public GregorianCalendar get(int i)
+    {
+        if (BuildConfig.DEBUG  && (i < 0 || i >= all.length || null == all)) {
+            Log.w(TAG, "index out of range or prayers array is null");
+            return null;
+        }
+        return all[i];
+    }
 
     public static String format(GregorianCalendar cal)
     {
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
         return sdf.format(cal.getTime());
     }
 
     public String format(int i)
     {
-        assert(i>=0 && i<all.length && null != all);
+        if (BuildConfig.DEBUG  && (i < 0 || i >= all.length || null == all)) {
+            Log.w(TAG, "index out of range or prayers array is null");
+            return null;
+        }
         return format(all[i]);
     }
 
