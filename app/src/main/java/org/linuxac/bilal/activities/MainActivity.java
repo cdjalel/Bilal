@@ -51,7 +51,7 @@ import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListe
 import com.google.android.gms.location.LocationServices;
 
 import org.arabeyes.prayertime.*;
-import org.linuxac.bilal.AlarmManager;
+import org.linuxac.bilal.AlarmScheduler;
 import org.linuxac.bilal.R;
 import org.linuxac.bilal.helpers.PrayerTimes;
 import org.linuxac.bilal.helpers.UserSettings;
@@ -73,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements
     protected BroadcastReceiver mUpdateViewsReceiver = null;
 
     protected boolean mIsJumu3a = false;
+    protected int mImportant = -1;
 
     protected TextView mTextViewCity;
     protected TextView mTextViewDate;
@@ -130,6 +131,7 @@ public class MainActivity extends AppCompatActivity implements
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
+    // TODO stop athan button in action bar
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -182,8 +184,6 @@ public class MainActivity extends AppCompatActivity implements
         };
     }
 
-
-
 //    private void deleteReceiver() {
 //        if (mReceiverRegistered) {
 //            assert(null != mUpdateViewsReceiver);
@@ -213,7 +213,7 @@ public class MainActivity extends AppCompatActivity implements
             registerReceiver(mUpdateViewsReceiver, new IntentFilter(UPDATE_VIEWS));
             mReceiverRegistered = true;
         }
-        AlarmManager.updatePrayerTimes(this, false);
+        AlarmScheduler.updatePrayerTimes(this, false);
         updatePrayerViews();
     }
 
@@ -298,23 +298,21 @@ public class MainActivity extends AppCompatActivity implements
         };
     }
 
-
-
     private void updatePrayerViews()
     {
         int i, j;
 
-        if (null == AlarmManager.sPrayerTimes) {
+        if (null == AlarmScheduler.sPrayerTimes) {
             mTextViewCity.setText(getString(R.string.not_available));
             return;
         }
 
         GregorianCalendar now = new GregorianCalendar();
-        mTextViewCity.setText(AlarmManager.sCityName);
+        mTextViewCity.setText(AlarmScheduler.sCityName);
         mTextViewDate.setText(DateFormat.getDateInstance().format(now.getTime()));
 
         for (i = 0; i < Prayer.NB_PRAYERS + 1; i++) {
-            mTextViewPrayers[i][1].setText(AlarmManager.sPrayerTimes.format(i));
+            mTextViewPrayers[i][1].setText(AlarmScheduler.sPrayerTimes.format(i));
         }
 
         // change Dhuhur to Jumuaa if needed.
@@ -329,36 +327,36 @@ public class MainActivity extends AppCompatActivity implements
             mIsJumu3a = false;
         }
 
-        // Norma typeface for all times
-        for (i = 0; i < Prayer.NB_PRAYERS + 1; i++) {
+        // Reset old important prayer to normal
+        if (mImportant != -1) {
             for (j = 0; j < 3; j++) {
-                mTextViewPrayers[i][j].setTypeface(null, Typeface.NORMAL);
+                mTextViewPrayers[mImportant][j].setTypeface(null, Typeface.NORMAL);
+                mTextViewPrayers[mImportant][j].clearAnimation();
             }
         }
 
-        // signal the important prayer, current if its time is recent, next otherwise
-        GregorianCalendar current = AlarmManager.sPrayerTimes.getCurrent();
+        // signal the new important prayer, which is the current if its time is recent, next otherwise
+        GregorianCalendar current = AlarmScheduler.sPrayerTimes.getCurrent();
         if ((now.getTimeInMillis() - current.getTimeInMillis()) <= (5 * 60 * 1000)) {
             // blink Current Prayers
-            int idx = AlarmManager.sPrayerTimes.getCurrentIndex();
+            mImportant = AlarmScheduler.sPrayerTimes.getCurrentIndex();
             Animation anim = new AlphaAnimation(0.0f, 1.0f);
             anim.setDuration(500);
             anim.setRepeatMode(Animation.REVERSE);
-            anim.setRepeatCount(Animation.INFINITE);
+            anim.setRepeatCount(120);
             for (j = 0; j < 3; j++) {
-                mTextViewPrayers[idx][j].setTypeface(null, Typeface.BOLD );
-                mTextViewPrayers[idx][j].startAnimation(anim);
+                mTextViewPrayers[mImportant][j].setTypeface(null, Typeface.BOLD );
+                mTextViewPrayers[mImportant][j].startAnimation(anim);
             }
         }
         else {
             // Bold Next Prayers
-            int idx = AlarmManager.sPrayerTimes.getNextIndex();
+            mImportant = AlarmScheduler.sPrayerTimes.getNextIndex();
             for (i = 0; i < Prayer.NB_PRAYERS + 1; i++) {
                 for (j = 0; j < 3; j++) {
-                    mTextViewPrayers[idx][j].setTypeface(null, Typeface.BOLD);
+                    mTextViewPrayers[mImportant][j].setTypeface(null, Typeface.BOLD);
                 }
             }
         }
     }
-
 }
