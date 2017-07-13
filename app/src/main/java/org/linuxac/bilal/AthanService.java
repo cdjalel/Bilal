@@ -21,8 +21,10 @@
 package org.linuxac.bilal;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -40,8 +42,9 @@ public class AthanService extends Service implements MediaPlayer.OnPreparedListe
         MediaPlayer.OnErrorListener, AudioManager.OnAudioFocusChangeListener  {
     protected static final String TAG = "AthanAudioService";
 
-    private MediaPlayer mAudioPlayer = null;
     private int mPrayer;
+    private MediaPlayer mAudioPlayer = null;
+    private BroadcastReceiver mVolumeChangeReceiver = null;
 
     public int onStartCommand(Intent intent, int flags, int startId) {
         mPrayer = AlarmScheduler.getNextPrayerIndex();
@@ -54,7 +57,19 @@ public class AthanService extends Service implements MediaPlayer.OnPreparedListe
             }
         }
         initMediaPlayer();
+        registerVolumeChangeReceiver();
         return Service.START_NOT_STICKY;
+    }
+
+    private void registerVolumeChangeReceiver() {
+        mVolumeChangeReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Log.i(TAG, "Volume changed, stopping Athan.");
+                onStop();
+            }
+        };
+        registerReceiver(mVolumeChangeReceiver, new IntentFilter("android.media.VOLUME_CHANGED_ACTION"));
     }
 
     private void initMediaPlayer() {
@@ -132,6 +147,7 @@ public class AthanService extends Service implements MediaPlayer.OnPreparedListe
             mAudioPlayer.release();
             mAudioPlayer = null;
         }
+        unregisterReceiver(mVolumeChangeReceiver);
     }
 	
 	public void onPause() {
