@@ -306,7 +306,7 @@ public class MainActivity extends AppCompatActivity implements
     {
         int i, j;
 
-        if (null == AlarmScheduler.sPrayerTimes) {
+        if (AlarmScheduler.prayerTimesNotAvailable()) {
             mTextViewCity.setText(getString(R.string.not_available));
             return;
         }
@@ -316,7 +316,7 @@ public class MainActivity extends AppCompatActivity implements
         mTextViewDate.setText(DateFormat.getDateInstance().format(now.getTime()));
 
         for (i = 0; i < Prayer.NB_PRAYERS + 1; i++) {
-            mTextViewPrayers[i][1].setText(AlarmScheduler.sPrayerTimes.format(i));
+            mTextViewPrayers[i][1].setText(AlarmScheduler.formatPrayer(i));
         }
 
         // change Dhuhur to Jumuaa if needed.
@@ -340,11 +340,11 @@ public class MainActivity extends AppCompatActivity implements
         }
 
         // signal the new important prayer, which is the current if its time is recent, next otherwise
-        GregorianCalendar current = AlarmScheduler.sPrayerTimes.getCurrent();
+        GregorianCalendar current = AlarmScheduler.getCurrentPrayer();
         long elapsed = now.getTimeInMillis() - current.getTimeInMillis();
         if (elapsed >= 0 && elapsed <= BLINK_INTERVAL) {
             // blink Current Prayers
-            mImportant = AlarmScheduler.sPrayerTimes.getCurrentIndex();
+            mImportant = AlarmScheduler.getCurrentPrayerIndex();
             Animation anim = new AlphaAnimation(0.0f, 1.0f);
             anim.setDuration(BLINK_DURATION);
             anim.setRepeatMode(Animation.REVERSE);
@@ -358,7 +358,7 @@ public class MainActivity extends AppCompatActivity implements
         }
         else {
             // Bold Next Prayers
-            mImportant = AlarmScheduler.sPrayerTimes.getNextIndex();
+            mImportant = AlarmScheduler.getNextPrayerIndex();
             for (i = 0; i < Prayer.NB_PRAYERS + 1; i++) {
                 for (j = 0; j < 3; j++) {
                     mTextViewPrayers[mImportant][j].setTypeface(null, Typeface.BOLD);

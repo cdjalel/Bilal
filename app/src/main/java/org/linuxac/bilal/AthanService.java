@@ -39,23 +39,19 @@ import java.io.IOException;
 public class AthanService extends Service implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener, AudioManager.OnAudioFocusChangeListener  {
     protected static final String TAG = "AthanAudioService";
-    public static final String EXTRA_EVENT_ID = "org.linuxac.bilal.EVENT_ID";
 
     private MediaPlayer mAudioPlayer = null;
     private int mPrayer;
 
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (null != AlarmScheduler.sPrayerTimes) {
-            mPrayer = AlarmScheduler.sPrayerTimes.getNextIndex();
-        }
-        else if (null != intent) {
-            Log.w(TAG, "onStartCommand: AlarmScheduler.sPrayerTimes == null");
-            mPrayer = intent.getIntExtra(AlarmReceiver.PRAYER_INDEX, 0);
-        }
-        else {
-            Log.w(TAG, "onStartCommand: AlarmScheduler.sPrayerTimes == null");
-            Log.w(TAG, "onStartCommand: intent == null");
-            mPrayer = 2;        // 80% chance correct :)
+        mPrayer = AlarmScheduler.getNextPrayerIndex();
+        if (-1 == mPrayer) {
+            if (null != intent) {
+                mPrayer = intent.getIntExtra(AlarmReceiver.PRAYER_INDEX, 0);
+            } else {
+                Log.w(TAG, "onStartCommand: intent == null");
+                mPrayer = 2;        // 80% chance correct :)
+            }
         }
         initMediaPlayer();
         return Service.START_NOT_STICKY;
@@ -64,15 +60,14 @@ public class AthanService extends Service implements MediaPlayer.OnPreparedListe
     private void initMediaPlayer() {
         if (null == mAudioPlayer) {
             mAudioPlayer = new MediaPlayer();
-            Context context = this; //getApplicationContext();      // TODO: why not this?
             String path = "android.resource://" + getPackageName() + "/" +
-                    UserSettings.getMuezzin(context, mPrayer);
+                    UserSettings.getMuezzin(this, mPrayer);
 
             try {
-                mAudioPlayer.setDataSource(context, Uri.parse(path));
+                mAudioPlayer.setDataSource(this, Uri.parse(path));
                 mAudioPlayer.setOnPreparedListener(this);
                 mAudioPlayer.setOnErrorListener(this);
-                mAudioPlayer.setWakeMode(context, PowerManager.PARTIAL_WAKE_LOCK);
+                mAudioPlayer.setWakeMode(this, PowerManager.PARTIAL_WAKE_LOCK);
                 mAudioPlayer.prepareAsync(); // prepare async to not block main thread
                 Log.d(TAG, "Audio player started asynchronously!");
             } catch (IOException e) {

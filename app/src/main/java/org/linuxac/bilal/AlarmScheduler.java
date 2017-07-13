@@ -49,7 +49,7 @@ public class AlarmScheduler {
 
     private static boolean sLocationIsSet = false;    // TODO rm as it's a setting
     public static String sCityName = "Souk Ahras";
-    public static PTLocation sPTLocation = new PTLocation(36.28639, 7.95111, 1, 0, 697, 1010, 10);
+    private static PTLocation sPTLocation = new PTLocation(36.28639, 7.95111, 1, 0, 697, 1010, 10);
     // http://dateandtime.info/citycoordinates.php?id=2479215
 
     private static Method sCalculationMethod;   // TODO rm as it's a setting
@@ -62,13 +62,62 @@ public class AlarmScheduler {
 
     private static final GregorianCalendar sLongLongTimeAgo = new GregorianCalendar(0,0,0);
     private static GregorianCalendar sLastTime = sLongLongTimeAgo;
-    public static PrayerTimes sPrayerTimes = null;      // TODO privatize & add getters
+    private static PrayerTimes sPrayerTimes = null;
 
     public static final String ALARM_TXT = "org.linuxac.bilal.ALARM_TXT";
     private static PendingIntent sAlarmIntent = null;
 
     private AlarmScheduler() {}
 
+    public static boolean prayerTimesNotAvailable()
+    {
+        return null == sPrayerTimes;
+    }
+
+    public static GregorianCalendar getCurrentPrayer()
+    {
+        if (BuildConfig.DEBUG && null == sPrayerTimes) {
+            Log.w(TAG, "sPrayerTimes == null");
+            return null;
+        }
+        return sPrayerTimes.getCurrent();
+    }
+
+    public static int getCurrentPrayerIndex()
+    {
+        if (BuildConfig.DEBUG && null == sPrayerTimes) {
+            Log.w(TAG, "sPrayerTimes == null");
+            return -1;
+        }
+        return sPrayerTimes.getCurrentIndex();
+    }
+
+    public static GregorianCalendar getNextPrayer()
+    {
+        if (BuildConfig.DEBUG && null == sPrayerTimes) {
+            Log.w(TAG, "sPrayerTimes == null");
+            return null;
+        }
+        return sPrayerTimes.getNext();
+    }
+
+    public static int getNextPrayerIndex()
+    {
+        if (BuildConfig.DEBUG && null == sPrayerTimes) {
+            Log.w(TAG, "sPrayerTimes == null");
+            return -1;
+        }
+        return sPrayerTimes.getNextIndex();
+    }
+
+    public static String formatPrayer(int i)
+    {
+        if (BuildConfig.DEBUG && null == sPrayerTimes) {
+            Log.w(TAG, "sPrayerTimes == null");
+            return "";
+        }
+        return sPrayerTimes.format(i);
+    }
     public static void enableAlarm(Context context)
     {
         Log.d(TAG, "Enabling Alarm.");
@@ -152,13 +201,13 @@ public class AlarmScheduler {
             Log.d(TAG, "Call it a day :)");
         }
         else {
-            Log.d(TAG, "Last time: " + sPrayerTimes.format(sLastTime));
+            Log.d(TAG, "Last time: " + PrayerTimes.format(sLastTime));
             GregorianCalendar[] ptCal = getPrayerTimes(context, nowCal);
             sPrayerTimes = new PrayerTimes(nowCal, ptCal);
             sLastTime = nowCal;
         }
 
-        Log.d(TAG, "Current time: " + sPrayerTimes.format(nowCal));
+        Log.d(TAG, "Current time: " + PrayerTimes.format(nowCal));
         Log.d(TAG, "Current prayer: " + getPrayerName(context, sPrayerTimes.getCurrentIndex()));
         Log.i(TAG, "Next prayer: " + getPrayerName(context, sPrayerTimes.getNextIndex()));
 
@@ -168,7 +217,7 @@ public class AlarmScheduler {
     }
 
     @NonNull
-    protected static GregorianCalendar[] getPrayerTimes(Context context, GregorianCalendar nowCal)
+    private static GregorianCalendar[] getPrayerTimes(Context context, GregorianCalendar nowCal)
     {
         int i;
         Prayer prayer = new Prayer();
@@ -196,7 +245,7 @@ public class AlarmScheduler {
         return ptCal;
     }
 
-    protected static String getPrayerName(Context context, int prayer)
+    private static String getPrayerName(Context context, int prayer)
     {
         int prayerNameResId = 0;
         switch (prayer) {
@@ -256,7 +305,7 @@ public class AlarmScheduler {
         Log.i(TAG, "Old alarm cancelled.");
     }
 
-    protected static void scheduleAlarm(Context context)
+    private static void scheduleAlarm(Context context)
     {
         sAlarmIntent = createAlarmIntent(context);
         AlarmManager alarmMgr = (AlarmManager)context.getSystemService(ALARM_SERVICE);
