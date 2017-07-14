@@ -42,18 +42,18 @@ public class AthanService extends Service implements MediaPlayer.OnPreparedListe
         MediaPlayer.OnErrorListener, AudioManager.OnAudioFocusChangeListener  {
     protected static final String TAG = "AthanAudioService";
 
-    private int mPrayer;
+    private int mPrayerIndex;
     private MediaPlayer mAudioPlayer = null;
     private BroadcastReceiver mVolumeChangeReceiver = null;
 
     public int onStartCommand(Intent intent, int flags, int startId) {
-        mPrayer = AlarmScheduler.getNextPrayerIndex();
-        if (-1 == mPrayer) {
+        mPrayerIndex = AlarmScheduler.getNextPrayerIndex();
+        if (-1 == mPrayerIndex) {
             if (null != intent) {
-                mPrayer = intent.getIntExtra(AlarmReceiver.PRAYER_INDEX, 0);
+                mPrayerIndex = intent.getIntExtra(AlarmReceiver.EXTRA_PRAYER_INDEX, 0);
             } else {
                 Log.w(TAG, "onStartCommand: intent == null");
-                mPrayer = 2;        // 80% chance correct :)
+                mPrayerIndex = 2;        // 80% chance correct :)
             }
         }
         initMediaPlayer();
@@ -65,10 +65,18 @@ public class AthanService extends Service implements MediaPlayer.OnPreparedListe
         mVolumeChangeReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                Log.i(TAG, "Volume changed, stopping Athan.");
-                onStop();
+                // TODO: the level checking code doesn't work. It returns -1 for old & new level.
+                final int level = intent.getIntExtra("AudioManager.EXTRA_VOLUME_STREAM_VALUE", -1);
+                final int oldLevel = intent.getIntExtra("AudioManager.EXTRA_PREV_VOLUME_STREAM_VALUE", -1);
+                Log.i(TAG, "VOLUME_CHANGED_ACTION stream=" + " level=" + level + " oldLevel=" + oldLevel);
+                if (oldLevel < level) {
+                    onStop();
+                }
             }
         };
+        // FIXME: VOLUME_CHANGED_ACTION is internal to the framework and is not part of API. It might change!
+        // Here is an alternative with MediaSession & MediaController
+        // https://stackoverflow.com/questions/10154118/listen-to-volume-buttons-in-background-service
         registerReceiver(mVolumeChangeReceiver, new IntentFilter("android.media.VOLUME_CHANGED_ACTION"));
     }
 
@@ -76,7 +84,7 @@ public class AthanService extends Service implements MediaPlayer.OnPreparedListe
         if (null == mAudioPlayer) {
             mAudioPlayer = new MediaPlayer();
             String path = "android.resource://" + getPackageName() + "/" +
-                    UserSettings.getMuezzin(this, mPrayer);
+                    UserSettings.getMuezzin(this, mPrayerIndex);
 
             try {
                 mAudioPlayer.setDataSource(this, Uri.parse(path));
