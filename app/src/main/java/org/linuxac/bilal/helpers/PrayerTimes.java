@@ -20,10 +20,13 @@
 
 package org.linuxac.bilal.helpers;
 
+import android.content.Context;
 import android.util.Log;
 
 import org.arabeyes.prayertime.Prayer;
+import org.linuxac.bilal.AlarmScheduler;
 import org.linuxac.bilal.BuildConfig;
+import org.linuxac.bilal.R;
 
 import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
@@ -64,13 +67,44 @@ public class PrayerTimes {
         return next;
     }
 
-    public GregorianCalendar get(int i)
+    public String getCurrentName(Context context) {return getName(context, c); }
+
+    public String getNextName(Context context) {return getName(context, n); }
+
+    public static String getName(Context context, int prayer)
     {
-        if (BuildConfig.DEBUG  && (i < 0 || i >= all.length || null == all)) {
-            Log.w(TAG, "index out of range or prayers array is null");
-            return null;
+        int prayerNameResId = 0;
+        switch (prayer) {
+            case Prayer.NB_PRAYERS:
+                // use "fajr" instead of "next fajr"
+                // FALLTHROUGH
+            case 0:
+                prayerNameResId = R.string.fajr_en;
+                break;
+            case 1:
+                prayerNameResId = R.string.shuruk;
+                break;
+            case 2:
+                prayerNameResId = R.string.dhuhur;
+                break;
+            case 3:
+                prayerNameResId = R.string.asr;
+                break;
+            case 4:
+                prayerNameResId = R.string.maghrib;
+                break;
+            case 5:
+                prayerNameResId = R.string.isha;
+                break;
+            default:
+                if (BuildConfig.DEBUG) {
+                    Log.e(TAG, "Invalid prayer index: " + prayer);
+                    return "";
+                }
+                break;
         }
-        return all[i];
+
+        return context.getString(prayerNameResId) ;
     }
 
     public static String format(GregorianCalendar cal)

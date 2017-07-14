@@ -208,8 +208,8 @@ public class AlarmScheduler {
         }
 
         Log.d(TAG, "Current time: " + PrayerTimes.format(nowCal));
-        Log.d(TAG, "Current prayer: " + getPrayerName(context, sPrayerTimes.getCurrentIndex()));
-        Log.i(TAG, "Next prayer: " + getPrayerName(context, sPrayerTimes.getNextIndex()));
+        Log.d(TAG, "Current prayer: " + sPrayerTimes.getCurrentName(context));
+        Log.i(TAG, "Next prayer: " + sPrayerTimes.getNextName(context));
 
         if (setAlarm) {
             scheduleAlarm(context);
@@ -231,7 +231,7 @@ public class AlarmScheduler {
             ptCal[i].set(Calendar.HOUR_OF_DAY, pt[i].hour);
             ptCal[i].set(Calendar.MINUTE, pt[i].minute);
             ptCal[i].set(Calendar.SECOND, pt[i].second);
-            Log.d(TAG, getPrayerName(context, i) + " " + PrayerTimes.format(ptCal[i]));
+            Log.d(TAG, PrayerTimes.getName(context, i) + " " + PrayerTimes.format(ptCal[i]));
         }
 
         PrayerTime nextPT = prayer.getNextDayFajr(sPTLocation, sCalculationMethod, today);
@@ -245,49 +245,10 @@ public class AlarmScheduler {
         return ptCal;
     }
 
-    private static String getPrayerName(Context context, int prayer)
-    {
-        int prayerNameResId = 0;
-        switch (prayer) {
-            case Prayer.NB_PRAYERS:
-                // use "fajr" instead of "next fajr"
-                // FALLTHROUGH
-            case 0:
-                prayerNameResId = R.string.fajr_en;
-                break;
-            case 1:
-                prayerNameResId = R.string.shuruk;
-                break;
-            case 2:
-                prayerNameResId = R.string.dhuhur;
-                break;
-            case 3:
-                prayerNameResId = R.string.asr;
-                break;
-            case 4:
-                prayerNameResId = R.string.maghrib;
-                break;
-            case 5:
-                prayerNameResId = R.string.isha;
-                break;
-            default:
-                if (BuildConfig.DEBUG) {
-                    Log.e(TAG, "Invalid prayer index: " + prayer);
-                    return "";
-                }
-                break;
-        }
-
-        return context.getString(prayerNameResId) ;
-    }
-
     private static PendingIntent createAlarmIntent(Context context)
     {
-        int next = sPrayerTimes.getNextIndex();
-        // prepare alarm message to be displayed in a notification when it's triggered.
-        String alarmTxt = sPrayerTimes.getNextIndex() + getPrayerName(context, next);
         Intent intent = new Intent(context, AlarmReceiver.class);
-        intent.putExtra(ALARM_TXT, alarmTxt);
+        intent.putExtra(AlarmReceiver.EXTRA_PRAYER_INDEX, "" + sPrayerTimes.getNextIndex());
         return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
     }
 
