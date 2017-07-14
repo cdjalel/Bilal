@@ -1,9 +1,43 @@
-- Improve UI (layout, icons, background).
-- Start app on phone boot to arm the next notification.
+TODO list(up to v0.3):
+====================
+Notification/Athan
+------------------
+- Change AthanService listener/receiver for Volume down button only to stop athan (current code stops athan whith volume up too).
+- Add than stop button in action bar (easy one as a similar button exists in notification)
+- Add audio preview when user selects muezzin (with dialogue?)
+- Add a timeout to the notification (will be available in Android O version) equal to Iqama inerval
+- Make iqama interval configrable?
+- Allow download of new athan voices? or point to mps3 in sdcard?
+
+
+User settings
+-------------
+- Add a General preferences screen:
+   - Language selection
+        - User choice
+        - System default
+   - Color themes
+   - Backgrounds (some from freepick)
+- Add a Location screen (cities section + mosques section)
+   - Search local DB activity for City
+   - Search online DB that provides coordinate (check website used for current ardcoded GPS position)
+   - Search mosques per city per mosque name
+   - {Power users?} add/del city/mosque
+- Implement data sync
+   - Sync with online server to update locations Database
+
+Remaining from v0.1:
+===================
 - Use Android Location API to find current location automatically. Some code is there but commented out as it was not tested.
 - Make location and calculation method configurable by user.
-- Make user preferences persistent.
-- Fallback on a pre-configured set of locations (countries/cities lis as in the minbar program), when Android Location API fails.
-- Make Athan sound user configurable by offering a list of famous athans to choose from.
+- Fallback on a pre-configured set of locations (countries/cities list as in the minbar program), when Android Location API fails.
 - Add Qibla direction feature using device compass.
+
+
+Done in v0.2:
+============
+- Improve UI (layout, icons, background).
+- Start app on phone boot to arm the next notification.
+- Make user preferences persistent.
+- Make Athan sound user configurable by offering a list of famous athans to choose from.
 - Update athan alarm if system time changes
