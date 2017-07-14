@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <Preference
+        android:key="pref_search_city"
+        android:title="@string/pref_title_search_city"
+        android:summary="pref_summary_search_city" >
+        <intent android:action="android.intent.action.VIEW"
+            android:targetClass=".activities.SearchCityActivity"/>
+    </Preference>
+
+</PreferenceScreen>

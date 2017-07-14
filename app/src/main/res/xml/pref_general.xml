@@ -30,12 +30,4 @@
         android:negativeButtonText="@null"
         android:positiveButtonText="@null" />
 
-    <Preference 
-        android:title="@string/pref_title_search_city"
-        android:summary="pref_summary_search_city" >
-        <intent android:action="android.intent.action.VIEW"
-                android:targetClass=".activities.SearchCityActivity"/>
-    </Preference>
-
-
 </PreferenceScreen>

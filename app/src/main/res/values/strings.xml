@@ -106,7 +106,7 @@
 
     <string name="pref_title_system_sync_settings">System sync settings</string>
 
-    <!-- Example settings for Notifications -->
+    <!-- Notifications -->
     <string name="pref_header_notifications">Notifications</string>
 
     <string name="pref_title_prayer_time">Prayer time</string>
@@ -136,5 +136,11 @@
     <string name="pref_title_notification">Screen notification</string>
 
     <string name="pref_title_vibrate">Vibrate</string>
+
+    <!--Location settings-->
+    <string name="btn_search_city">Search</string>
+    <string name="search_city">Search city</string>
+
+    <string name="pref_header_locations">Notifications</string>
 
 </resources>
