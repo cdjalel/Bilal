@@ -114,7 +114,11 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
 
     public List<City> searchCity(String nameEn)
     {
-        openReadable();
+        if (null == mDatabase) {
+            Log.w(TAG, "Open database first!");
+            return null;
+        }
+
         String query =
                 "SELECT locations.id as ID,\n" +
                         "\t   locations.nameEn as en,\n" +
@@ -141,15 +145,19 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
                     0           // TODO
             ));
         }
+        cursor.close();
         Log.d(TAG, "cityList:\n" + cityList);
-        close();
 
         return cityList;
     }
 
     public List<City> searchCity(double lat, double lng)
     {
-        openReadable();
+        if (null == mDatabase) {
+            Log.w(TAG, "Open database first!");
+            return null;
+        }
+
         String query =  "SELECT locations.id as ID,\n" +
                         "\t   locations.nameEn as en,\n" +
                         "\t   countries.nameEN as c_en,\n" +
@@ -176,8 +184,8 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
                     0           // TODO
             ));
         }
+        cursor.close();
         Log.d(TAG, "cityList:\n" + cityList);
-        close();
 
         return cityList;
     }

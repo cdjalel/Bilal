@@ -46,9 +46,6 @@
     <!-- Example General settings -->
     <string name="pref_header_general">General</string>
 
-    <string name="pref_title_search_city">City</string>
-    <string name="pref_summary_search_city">Prayer times calculation depend on city position</string>
-
     <string name="pref_title_social_recommendations">Enable social recommendations</string>
     <string name="pref_description_social_recommendations">Recommendations for people to contact
         based on your message history
@@ -141,6 +138,8 @@
     <string name="btn_search_city">Search</string>
     <string name="search_city">Search city</string>
 
-    <string name="pref_header_locations">Notifications</string>
+    <string name="pref_header_locations">Locations</string>
+    <string name="pref_title_search_city">City</string>
+    <string name="pref_summary_search_city">Undefined</string>
 
 </resources>

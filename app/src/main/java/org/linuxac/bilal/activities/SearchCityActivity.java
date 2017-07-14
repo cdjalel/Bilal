@@ -24,10 +24,13 @@ import android.app.SearchManager;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.SearchView;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import org.linuxac.bilal.BuildConfig;
 import org.linuxac.bilal.R;
 import org.linuxac.bilal.adapters.CityListAdapter;
 import org.linuxac.bilal.databases.LocationsDBHelper;
@@ -36,8 +39,9 @@ import org.linuxac.bilal.datamodels.City;
 import java.util.List;
 
 public class SearchCityActivity extends AppCompatActivity
-        implements AdapterView.OnItemClickListener {
-
+        implements SearchView.OnQueryTextListener, AdapterView.OnItemClickListener {
+    private static String TAG = "SearchCityActivity";
+    private LocationsDBHelper mDBHelper; // TODO: static?
     private CityListAdapter mCityListAdapter;
     private ListView mCityListView;
 
@@ -47,8 +51,39 @@ public class SearchCityActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_city);
 
+        mDBHelper = new LocationsDBHelper(this);
+        mDBHelper.openReadable();
+
+        SearchView searchView = (SearchView) findViewById(R.id.search_city_box);
+        searchView.setOnQueryTextListener(this);
+
         // Get the intent, verify the action and get the query
         Intent intent = getIntent();
+        Log.i(TAG, "onCreate: intent.action = " + intent.getAction());
+        handleIntent(getIntent());
+    }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+        Log.i(TAG, "onNewIntent: intent.action = " + intent.getAction());
+        setIntent(intent);
+        handleIntent(intent);
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        searchCity(query);
+        return true;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        searchCity(newText);
+        return true;
+    }
+
+    private void handleIntent(Intent intent)
+    {
         String action = intent.getAction();
         if (Intent.ACTION_SEARCH.equals(action)) {
             String query = intent.getStringExtra(SearchManager.QUERY);
@@ -61,12 +96,10 @@ public class SearchCityActivity extends AppCompatActivity
 
     private void searchCity(String query)
     {
-        LocationsDBHelper dbHelper = new LocationsDBHelper(this);
-
-        List<City> cityList = dbHelper.searchCity(query);
+        List<City> cityList = mDBHelper.searchCity(query);
 
         if (cityList != null){
-            // TODO: what happens to old adapter & old listview content?
+            // TODO: what happens to old adapter &  listview content?
             mCityListAdapter = new CityListAdapter(this , cityList);
             mCityListView = (ListView) findViewById(R.id.list_city);
             mCityListView.setAdapter(mCityListAdapter);
@@ -81,5 +114,15 @@ public class SearchCityActivity extends AppCompatActivity
         // TODO adapt setting view preference summary pref_search_city somehow
         // setResult(321); TODO rm
         finish();
+    }
+
+    @Override
+    public void onDestroy()
+    {
+        if (null != mDBHelper) {
+            mDBHelper.close();
+            mDBHelper = null;
+        }
+        super.onDestroy();
     }
 }
