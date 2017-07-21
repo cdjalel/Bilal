@@ -6,8 +6,8 @@
     <string name="time_for">حان وقت صلاة %s</string>
     <string name="time_in">في %s</string>
     <string name="stop_athan">وقف الآذان</string>
-    <string name="location_unknown">الموقع غير معروف</string>
-    <string name="not_available">أوقات الصلاة غير متوفرة</string>
+    <string name="undefined_location">الموقع غير مُعرّف</string>
+    <string name="set_location">حدده في الإعدادات</string>
     <string name="zero_hour">00:00</string>
 
     <string name="fajr_ar">الفجر</string>

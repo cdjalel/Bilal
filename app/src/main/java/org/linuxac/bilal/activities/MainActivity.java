@@ -305,13 +305,11 @@ public class MainActivity extends AppCompatActivity implements
 
     private void updatePrayerViews()
     {
-        int i, j;
-
         if (AlarmScheduler.prayerTimesNotAvailable()) {
-            //mTextViewCity.setText(getString(R.string.location_unknown));
-            //mTextViewDate.setText(getString(R.string.set_location));
             return;
         }
+
+        int i, j;
 
         GregorianCalendar now = new GregorianCalendar();
         mTextViewCity.setText(AlarmScheduler.getCityName(this));
