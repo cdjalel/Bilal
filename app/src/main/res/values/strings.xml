@@ -6,7 +6,7 @@
     <string name="time_in">In %s</string>
     <string name="stop_athan">Stop Athan</string>
     <string name="location_unknown">Location unknown</string>
-    <string name="not_available">Prayer times not available</string>
+    <string name="set_location">Configure it in Settings</string>
     <string name="zero_hour">00:00</string>
 
     <string name="fajr_ar">الفجر</string>
@@ -144,14 +144,14 @@
 
     <string name="pref_title_method">Calculation method</string>
     <string-array name="pref_method_list_titles">
-        <item>Egypt survey</item>
-        <item>Karachi Shaafi</item>
-        <item>Karachi Hanafi</item>
-        <item>North America</item>
-        <item>Muslim world league</item>
-        <item>Umm Alqurra</item>
-        <item>Fixed isha</item>
-        <item>Egypt new</item>
+        <item>Egyptian General Authority of Survey (Old)</item>
+        <item>University of Islamic Sciences, Karachi (Shaf\'i)</item>
+        <item>University of Islamic Sciences, Karachi (Hanafi)</item>
+        <item>Islamic Society of North America</item>
+        <item>Muslim World League (MWL)</item>
+        <item>Umm Al-Qura University</item>
+        <item>Fixed Ishaa Interval (always 90)</item>
+        <item>Egyptian General Authority of Survey (New)</item>
     </string-array>
     <string-array name="pref_method_list_values">
         <item>1</item>
