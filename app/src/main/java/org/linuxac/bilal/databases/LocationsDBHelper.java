@@ -63,7 +63,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
         mOpenMode = DATABASE_CLOSED;
     }
 
-    public void openReadable()
+    public void openReadable() // TODO return boolean
     {
         switch (mOpenMode) {
             case SQLiteDatabase.OPEN_READONLY:
@@ -112,6 +112,49 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
         mDatabase = null;
     }
 
+    public City getCity(int id)
+    {
+        if (-1 >= id) {
+            Log.e(TAG, "Bad city id: " + id);
+            return null;
+        }
+
+        String query =
+                "SELECT " +
+                    "locations.id as ID, " +
+                    "locations.nameEn as en, " +
+                    "countries.nameEN, " +
+                    "countries.regionEN, " +
+                    "locations.latitude, " +
+                    "locations.longitude " +
+                "FROM " +
+                    "locations, countries " +
+                "WHERE " +
+                    "locations.id_contry = countries.id " +
+                    "ID = " + id + ";";
+
+        openReadable();
+        Cursor cursor = mDatabase.rawQuery(query, null);
+
+        City city = null;
+        if (cursor.moveToNext()) {
+            city = new City(
+                    cursor.getInt(0),
+                    cursor.getString(1),
+                    cursor.getString(2),
+                    cursor.getString(3),
+                    cursor.getFloat(4),
+                    cursor.getFloat(5),
+                    0           // TODO
+                );
+        }
+        cursor.close();
+        close();
+        Log.d(TAG, "city:\n" + city);
+
+        return city;
+    }
+
     public List<City> searchCity(String nameEn)
     {
         if (null == mDatabase) {
@@ -120,16 +163,18 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
         }
 
         String query =
-                "SELECT locations.id as ID,\n" +
-                        "\t   locations.nameEn as en,\n" +
-                        "\t   countries.nameEN as c_en,\n" +
-                        "\t   countries.regionEN as r_en\n" +
-                        "\t   locations.latitude,\n" +
-                        "\t   locations.longitude,\n" +
-                        "FROM   locations, \n" +
-                        "\t   countries\n" +
-                        "WHERE  locations.id_contry = countries.id and\n" +
-                        "\t   en like '%" + nameEn + "%'";
+                "SELECT " +
+                    "locations.id as ID, " +
+                    "locations.nameEn as en, " +
+                    "countries.nameEN, " +
+                    "countries.regionEN, " +
+                    "locations.latitude, " +
+                    "locations.longitude " +
+                "FROM " +
+                    "locations, countries " +
+                "WHERE " +
+                    "locations.id_contry = countries.id " +
+                    "AND en like '%" + nameEn + "%';";
 
         Cursor cursor = mDatabase.rawQuery(query, null);
 
@@ -158,17 +203,19 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
             return null;
         }
 
-        String query =  "SELECT locations.id as ID,\n" +
-                        "\t   locations.nameEn as en,\n" +
-                        "\t   countries.nameEN as c_en,\n" +
-                        "\t   countries.regionEN as r_en\n" +
-                        "\t   locations.latitude,\n" +
-                        "\t   locations.longitude,\n" +
-                        "FROM  locations, \n" +
-                        "\t    countries\n" +
-                        "WHERE locations.id_contry = countries.id and\n" +
-                        "\t    locations.latitude between " + (lat - 0.08) + " and " + (lat + 0.08) + " and\n" +
-                        "\t    locations.longitude between " + (lng - 0.08) + " and " + (lng + 0.08);
+        String query =  "SELECT " +
+                            "locations.id as ID, " +
+                            "locations.nameEn as en, " +
+                            "countries.nameEN as c_en, " +
+                            "countries.regionEN as r_en " +
+                            "locations.latitude, " +
+                            "locations.longitude " +
+                        "FROM " +
+                            "locations, countries " +
+                        "WHERE " +
+                            "locations.id_contry = countries.id AND " +
+                            "locations.latitude between " + (lat - 0.08) + " and " + (lat + 0.08) + " AND " +
+                            "locations.longitude between " + (lng - 0.08) + " and " + (lng + 0.08) + ";";
 
         Cursor cursor = mDatabase.rawQuery(query, null);
 
@@ -235,15 +282,18 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
         }
 
         String query =
-                "SELECT locations.id as ID, " +
-                "\t   locations.nameEn as en,\n" +
-                "\t   countries.nameEN as c_en,\n" +
-                "\t   countries.regionEN as r_en\n" +
-                "\t   locations.latitude,\n" +
-                "\t   locations.longitude,\n" + // TODO alt
-                "FROM  locations, countries " +
-                "WHERE locations.id_contry = countries.id and " +
-                "      countries.nameEN like '%" + country + "%'";
+                "SELECT " +
+                    "locations.id as ID, " +
+                    "locations.nameEn, " +
+                    "countries.nameEN, " +
+                    "countries.regionEN, " +
+                    "locations.latitude, " +
+                    "locations.longitude " + // TODO alt
+                "FROM " +
+                    "locations, countries " +
+                "WHERE " +
+                    "locations.id_contry = countries.id AND " +
+                    "countries.nameEN like '%" + country + "%';";
 
         Cursor cursor = mDatabase.rawQuery(query, null);
 
