@@ -63,7 +63,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
         mOpenMode = DATABASE_CLOSED;
     }
 
-    public void openReadable() // TODO return boolean
+    public void openReadable()
     {
         switch (mOpenMode) {
             case SQLiteDatabase.OPEN_READONLY:
@@ -121,17 +121,17 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
 
         String query =
                 "SELECT " +
-                    "locations.id as ID, " +
-                    "locations.nameEn as en, " +
+                    "locations.id, " +
+                    "locations.nameEn, " +
                     "countries.nameEN, " +
                     "countries.regionEN, " +
                     "locations.latitude, " +
                     "locations.longitude " +
                 "FROM " +
-                    "locations, countries " +
+                    "locations " +
+                "INNER JOIN countries ON locations.id_contry = countries.id " +
                 "WHERE " +
-                    "locations.id_contry = countries.id " +
-                    "ID = " + id + ";";
+                    "locations.id = " + id + ";";
 
         openReadable();
         Cursor cursor = mDatabase.rawQuery(query, null);
@@ -162,9 +162,10 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
             return null;
         }
 
+        // TODO use INNER JOIN here & below
         String query =
                 "SELECT " +
-                    "locations.id as ID, " +
+                    "locations.id, " +
                     "locations.nameEn as en, " +
                     "countries.nameEN, " +
                     "countries.regionEN, " +
