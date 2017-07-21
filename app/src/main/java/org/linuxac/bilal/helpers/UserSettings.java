@@ -25,6 +25,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import org.arabeyes.prayertime.Method;
 import org.arabeyes.prayertime.Prayer;
 import org.linuxac.bilal.R;
 
@@ -133,5 +134,29 @@ public class UserSettings {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         String str = sharedPref.getString("sync_frequency", "180");
         return Integer.parseInt(str);
+    }
+
+    public static int getCityID(Context context) {
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+        return sharedPref.getInt("city_id", -1);
+    }
+
+
+    public static void setCityID(Context context, int id) {
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putInt("city_id", id); // TODO handle locales -> save city ID in the DB then query DB
+        editor.apply();
+    }
+
+    public static int getCalculationMethod(Context context) {
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+        return sharedPref.getInt("calc_method", Method.MUSLIM_LEAGUE);
+
+    }
+
+    public static boolean getCalculationRound(Context context) {
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+        return sharedPref.getBoolean("calc_round", true);
     }
 }

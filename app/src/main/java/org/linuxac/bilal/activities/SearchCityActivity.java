@@ -20,6 +20,7 @@
 
 package org.linuxac.bilal.activities;
 
+import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
@@ -35,6 +36,7 @@ import org.linuxac.bilal.R;
 import org.linuxac.bilal.adapters.CityListAdapter;
 import org.linuxac.bilal.databases.LocationsDBHelper;
 import org.linuxac.bilal.datamodels.City;
+import org.linuxac.bilal.helpers.UserSettings;
 
 import java.util.List;
 
@@ -77,19 +79,23 @@ public class SearchCityActivity extends AppCompatActivity
             searchCity(query);
         }
         else {
-            mCityListView.setAdapter(null);
+            if (null != mCityListView) {
+                mCityListView.setAdapter(null);
+            }
         }
         return true;
     }
 
     @Override
     public boolean onQueryTextChange(String newText) {
-        Log.i(TAG, "onQueryTextChange: " + query);
-        if (null != query && !query.isEmpty()) {
-            searchCity(query);
+        Log.i(TAG, "onQueryTextChange: " + newText);
+        if (null != newText && !newText.isEmpty()) {
+            searchCity(newText);
         }
         else {
-            mCityListView.setAdapter(null);
+            if (null != mCityListView) {
+                mCityListView.setAdapter(null);
+            }
         }
         return true;
     }
@@ -102,7 +108,9 @@ public class SearchCityActivity extends AppCompatActivity
             searchCity(query);
         }
         else if (Intent.ACTION_VIEW.equals(action)) {
-            mCityListView.setAdapter(null);
+            if (null != mCityListView) {        // useless when called from onCreate!
+                mCityListView.setAdapter(null);
+            }
         }
     }
 
@@ -111,8 +119,7 @@ public class SearchCityActivity extends AppCompatActivity
         List<City> cityList = mDBHelper.searchCity(query);
 
         if (cityList != null){
-            // TODO: what happens to old adapter &  listview content?
-            mCityListAdapter = new CityListAdapter(this , cityList);
+            mCityListAdapter = new CityListAdapter(this, cityList);
             mCityListView = (ListView) findViewById(R.id.list_city);
             mCityListView.setAdapter(mCityListAdapter);
             mCityListView.setOnItemClickListener(this);
@@ -125,12 +132,12 @@ public class SearchCityActivity extends AppCompatActivity
         Log.i(TAG, "onItemClick city: " + item);
 
         // save new value // TODO check if new is available changeCalculatonMethod()
-        UserSettings.setCityID(this, item.getID());
+        UserSettings.setCityID(this, item.getId());
 
         // adapt preference summary
         Intent resultIntent = new Intent();// TODO getIntent();
         resultIntent.putExtra("name", item.getName());
-        //resultIntent.putExtra("id", item.getID());
+        //resultIntent.putExtra("id", item.getId());
         setResult(Activity.RESULT_OK, resultIntent);
         finish();
     }

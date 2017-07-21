@@ -35,6 +35,8 @@ import org.arabeyes.prayertime.Prayer;
 import org.arabeyes.prayertime.PrayerTime;
 import org.linuxac.bilal.helpers.PrayerTimes;
 import org.linuxac.bilal.helpers.UserSettings;
+import org.linuxac.bilal.databases.LocationsDBHelper;
+import org.linuxac.bilal.datamodels.City;
 import org.linuxac.bilal.receivers.AlarmReceiver;
 import org.linuxac.bilal.receivers.BootAndTimeChangeReceiver;
 
@@ -47,22 +49,11 @@ import static android.content.Context.ALARM_SERVICE;
 public class AlarmScheduler {
     private static final String TAG = "AlarmScheduler";
 
-    private static boolean sLocationIsSet = false;    // TODO rm as it's a setting
-    public static String sCityName = "Souk Ahras";
-    private static PTLocation sPTLocation = new PTLocation(36.28639, 7.95111, 1, 0, 697, 1010, 10);
-    // http://dateandtime.info/citycoordinates.php?id=2479215
-
-    private static Method sCalculationMethod;   // TODO rm as it's a setting
-    static {
-        sCalculationMethod = new Method();
-        sCalculationMethod.setMethod(Method.MUSLIM_LEAGUE);
-        sCalculationMethod.round = 0;
-        sLocationIsSet = true;
-    }
 
     private static final GregorianCalendar sLongLongTimeAgo = new GregorianCalendar(0,0,0);
     private static GregorianCalendar sLastTime = sLongLongTimeAgo;
     private static PrayerTimes sPrayerTimes = null;
+    private static Method sMethod = null;
 
     public static final String ALARM_TXT = "org.linuxac.bilal.ALARM_TXT";
     private static PendingIntent sAlarmIntent = null;
@@ -118,6 +109,16 @@ public class AlarmScheduler {
         }
         return sPrayerTimes.format(i);
     }
+
+    public static String getCityName(Context context)
+    {
+        if (BuildConfig.DEBUG && null == sPrayerTimes) {
+            Log.w(TAG, "sPrayerTimes == null");
+            return context.getString(R.string.pref_undefined_city);
+        }
+        return sPrayerTimes.getCityName(context);
+    }
+
     public static void enableAlarm(Context context)
     {
         Log.d(TAG, "Enabling Alarm.");
@@ -131,6 +132,14 @@ public class AlarmScheduler {
         cancelAlarm(context);
         disableBootAndTimeChangeReceiver(context);
     }
+
+    public static void changeCalculatonMethod(Context context, Method method)
+    {
+        sLastTime = sLongLongTimeAgo;
+        sMethod = method;
+        updatePrayerTimes(context, false);
+    }
+
 /*
 
     private static void logBootAndTimeChangeReceiverSetting(Context context)
@@ -181,9 +190,9 @@ public class AlarmScheduler {
 
 //        logBootAndTimeChangeReceiverSetting(context);
 
-        // TODO UserSettings.getLocation
-        // TODO UserSettings.getMethod
-        if (!sLocationIsSet) {
+        LocationsDBHelper dbHelper = new LocationsDBHelper(context);
+        City city = dbHelper.getCity(UserSettings.getCityID(context));
+        if (null == city) {
             Log.w(TAG, "Location not set! Nothing todo until user starts UI.");
             return;
         }
@@ -201,13 +210,10 @@ public class AlarmScheduler {
             Log.d(TAG, "Call it a day :)");
         }
         else {
-            Log.d(TAG, "Last time: " + PrayerTimes.format(sLastTime));
-            GregorianCalendar[] ptCal = getPrayerTimes(context, nowCal);
-            sPrayerTimes = new PrayerTimes(nowCal, ptCal);
-            sLastTime = nowCal;
+            calcPrayerTimes(context, nowCal, city);
         }
 
-        Log.d(TAG, "Current time: " + PrayerTimes.format(nowCal));
+        Log.d(TAG, "Current time: " + sPrayerTimes.format(nowCal));
         Log.d(TAG, "Current prayer: " + sPrayerTimes.getCurrentName(context));
         Log.i(TAG, "Next prayer: " + sPrayerTimes.getNextName(context));
 
@@ -217,32 +223,48 @@ public class AlarmScheduler {
     }
 
     @NonNull
-    private static GregorianCalendar[] getPrayerTimes(Context context, GregorianCalendar nowCal)
+    private static void calcPrayerTimes(Context context, GregorianCalendar nowCal, City city)
     {
         int i;
         Prayer prayer = new Prayer();
         Date today = nowCal.getTime();
         GregorianCalendar[] ptCal = new GregorianCalendar[Prayer.NB_PRAYERS + 1];
 
+        // http://dateandtime.info/citycoordinates.php?id=2479215
+        PTLocation location = new PTLocation(
+            city.getLatitude(),
+            city.getLongitude(),
+            1, 0, 697, 1010, 10);
+
+        if (null == sMethod) {
+            sMethod = new Method();
+            sMethod.setMethod(UserSettings.getCalculationMethod(context));
+            sMethod.round = UserSettings.getCalculationRound(context)? 1 : 0;
+        }
+
+        Log.d(TAG, "Last time: " + PrayerTimes.format(sLastTime, sMethod.round));
+
         /* Call the main library function to fill the Prayer times */
-        PrayerTime[] pt = prayer.getPrayerTimes(sPTLocation, sCalculationMethod, today);
+        PrayerTime[] pt = prayer.getPrayerTimes(location, sMethod, today);
         for (i = 0; i < Prayer.NB_PRAYERS; i++) {
             ptCal[i] = (GregorianCalendar)nowCal.clone();
             ptCal[i].set(Calendar.HOUR_OF_DAY, pt[i].hour);
             ptCal[i].set(Calendar.MINUTE, pt[i].minute);
             ptCal[i].set(Calendar.SECOND, pt[i].second);
-            Log.d(TAG, PrayerTimes.getName(context, i) + " " + PrayerTimes.format(ptCal[i]));
+            Log.d(TAG, PrayerTimes.getName(context, i) + " " + PrayerTimes.format(ptCal[i], sMethod.round));
         }
 
-        PrayerTime nextPT = prayer.getNextDayFajr(sPTLocation, sCalculationMethod, today);
+        PrayerTime nextPT = prayer.getNextDayFajr(location, sMethod, today);
         ptCal[i] = (GregorianCalendar)nowCal.clone();
         ptCal[i].add(Calendar.DATE, 1);
         ptCal[i].set(Calendar.HOUR_OF_DAY, nextPT.hour);
         ptCal[i].set(Calendar.MINUTE, nextPT.minute);
         ptCal[i].set(Calendar.SECOND, nextPT.second);
-        Log.d(TAG, context.getString(R.string.nextfajr) + " " + PrayerTimes.format(ptCal[i]));
+        Log.d(TAG, context.getString(R.string.nextfajr) + " " + PrayerTimes.format(ptCal[i], sMethod.round));
 
-        return ptCal;
+        sPrayerTimes = new PrayerTimes(nowCal, ptCal, city.getName(), sMethod.round == 1);
+        sLastTime = nowCal;
+        sMethod = null;
     }
 
     private static PendingIntent createAlarmIntent(Context context)
@@ -254,6 +276,11 @@ public class AlarmScheduler {
 
     private static void cancelAlarm(Context context)
     {
+        if (null == sPrayerTimes) {
+            Log.i(TAG, "No alarm to cancel!");
+            return;
+        }
+
         if (null != sAlarmIntent) {
             sAlarmIntent.cancel();
         }

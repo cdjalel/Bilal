@@ -40,9 +40,13 @@ public class PrayerTimes {
     private GregorianCalendar next;
     private int c;                          // current prayer index
     private int n;                          // next prayer index
+    private String cityName;
+    private boolean rounded;
 
-    public PrayerTimes(GregorianCalendar now, GregorianCalendar... all) {
+    public PrayerTimes(GregorianCalendar now, GregorianCalendar[] all, String cityName, boolean rounded) {
         this.all = all;
+        this.cityName = new String(cityName);
+        this.rounded = rounded;
         findCurrent(now);
     }
 
@@ -107,10 +111,16 @@ public class PrayerTimes {
         return context.getString(prayerNameResId) ;
     }
 
-    public static String format(GregorianCalendar cal)
+    public static String format(GregorianCalendar cal, int round)
     {
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+        SimpleDateFormat sdf = new SimpleDateFormat(
+            round != 0 ? "HH:mm" : "HH:mm:ss", Locale.getDefault());
         return sdf.format(cal.getTime());
+    }
+
+    public String format(GregorianCalendar cal)
+    {
+        return format(cal, rounded? 1:0);
     }
 
     public String format(int i)
@@ -119,7 +129,7 @@ public class PrayerTimes {
             Log.w(TAG, "index out of range or prayers array is null");
             return null;
         }
-        return format(all[i]);
+        return format(all[i], rounded? 1:0);
     }
 
     private void findCurrent(GregorianCalendar now)
@@ -152,5 +162,10 @@ public class PrayerTimes {
         }
         current = all[c];
         next = all[n];
+    }
+
+    public String getCityName(Context context)
+    {
+        return null != cityName ? cityName : context.getString(R.string.pref_undefined_city);
     }
 }

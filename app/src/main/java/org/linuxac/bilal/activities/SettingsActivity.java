@@ -22,6 +22,7 @@ package org.linuxac.bilal.activities;
 
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -37,9 +38,13 @@ import android.util.Log;
 import android.view.MenuItem;
 
 import org.linuxac.bilal.AlarmScheduler;
+import org.linuxac.bilal.helpers.PrayerTimes;
+import org.linuxac.bilal.helpers.UserSettings;
 import org.linuxac.bilal.R;
 
 import java.util.List;
+
+import org.arabeyes.prayertime.Method;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -54,6 +59,8 @@ import java.util.List;
  */
 public class SettingsActivity extends AppCompatPreferenceActivity {
     private static final String TAG = "SettingsActivity";
+
+    public static final int REQUEST_SEARCH_CITY = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -163,7 +170,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         return PreferenceFragment.class.getName().equals(fragmentName)
                 || GeneralPreferenceFragment.class.getName().equals(fragmentName)
                 || LocationsPreferenceFragment.class.getName().equals(fragmentName)
-                || DataSyncPreferenceFragment.class.getName().equals(fragmentName)
+                //|| DataSyncPreferenceFragment.class.getName().equals(fragmentName)
                 || NotificationPreferenceFragment.class.getName().equals(fragmentName);
     }
 
@@ -198,10 +205,54 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         }
     }
 
-    /**
-     * This fragment shows general preferences only. It is used when the
-     * activity is showing a two-pane settings UI.
-     */
+    private static Preference.OnPreferenceChangeListener sMethodChangeListener = new Preference.OnPreferenceChangeListener() {
+        @Override
+        public boolean onPreferenceChange(Preference preference, Object value) {
+            String stringValue = value.toString();
+            String key = preference.getKey();
+            Context ctxt = preference.getContext();
+            Method method = new Method();
+
+            if (key.equals("pref_calc_method")) {
+                // For list preferences, look up the correct display value in
+                // the preference's 'entries' list.
+                ListPreference listPreference = (ListPreference) preference;
+                int index = listPreference.findIndexOfValue(stringValue);
+
+                // Set the summary to reflect the new value.
+                preference.setSummary(
+                        index >= 0
+                                ? listPreference.getEntries()[index]
+                                : null);
+
+                // Trigger new cacl if value change
+                int oldMethodIdx = UserSettings.getCalculationMethod(preference.getContext());
+                if (oldMethodIdx != index) {
+                    method.setMethod(index);
+                    method.round = UserSettings.getCalculationRound(ctxt)? 1 : 0;
+                    AlarmScheduler.changeCalculatonMethod(ctxt, method);
+                }
+            }
+            else if (key.equals("pref_calc_round")) {
+                // Trigger new cacl if value change
+                boolean oldRound  = UserSettings.getCalculationRound(preference.getContext());
+                boolean newRound = stringValue.equals("true");
+                if (oldRound != newRound) {
+                    method.setMethod(UserSettings.getCalculationMethod(ctxt));
+                    method.round = newRound ? 1 : 0;
+                    AlarmScheduler.changeCalculatonMethod(ctxt, method);
+                }
+            }
+            else {
+                // For other preferences, set the summary to the value's
+                // simple string representation.
+                //preference.setSummary(stringValue);
+            }
+
+            return true;
+        }
+    };
+
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static class LocationsPreferenceFragment extends PreferenceFragment {
         @Override
@@ -210,15 +261,31 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             addPreferencesFromResource(R.xml.pref_locations);
             setHasOptionsMenu(true);
 
-            // Bind the summaries of EditText/List/Dialog/Ringtone preferences
-            // to their values. When their values change, their summaries are
-            // updated to reflect the new value, per the Android Design
-            // guidelines.
-//            bindPreferenceSummaryToValue(findPreference("example_text"));
-//            bindPreferenceSummaryToValue(findPreference("example_list"));
+            // Set pref_search_city summary to current user setting or default
+            Preference pref = (Preference) findPreference("pref_search_city");
+            Context ctxt = pref.getContext();
+            pref.setSummary(AlarmScheduler.getCityName(ctxt));
 
-            // TODO set pref_search_city summary to current user setting, otherwise default "pref_summary_search_city"
-            // TODO add a listener to be called when it changes (in Search city activity)
+            // bind listener to start SearchCity activity
+            pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                    @Override
+                    public boolean onPreferenceClick(Preference preference) {
+                        Log.i(TAG, "onPrefClick");
+                        startActivityForResult(preference.getIntent(), REQUEST_SEARCH_CITY);
+                        return true;
+                    }
+                   });
+
+            // Set method summary to current user setting or default
+            int index = UserSettings.getCalculationMethod(ctxt);
+            ListPreference listPref = (ListPreference) findPreference("pref_calc_method");
+            listPref.setSummary(index >= 0 ?
+                    listPref.getEntries()[index] : null);
+
+            listPref.setOnPreferenceChangeListener(sMethodChangeListener);
+
+            pref = (Preference) findPreference("pref_calc_round");
+            pref.setOnPreferenceChangeListener(sMethodChangeListener);
         }
 
         @Override
@@ -230,7 +297,23 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             }
             return super.onOptionsItemSelected(item);
         }
+
+        @Override
+        public void onActivityResult(int requestCode, int resultCode, Intent data) {
+            Log.i(TAG, "onActivityResult");
+            if (requestCode == REQUEST_SEARCH_CITY) {
+                if(resultCode == Activity.RESULT_OK){
+                    Preference pref = (Preference) findPreference("pref_search_city");
+                    pref.setSummary(data.getStringExtra("name"));
+
+                    AlarmScheduler.changeCalculatonMethod(getActivity(), null);
+                }
+                //else if (resultCode == Activity.RESULT_CANCELED) {
+                //}
+            }
+        }
     }
+
 
     /**
      * This fragment shows notification preferences only. It is used when the
@@ -284,6 +367,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      * This fragment shows data and sync preferences only. It is used when the
      * activity is showing a two-pane settings UI.
      */
+/*
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static class DataSyncPreferenceFragment extends PreferenceFragment {
         @Override
@@ -309,4 +393,5 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             return super.onOptionsItemSelected(item);
         }
     }
+*/
 }

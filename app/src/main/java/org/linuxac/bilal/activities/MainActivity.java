@@ -1,6 +1,6 @@
 /*
  *  Copyright © 2015 Djalel Chefrour
- * 
+ *
  *  This file is part of Bilal.
  *
  *  Bilal is free software: you can redistribute it and/or modify
@@ -120,8 +120,9 @@ public class MainActivity extends AppCompatActivity implements
         // before enabling both receivers by enabling Athan notification in the Settings activity.
 
         PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
+        PreferenceManager.setDefaultValues(this, R.xml.pref_locations, false);
         PreferenceManager.setDefaultValues(this, R.xml.pref_notification, false);
-        PreferenceManager.setDefaultValues(this, R.xml.pref_data_sync, false);
+        //PreferenceManager.setDefaultValues(this, R.xml.pref_data_sync, false);
 
         // TODO force SettingsActivity on 1st run with an intermediate explanatory dialogue
 
@@ -307,12 +308,13 @@ public class MainActivity extends AppCompatActivity implements
         int i, j;
 
         if (AlarmScheduler.prayerTimesNotAvailable()) {
-            mTextViewCity.setText(getString(R.string.not_available));
+            //mTextViewCity.setText(getString(R.string.location_unknown));
+            //mTextViewDate.setText(getString(R.string.set_location));
             return;
         }
 
         GregorianCalendar now = new GregorianCalendar();
-        mTextViewCity.setText(AlarmScheduler.sCityName);
+        mTextViewCity.setText(AlarmScheduler.getCityName(this));
         mTextViewDate.setText(DateFormat.getDateInstance().format(now.getTime()));
 
         for (i = 0; i < Prayer.NB_PRAYERS + 1; i++) {

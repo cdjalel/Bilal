@@ -1,6 +1,6 @@
 /*
  *  Copyright © 2015 Djalel Chefrour
- * 
+ *
  *  This file is part of Bilal.
  *
  *  Bilal is free software: you can redistribute it and/or modify
@@ -101,7 +101,7 @@ public class AlarmReceiver extends BroadcastReceiver
         String contentTitle = String.format(context.getString(R.string.time_for),
                 PrayerTimes.getName(context, index));
         String contentTxt = String.format(context.getString(R.string.time_in),
-                AlarmScheduler.sCityName); // TODO UserSetting for city name
+                AlarmScheduler.getCityName(context));
         String actionTxt = context.getString(R.string.stop_athan);
 
         NotificationCompat.Builder notificationBuilder =
