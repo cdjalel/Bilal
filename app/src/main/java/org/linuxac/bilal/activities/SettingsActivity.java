@@ -168,7 +168,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      */
     protected boolean isValidFragment(String fragmentName) {
         return PreferenceFragment.class.getName().equals(fragmentName)
-                || GeneralPreferenceFragment.class.getName().equals(fragmentName)
+                //|| GeneralPreferenceFragment.class.getName().equals(fragmentName)
                 || LocationsPreferenceFragment.class.getName().equals(fragmentName)
                 //|| DataSyncPreferenceFragment.class.getName().equals(fragmentName)
                 || NotificationPreferenceFragment.class.getName().equals(fragmentName);
@@ -178,6 +178,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      * This fragment shows general preferences only. It is used when the
      * activity is showing a two-pane settings UI.
      */
+/*
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static class GeneralPreferenceFragment extends PreferenceFragment {
         @Override
@@ -204,7 +205,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             return super.onOptionsItemSelected(item);
         }
     }
-
+*/
     private static Preference.OnPreferenceChangeListener sMethodChangeListener = new Preference.OnPreferenceChangeListener() {
         @Override
         public boolean onPreferenceChange(Preference preference, Object value) {
@@ -220,14 +221,12 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 int index = listPreference.findIndexOfValue(stringValue);
 
                 // Set the summary to reflect the new value.
-                preference.setSummary(
-                        index >= 0
-                                ? listPreference.getEntries()[index]
-                                : null);
+                preference.setSummary(index >= 0 ?
+                            listPreference.getEntries()[index] : null);
 
                 // Trigger new cacl if value change
                 int oldMethodIdx = UserSettings.getCalculationMethod(preference.getContext());
-                if (oldMethodIdx != index) {
+                if (oldMethodIdx != ++index) {
                     method.setMethod(index);
                     method.round = UserSettings.getCalculationRound(ctxt)? 1 : 0;
                     AlarmScheduler.changeCalculatonMethod(ctxt, method);
@@ -279,8 +278,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // Set method summary to current user setting or default
             int index = UserSettings.getCalculationMethod(ctxt);
             ListPreference listPref = (ListPreference) findPreference("pref_calc_method");
-            listPref.setSummary(index >= 0 ?
-                    listPref.getEntries()[index] : null);
+            listPref.setSummary(index > 0 ? listPref.getEntries()[index - 1] : null);
 
             listPref.setOnPreferenceChangeListener(sMethodChangeListener);
 
