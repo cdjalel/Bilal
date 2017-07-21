@@ -5,7 +5,7 @@
     <SwitchPreference
         android:key="notifications_prayer_time"
         android:title="@string/pref_title_prayer_time"
-        android:defaultValue="false" />
+        android:defaultValue="true" />
 
     <SwitchPreference
         android:dependency="notifications_prayer_time"
