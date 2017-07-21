@@ -140,6 +140,31 @@
 
     <string name="pref_header_locations">Locations</string>
     <string name="pref_title_search_city">City</string>
-    <string name="pref_summary_search_city">Undefined</string>
+    <string name="pref_undefined_city">Undefined</string>
 
+    <string name="pref_title_method">Calculation method</string>
+    <string-array name="pref_method_list_titles">
+        <item>Egypt survey</item>
+        <item>Karachi Shaafi</item>
+        <item>Karachi Hanafi</item>
+        <item>North America</item>
+        <item>Muslim world league</item>
+        <item>Umm Alqurra</item>
+        <item>Fixed isha</item>
+        <item>Egypt new</item>
+    </string-array>
+    <string-array name="pref_method_list_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+    </string-array>
+
+    <string name="pref_title_round">Rounding seconds</string>
+
+    <!-- TODO: add mathab an other config. from Method.java -->
 </resources>
