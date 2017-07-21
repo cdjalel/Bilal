@@ -58,6 +58,8 @@ public class SearchCityActivity extends AppCompatActivity
 
         SearchView searchView = (SearchView) findViewById(R.id.search_city_box);
         searchView.setOnQueryTextListener(this);
+        searchView.setIconified(false);
+        searchView.setQueryHint(getString(R.string.search_city));      // XML tag has a bug
 
         // Get the intent, verify the action and get the query
         Intent intent = getIntent();
