@@ -40,10 +40,8 @@ public class CityListAdapter extends BaseAdapter {
 
         City city = mCities.get(i);
 
-        TextView name = (TextView) v.findViewById(R.id.tv_city_name);
-        name.setText(city.getName());
-        TextView time = (TextView) v.findViewById(R.id.tv_country_name);
-        time.setText("(" + city.getCountry() + ", " + city.getRegion() + ")");
+        TextView tv = (TextView) v.findViewById(R.id.tv_city);
+        tv.setText(city.getName() + " (" + city.getCountry() + ", " + city.getRegion() + ")");
 
         return v;
     }
