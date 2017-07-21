@@ -72,13 +72,25 @@ public class SearchCityActivity extends AppCompatActivity
 
     @Override
     public boolean onQueryTextSubmit(String query) {
-        searchCity(query);
+        Log.i(TAG, "onQueryTextSubmit: " + query);
+        if (null != query && !query.isEmpty()) {
+            searchCity(query);
+        }
+        else {
+            mCityListView.setAdapter(null);
+        }
         return true;
     }
 
     @Override
     public boolean onQueryTextChange(String newText) {
-        searchCity(newText);
+        Log.i(TAG, "onQueryTextChange: " + query);
+        if (null != query && !query.isEmpty()) {
+            searchCity(query);
+        }
+        else {
+            mCityListView.setAdapter(null);
+        }
         return true;
     }
 
@@ -90,7 +102,7 @@ public class SearchCityActivity extends AppCompatActivity
             searchCity(query);
         }
         else if (Intent.ACTION_VIEW.equals(action)) {
-            // TODO? reset search box and list content
+            mCityListView.setAdapter(null);
         }
     }
 
@@ -110,9 +122,16 @@ public class SearchCityActivity extends AppCompatActivity
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
         City item = (City) mCityListAdapter.getItem(i);
-        // mPreference.setCity(item); // TODO change User Setting
-        // TODO adapt setting view preference summary pref_search_city somehow
-        // setResult(321); TODO rm
+        Log.i(TAG, "onItemClick city: " + item);
+
+        // save new value // TODO check if new is available changeCalculatonMethod()
+        UserSettings.setCityID(this, item.getID());
+
+        // adapt preference summary
+        Intent resultIntent = new Intent();// TODO getIntent();
+        resultIntent.putExtra("name", item.getName());
+        //resultIntent.putExtra("id", item.getID());
+        setResult(Activity.RESULT_OK, resultIntent);
         finish();
     }
 
