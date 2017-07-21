@@ -109,7 +109,7 @@
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginTop="4dp"
-        android:text=""
+        android:text="@string/set_location"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         android:textColor="@color/colorDate"
         app:layout_constraintLeft_toLeftOf="@+id/guideline"
