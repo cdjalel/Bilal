@@ -41,7 +41,131 @@
     <string name="nextfajr_ar">فجر الغد</string>
     <string name="nextfajr_en">Next fajr</string>
     <string name="nextfajr">@string/nextfajr_ar</string>
-    <string name="pref_default_display_name">محمد علي</string>
-    <string name="pref_header_notifications">التنبيهات</string>
 
+    <!-- Strings related to Settings -->
+
+    <!-- Example General settings -->
+    <string name="pref_header_general">عام</string>
+
+    <string name="pref_title_social_recommendations">Enable social recommendations</string>
+    <string name="pref_description_social_recommendations">Recommendations for people to contact
+        based on your message history
+    </string>
+
+    <string name="pref_title_display_name">Display name</string>
+    <string name="pref_default_display_name">محمد علي</string>
+
+    <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
+    <string-array name="pref_example_list_titles">
+        <item>Always</item>
+        <item>When possible</item>
+        <item>Never</item>
+    </string-array>
+    <string-array name="pref_example_list_values">
+        <item>1</item>
+        <item>0</item>
+        <item>-1</item>
+    </string-array>
+
+    <!-- Example settings for Data & Sync -->
+    <string name="pref_header_data_sync">Data &amp; sync</string>
+
+    <string name="pref_title_sync_frequency">Sync frequency</string>
+    <string-array name="pref_sync_frequency_titles">
+        <item>15 minutes</item>
+        <item>30 minutes</item>
+        <item>1 hour</item>
+        <item>3 hours</item>
+        <item>6 hours</item>
+        <item>Never</item>
+    </string-array>
+    <string-array name="pref_sync_frequency_values">
+        <item>15</item>
+        <item>30</item>
+        <item>60</item>
+        <item>180</item>
+        <item>360</item>
+        <item>-1</item>
+    </string-array>
+
+    <string-array name="list_preference_entries">
+        <item>Entry 1</item>
+        <item>Entry 2</item>
+        <item>Entry 3</item>
+    </string-array>
+
+    <string-array name="list_preference_entry_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+
+    <string-array name="multi_select_list_preference_default_value" />
+
+    <string name="pref_title_system_sync_settings">System sync settings</string>
+
+    <!-- Notifications -->
+    <string name="pref_header_notifications">التنبيه</string>
+
+    <string name="pref_title_prayer_time">دخول وقت الصلاة</string>
+
+    <string name="pref_title_athan">الآذان</string>
+
+    <string name="pref_title_muezzin">المؤذن</string>
+    <string-array name="pref_muezzin_list_titles">
+        <item>عبد الباسط عبد الصمد - مصر</item>
+        <item>علي ملا - مكة</item>
+        <item>ناصر القطامي - الرياض</item>
+        <item>عبد المجيد السريحي - المدينة</item>
+        <item>إسماعيل جُشر - تركيا</item>
+        <item>كفاح عيسى - فلسطين</item>
+        <item>رياض آيت حمو - الجزائر</item>
+    </string-array>
+    <string-array name="pref_muezzin_list_values">
+        <item>ABDELBASET</item>
+        <item>ALIMULLA</item>
+        <item>ALQATAMI</item>
+        <item>ASEREHY</item>
+        <item>JOSHAR</item>
+        <item>KEFAH</item>
+        <item>RIAD</item>
+    </string-array>
+
+    <string name="pref_title_notification">تنبيه أعلى الشاشة</string>
+
+    <string name="pref_title_vibrate">اهتزاز</string>
+
+    <!--Location settings-->
+    <string name="btn_search_city">بحث</string>
+    <string name="search_city">ابحث عن مدينة</string>
+
+    <string name="pref_header_locations">الموقع</string>
+    <string name="pref_title_search_city">المدينة</string>
+    <string name="pref_undefined_city">غير مُحددة</string>
+
+    <string name="pref_title_method">طريقة الحساب</string>
+    <string-array name="pref_method_list_titles">
+        <item>الهيئة المصرية العامة للمساحة (قديم)</item>
+        <item>جامعة العلوم الإسلامية بكراتشي (شافعي)</item>
+        <item>جامعة العلوم الإسلامية بكراتشي (حنفي)</item>
+        <item>الاتحاد الإسلامي بأمريكا الشمالية</item>
+        <item>رابطة العالم الإسلامي</item>
+        <item>جامعة أم القرى</item>
+        <item>وقت ثابت بين المغرب والعشاء (دائما 90د)</item>
+        <item>الهيئة المصرية العامة للمساحة (جديد)</item>
+    </string-array>
+    <string-array name="pref_method_list_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+    </string-array>
+
+    <string name="pref_title_round">تقريب الثواني</string>
+
+    <!-- TODO: add mathab an other config. from Method.java -->
 </resources>
