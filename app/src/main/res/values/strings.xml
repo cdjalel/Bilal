@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Bilal</string>
     <string name="title_activity_bilal">Bilal</string>
@@ -130,7 +131,7 @@
         <item>RIAD</item>
     </string-array>
 
-    <string name="pref_title_notification">Screen notification</string>
+    <string name="pref_title_notification">Screen and smart watch messages</string>
 
     <string name="pref_title_vibrate">Vibrate</string>
 
@@ -150,7 +151,7 @@
         <item>Islamic Society of North America</item>
         <item>Muslim World League (MWL)</item>
         <item>Umm Al-Qura University</item>
-        <item>Fixed Ishaa Interval (always 90)</item>
+        <item>Fixed Ishaa Interval (always 90m)</item>
         <item>Egyptian General Authority of Survey (New)</item>
     </string-array>
     <string-array name="pref_method_list_values">
