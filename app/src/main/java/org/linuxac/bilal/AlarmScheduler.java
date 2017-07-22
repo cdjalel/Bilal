@@ -113,7 +113,6 @@ public class AlarmScheduler {
     public static String getCityName(Context context)
     {
         if (BuildConfig.DEBUG && null == sPrayerTimes) {
-            Log.w(TAG, "sPrayerTimes == null");
             return context.getString(R.string.pref_undefined_city);
         }
         return sPrayerTimes.getCityName(context);
@@ -133,14 +132,25 @@ public class AlarmScheduler {
         disableBootAndTimeChangeReceiver(context);
     }
 
-    public static void changeCalculatonMethod(Context context, Method method)
+    public static void handleLocationChange(Context context, Method method)
     {
-        sLastTime = sLongLongTimeAgo;
+        sLastTime = sLongLongTimeAgo;       // force recalculation of prayer times
         sMethod = method;
         updatePrayerTimes(context, false);
     }
 
-/*
+    public static void handleBootComplete(Context context)
+    {
+        updatePrayerTimes(context, false);
+    }
+
+    public static void handleTimeChange(Context context)
+    {
+        sLastTime = sLongLongTimeAgo;       // force recalculation of prayer times
+        cancelAlarm(context);     // avoid unwanted alarm trigger from AlarmService
+        updatePrayerTimes(context, false);
+    }
+
 
     private static void logBootAndTimeChangeReceiverSetting(Context context)
     {
@@ -149,7 +159,6 @@ public class AlarmScheduler {
         Log.d(TAG, "BootAndTimeChangeReceiver Setting = " +
                 pm.getComponentEnabledSetting(receiver));
     }
-*/
 
     private static void enableBootAndTimeChangeReceiver(Context context)
     {
@@ -186,30 +195,26 @@ public class AlarmScheduler {
      */
     public static void updatePrayerTimes(Context context, boolean enableAlarm)
     {
-        Log.i(TAG, "updatePrayerTimes(..., " + enableAlarm + ")");
+        Log.i(TAG, "--- updatePrayerTimes(..., " + enableAlarm + ")");
 
-//        logBootAndTimeChangeReceiverSetting(context);
+        if (BuildConfig.DEBUG) {
+            logBootAndTimeChangeReceiverSetting(context);
+        }
 
-        LocationsDBHelper dbHelper = new LocationsDBHelper(context);
-        City city = dbHelper.getCity(UserSettings.getCityID(context));
-        if (null == city) {
+        int cityID = UserSettings.getCityID(context);
+        if (-1 == cityID) {
             Log.w(TAG, "Location not set! Nothing todo until user starts UI.");
             return;
         }
 
-        // In SettingsActivity, listener calls us before setting is committed to shared prefs.
-        boolean setAlarm = enableAlarm || UserSettings.isAlarmEnabled(context);
         GregorianCalendar nowCal = new GregorianCalendar();
-        if (sameDay(sLastTime, nowCal)) {
-            int oldNext = sPrayerTimes.getNextIndex();
+        // next test includes location & time change see handlers above
+        if (null != sPrayerTimes && sameDay(sLastTime, nowCal)) {
             sPrayerTimes.updateCurrent(nowCal);
-            if (setAlarm && !enableAlarm && oldNext == sPrayerTimes.getNextIndex()) {
-                setAlarm = false;
-                Log.i(TAG, "Keep old alarm.");
-            }
             Log.d(TAG, "Call it a day :)");
         }
         else {
+            City city = (new LocationsDBHelper(context)).getCity(cityID);
             calcPrayerTimes(context, nowCal, city);
         }
 
@@ -217,7 +222,8 @@ public class AlarmScheduler {
         Log.d(TAG, "Current prayer: " + sPrayerTimes.getCurrentName(context));
         Log.i(TAG, "Next prayer: " + sPrayerTimes.getNextName(context));
 
-        if (setAlarm) {
+        // In SettingsActivity, listener calls us before setting is committed to shared prefs.
+        if (enableAlarm || UserSettings.isAlarmEnabled(context)) {
             scheduleAlarm(context);
         }
     }
@@ -230,10 +236,9 @@ public class AlarmScheduler {
         Date today = nowCal.getTime();
         GregorianCalendar[] ptCal = new GregorianCalendar[Prayer.NB_PRAYERS + 1];
 
+
         // http://dateandtime.info/citycoordinates.php?id=2479215
-        PTLocation location = new PTLocation(
-            city.getLatitude(),
-            city.getLongitude(),
+        PTLocation location = new PTLocation(city.getLatitude(), city.getLongitude(),
             1, 0, 697, 1010, 10);
 
         if (null == sMethod) {
@@ -243,6 +248,7 @@ public class AlarmScheduler {
         }
 
         Log.d(TAG, "Last time: " + PrayerTimes.format(sLastTime, sMethod.round));
+        sLastTime = nowCal;
 
         /* Call the main library function to fill the Prayer times */
         PrayerTime[] pt = prayer.getPrayerTimes(location, sMethod, today);
@@ -263,24 +269,19 @@ public class AlarmScheduler {
         Log.d(TAG, context.getString(R.string.nextfajr) + " " + PrayerTimes.format(ptCal[i], sMethod.round));
 
         sPrayerTimes = new PrayerTimes(nowCal, ptCal, city.getName(), sMethod.round == 1);
-        sLastTime = nowCal;
         sMethod = null;
     }
 
     private static PendingIntent createAlarmIntent(Context context)
     {
+        int idx = null == sPrayerTimes? 2 : sPrayerTimes.getNextIndex();
         Intent intent = new Intent(context, AlarmReceiver.class);
-        intent.putExtra(AlarmReceiver.EXTRA_PRAYER_INDEX, "" + sPrayerTimes.getNextIndex());
+        intent.putExtra(AlarmReceiver.EXTRA_PRAYER_INDEX, "" + idx);
         return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
     }
 
     private static void cancelAlarm(Context context)
     {
-        if (null == sPrayerTimes) {
-            Log.i(TAG, "No alarm to cancel!");
-            return;
-        }
-
         if (null != sAlarmIntent) {
             sAlarmIntent.cancel();
         }

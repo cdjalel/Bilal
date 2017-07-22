@@ -229,7 +229,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 if (oldMethodIdx != ++index) {
                     method.setMethod(index);
                     method.round = UserSettings.getCalculationRound(ctxt)? 1 : 0;
-                    AlarmScheduler.changeCalculatonMethod(ctxt, method);
+                    AlarmScheduler.handleLocationChange(ctxt, method);
                 }
             }
             else if (key.equals("pref_calc_round")) {
@@ -239,7 +239,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 if (oldRound != newRound) {
                     method.setMethod(UserSettings.getCalculationMethod(ctxt));
                     method.round = newRound ? 1 : 0;
-                    AlarmScheduler.changeCalculatonMethod(ctxt, method);
+                    AlarmScheduler.handleLocationChange(ctxt, method);
                 }
             }
             else {
@@ -304,7 +304,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                     Preference pref = (Preference) findPreference("pref_search_city");
                     pref.setSummary(data.getStringExtra("name"));
 
-                    AlarmScheduler.changeCalculatonMethod(getActivity(), null);
+                    AlarmScheduler.handleLocationChange(getActivity(), null);
                 }
                 //else if (resultCode == Activity.RESULT_CANCELED) {
                 //}

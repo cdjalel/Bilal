@@ -36,10 +36,13 @@ public class BootAndTimeChangeReceiver extends BroadcastReceiver {
         String action = intent.getAction();
         Log.i(TAG, action);
 
-        /*if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
-            // special handling for boot?
-        }*/
-
-        AlarmScheduler.updatePrayerTimes(context, false);
+        if (action.equals(Intent.ACTION_BOOT_COMPLETED))
+        {
+            AlarmScheduler.handleBootComplete(context);
+        }
+        else // TIME_SET
+        {
+            AlarmScheduler.handleTimeChange(context);
+        }
     }
 }

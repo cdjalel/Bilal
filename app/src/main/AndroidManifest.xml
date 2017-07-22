@@ -51,7 +51,7 @@
         <receiver android:name=".receivers.AlarmReceiver" />
         <receiver
             android:name=".receivers.BootAndTimeChangeReceiver"
-            android:enabled="false"> <!-- disabled until user sets location -->
+            android:enabled="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.TIME_SET" />
