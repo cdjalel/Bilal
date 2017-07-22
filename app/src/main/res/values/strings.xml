@@ -6,8 +6,7 @@
     <string name="time_for">Time for %s prayer</string>
     <string name="time_in">In %s</string>
     <string name="stop_athan">Stop Athan</string>
-    <string name="undefined_location">Undefined location</string>
-    <string name="set_location">Configure it in Settings</string>
+    <string name="set_location">Tap to set location</string>
     <string name="zero_hour">00:00</string>
 
     <string name="fajr_ar">الفجر</string>

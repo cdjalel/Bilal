@@ -20,6 +20,7 @@
 
 package org.linuxac.bilal.activities;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -40,6 +41,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
+import android.view.View;
 import android.widget.TextView;
 //import android.widget.Toast;
 
@@ -64,27 +66,31 @@ public class MainActivity extends AppCompatActivity implements
         ConnectionCallbacks, OnConnectionFailedListener {
 
     public static final String UPDATE_VIEWS = "org.linuxac.bilal.UPDATE";
-    protected static final String TAG = "MainActivity";
+    private static final String TAG = "MainActivity";
 
-    protected static int BLINK_INTERVAL = 5 * 60 * 1000;
-    protected static int BLINK_DURATION = 500;
-    protected static int BLINK_COUNT    = BLINK_INTERVAL/BLINK_DURATION;
+    private static int BLINK_INTERVAL = 5 * 60 * 1000;
+    private static int BLINK_DURATION = 500;
+    private static int BLINK_COUNT    = BLINK_INTERVAL/BLINK_DURATION;
 
-    protected GoogleApiClient mGoogleApiClient;
-    protected Location mLastLocation;
+    private static final int REQUEST_SEARCH_CITY = 2;
 
-    protected Boolean mReceiverRegistered = false;
-    protected BroadcastReceiver mUpdateViewsReceiver = null;
+    private GoogleApiClient mGoogleApiClient;
+    private Location mLastLocation;
 
-    protected boolean mIsJumu3a = false;
-    protected int mImportant = -1;
+    private Boolean mReceiverRegistered = false;
+    private BroadcastReceiver mUpdateViewsReceiver = null;
 
-    protected TextView mTextViewCity;
-    protected TextView mTextViewDate;
-    protected TextView[][] mTextViewPrayers;
+    private boolean mIsJumu3a = false;
+    private int mImportant = -1;
+
+    private TextView mTextViewCity;
+    private TextView mTextViewDate;
+    private TextView[][] mTextViewPrayers;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "onCreate");
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -106,11 +112,11 @@ public class MainActivity extends AppCompatActivity implements
         }
         buildGoogleApiClient();     // needed for Location
 
-        // TODO: use case: 1st run opens settings to let user pick a location (from DB or
-        // TODO automatically). Then Athan is enabled by default until user turns it off.
-        // TODO Prayer time calc. method is also set automatically (from DB based on location
-        // TODO country), unless manually overidden by user, or when DB data is missing, UI must
+
+        // TODO Prayer time calc. method is also set automatically (from DB based on country).
+        // TODO Unless manually overidden by user, or when DB data is missing, UI must
         // TODO ask user explicitly
+
         // The other two entry points of the app, which run when MainActivity usually does not, are:
         //      - the alarm receiver called at prayer time
         //      - the boot complete and time change receiver
@@ -124,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements
         PreferenceManager.setDefaultValues(this, R.xml.pref_notification, false);
         //PreferenceManager.setDefaultValues(this, R.xml.pref_data_sync, false);
 
-        // TODO force SettingsActivity on 1st run with an intermediate explanatory dialogue
+        // TODO force SearchCityActivity on 1st run with an intermediate explanatory dialogue
 
         initReceiver();
         loadViews();
@@ -169,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    protected synchronized void buildGoogleApiClient() {
+    private synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
@@ -200,6 +206,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     protected void onStart() {
+        Log.d(TAG, "onStart");
         super.onStart();
         mGoogleApiClient.connect();
     }
@@ -213,6 +220,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     protected void onResume() {
+        Log.d(TAG, "OnResume");
         super.onResume();
         if (UserSettings.isAlarmEnabled(this) && !mReceiverRegistered) {
             registerReceiver(mUpdateViewsReceiver, new IntentFilter(UPDATE_VIEWS));
@@ -261,7 +269,7 @@ public class MainActivity extends AppCompatActivity implements
         mGoogleApiClient.connect();
     }
 
-    protected void loadViews() {
+    private void loadViews() {
         mTextViewCity = (TextView) findViewById(R.id.textViewCity);
         mTextViewDate = (TextView) findViewById(R.id.textViewDate);
         mTextViewPrayers = new TextView[][] {
@@ -301,6 +309,28 @@ public class MainActivity extends AppCompatActivity implements
                     (TextView) findViewById(R.id.textViewNextFajrEN)
             }
         };
+
+
+        View.OnClickListener cityListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(v.getContext(), SearchCityActivity.class);
+                startActivityForResult(intent, REQUEST_SEARCH_CITY);
+            }
+        };
+        mTextViewCity.setOnClickListener(cityListener);
+        mTextViewDate.setOnClickListener(cityListener);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG, "onActivityResult");
+        if (requestCode == REQUEST_SEARCH_CITY) {
+            if(resultCode == Activity.RESULT_OK){
+                AlarmScheduler.handleLocationChange(this, null);
+                //updatePrayerViews(); // This is called by OnResume anyway
+            }
+        }
     }
 
     private void updatePrayerViews()

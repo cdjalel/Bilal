@@ -90,7 +90,7 @@ public class SearchCityActivity extends AppCompatActivity
 
     @Override
     public boolean onQueryTextChange(String newText) {
-        Log.i(TAG, "onQueryTextChange: " + newText);
+        Log.d(TAG, "onQueryTextChange: " + newText);
         if (null != newText && !newText.isEmpty()) {
             searchCity(newText);
         }
@@ -131,13 +131,13 @@ public class SearchCityActivity extends AppCompatActivity
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
         City item = (City) mCityListAdapter.getItem(i);
-        Log.i(TAG, "onItemClick city: " + item);
+        Log.i(TAG, "Selected city: " + item);
 
         // save new value // TODO check if new is available changeCalculatonMethod()
         UserSettings.setCityID(this, item.getId());
 
         // adapt preference summary
-        Intent resultIntent = new Intent();// TODO getIntent();
+        Intent resultIntent = new Intent();
         resultIntent.putExtra("name", item.getName());
         //resultIntent.putExtra("id", item.getId());
         setResult(Activity.RESULT_OK, resultIntent);

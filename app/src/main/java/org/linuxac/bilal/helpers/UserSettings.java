@@ -145,7 +145,7 @@ public class UserSettings {
     public static void setCityID(Context context, int id) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putInt("city_id", id); // TODO handle locales -> save city ID in the DB then query DB
+        editor.putInt("city_id", id); // TODO handle locales -> save city ID in prefs DB then query DB
         editor.apply();
     }
 

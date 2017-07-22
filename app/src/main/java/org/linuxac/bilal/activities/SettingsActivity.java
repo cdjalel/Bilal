@@ -60,7 +60,7 @@ import org.arabeyes.prayertime.Method;
 public class SettingsActivity extends AppCompatPreferenceActivity {
     private static final String TAG = "SettingsActivity";
 
-    public static final int REQUEST_SEARCH_CITY = 1;
+    private static final int REQUEST_SEARCH_CITY = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -269,7 +269,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                     @Override
                     public boolean onPreferenceClick(Preference preference) {
-                        Log.i(TAG, "onPrefClick");
+                        Log.d(TAG, "onPrefClick");
                         startActivityForResult(preference.getIntent(), REQUEST_SEARCH_CITY);
                         return true;
                     }
@@ -298,7 +298,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
         @Override
         public void onActivityResult(int requestCode, int resultCode, Intent data) {
-            Log.i(TAG, "onActivityResult");
+            Log.d(TAG, "onActivityResult");
             if (requestCode == REQUEST_SEARCH_CITY) {
                 if(resultCode == Activity.RESULT_OK){
                     Preference pref = (Preference) findPreference("pref_search_city");
