@@ -162,7 +162,6 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
             return null;
         }
 
-        // TODO use INNER JOIN here & below
         String query =
                 "SELECT " +
                     "locations.id, " +
@@ -172,10 +171,10 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
                     "locations.latitude, " +
                     "locations.longitude " +
                 "FROM " +
-                    "locations, countries " +
+                    "locations " +
+                "INNER JOIN countries ON locations.id_contry = countries.id " +
                 "WHERE " +
-                    "locations.id_contry = countries.id " +
-                    "AND en like '%" + nameEn + "%';";
+                    "en like '%" + nameEn + "%';";
 
         Cursor cursor = mDatabase.rawQuery(query, null);
 
@@ -212,9 +211,9 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
                             "locations.latitude, " +
                             "locations.longitude " +
                         "FROM " +
-                            "locations, countries " +
+                            "locations " +
+                        "INNER JOIN countries ON locations.id_contry = countries.id " +
                         "WHERE " +
-                            "locations.id_contry = countries.id AND " +
                             "locations.latitude between " + (lat - 0.08) + " and " + (lat + 0.08) + " AND " +
                             "locations.longitude between " + (lng - 0.08) + " and " + (lng + 0.08) + ";";
 
@@ -291,9 +290,9 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
                     "locations.latitude, " +
                     "locations.longitude " + // TODO alt
                 "FROM " +
-                    "locations, countries " +
+                    "locations " +
+                "INNER JOIN countries ON locations.id_contry = countries.id " +
                 "WHERE " +
-                    "locations.id_contry = countries.id AND " +
                     "countries.nameEN like '%" + country + "%';";
 
         Cursor cursor = mDatabase.rawQuery(query, null);
