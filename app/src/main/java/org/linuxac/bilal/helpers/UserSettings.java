@@ -151,7 +151,7 @@ public class UserSettings {
 
     public static int getCalculationMethod(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        String method = sharedPref.getString("locations_method", String.valueOf(Method.MUSLIM_LEAGUE));
+        String method = sharedPref.getString("locations_method", String.valueOf(Method.V2_MWL));
         Log.w(TAG, "getCalculationMethod: " + method);
         return Integer.parseInt(method);
     }

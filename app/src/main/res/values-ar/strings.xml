@@ -145,24 +145,22 @@
 
     <string name="pref_title_method">طريقة الحساب</string>
     <string-array name="pref_method_list_titles">
-        <item>الهيئة المصرية العامة للمساحة (قديم)</item>
-        <item>جامعة العلوم الإسلامية بكراتشي (شافعي)</item>
-        <item>جامعة العلوم الإسلامية بكراتشي (حنفي)</item>
-        <item>الاتحاد الإسلامي بأمريكا الشمالية</item>
         <item>رابطة العالم الإسلامي</item>
+        <item>الهيئة المصرية للمساحة</item>
         <item>جامعة أم القرى</item>
-        <item>وقت ثابت بين المغرب والعشاء (دائما 90د)</item>
-        <item>الهيئة المصرية العامة للمساحة (جديد)</item>
+        <item>جامعة العلوم الإسلامية بكراتشي</item>
+        <item>الاتحاد الإسلامي بأمريكا الشمالية</item>
+        <item>اتحاد المنظمات الإسلامية بفرنسا</item>
+        <item>وزارة الأوقاف والشؤون الإسلامية بالكويت</item>
     </string-array>
     <string-array name="pref_method_list_values">
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-        <item>4</item>
-        <item>5</item>
-        <item>6</item>
-        <item>7</item>
-        <item>8</item>
+        <item>10</item>
+        <item>11</item>
+        <item>11</item>
+        <item>13</item>
+        <item>14</item>
+        <item>15</item>
+        <item>16</item>
     </string-array>
 
     <string name="pref_title_round">تقريب الثواني</string>

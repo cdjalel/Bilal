@@ -15,7 +15,7 @@
     <ListPreference
         android:key="locations_method"
         android:title="@string/pref_title_method"
-        android:defaultValue="5"
+        android:defaultValue="10"
         android:entries="@array/pref_method_list_titles"
         android:entryValues="@array/pref_method_list_values"
         android:negativeButtonText="@null"

@@ -213,8 +213,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                             listPreference.getEntries()[index] : null);
 
                 // Trigger new cacl if value change
-                int oldMethodIdx = UserSettings.getCalculationMethod(preference.getContext());
-                if (oldMethodIdx != ++index) {
+                index += Method.V2_MWL;
+                int oldMethodIdx = UserSettings.getCalculationMethod(ctxt);
+                if (oldMethodIdx != index) {
                     Log.d(TAG, "New calc method: " + index);
                     method.setMethod(index);
                     method.round = UserSettings.getCalculationRound(ctxt)? 1 : 0;
@@ -223,7 +224,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             }
             else if (key.equals("locations_rounding")) {
                 // Trigger new cacl if value change
-                boolean oldRound  = UserSettings.getCalculationRound(preference.getContext());
+                boolean oldRound  = UserSettings.getCalculationRound(ctxt);
                 boolean newRound = stringValue.equals("true");
                 if (oldRound != newRound) {
                     method.setMethod(UserSettings.getCalculationMethod(ctxt));
@@ -264,9 +265,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                    });
 
             // Set method summary to current user setting
-            int methodIdx = UserSettings.getCalculationMethod(ctxt);
             ListPreference listPref = (ListPreference) findPreference("locations_method");
-            listPref.setSummary(methodIdx > 0 ? listPref.getEntries()[methodIdx - 1] : null);
+            int index = UserSettings.getCalculationMethod(ctxt) - Method.V2_MWL;
+            listPref.setSummary(index >= 0 ? listPref.getEntries()[index] : null);
 
             listPref.setOnPreferenceChangeListener(sMethodChangeListener);
 

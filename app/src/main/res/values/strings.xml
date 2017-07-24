@@ -145,24 +145,22 @@
 
     <string name="pref_title_method">Calculation method</string>
     <string-array name="pref_method_list_titles">
-        <item>Egyptian General Authority of Survey (Old)</item>
-        <item>University of Islamic Sciences, Karachi (Shaf\'i)</item>
-        <item>University of Islamic Sciences, Karachi (Hanafi)</item>
-        <item>Islamic Society of North America</item>
         <item>Muslim World League</item>
-        <item>Umm Al-Qura University</item>
-        <item>Fixed Ishaa Interval (always 90m)</item>
-        <item>Egyptian General Authority of Survey (New)</item>
+        <item>Egyptian Survey Authority</item>
+        <item>Umm Al-Qurra University</item>
+        <item>Karachi Univ. of Islamic Sciences</item>
+        <item>Islamic Society of North America</item>
+        <item>Union of Islamic Org. in France</item>
+        <item>Kuwait Ministry of Awqaf</item>
     </string-array>
     <string-array name="pref_method_list_values">
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-        <item>4</item>
-        <item>5</item>
-        <item>6</item>
-        <item>7</item>
-        <item>8</item>
+        <item>10</item>
+        <item>11</item>
+        <item>11</item>
+        <item>13</item>
+        <item>14</item>
+        <item>15</item>
+        <item>16</item>
     </string-array>
 
     <string name="pref_title_round">Rounding seconds</string>
