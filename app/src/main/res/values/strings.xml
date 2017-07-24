@@ -54,17 +54,18 @@
     <string name="pref_title_display_name">Display name</string>
     <string name="pref_default_display_name">John Smith</string>
 
-    <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
-    <string-array name="pref_example_list_titles">
-        <item>Always</item>
-        <item>When possible</item>
-        <item>Never</item>
+    <string name="pref_title_language">Language</string>
+    <string-array name="pref_language_list_titles">
+        <item>Arabic</item>
+        <item>Arabic with eastern numerals</item>
+        <item>English</item>
     </string-array>
-    <string-array name="pref_example_list_values">
-        <item>1</item>
-        <item>0</item>
-        <item>-1</item>
+    <string-array name="pref_language_list_values">
+        <item>ar_DZ</item>
+        <item>ar_EG</item>
+        <item>en</item>
     </string-array>
+    <string name="pref_language_default_value">ar_DZ</string>
 
     <!-- Example settings for Data & Sync -->
     <string name="pref_header_data_sync">Data &amp; sync</string>
@@ -148,7 +149,7 @@
         <item>University of Islamic Sciences, Karachi (Shaf\'i)</item>
         <item>University of Islamic Sciences, Karachi (Hanafi)</item>
         <item>Islamic Society of North America</item>
-        <item>Muslim World League (MWL)</item>
+        <item>Muslim World League</item>
         <item>Umm Al-Qura University</item>
         <item>Fixed Ishaa Interval (always 90m)</item>
         <item>Egyptian General Authority of Survey (New)</item>
@@ -166,5 +167,5 @@
 
     <string name="pref_title_round">Rounding seconds</string>
 
-    <!-- TODO: add mathab an other config. from Method.java -->
+    <!-- TODO: add mathab and other config. from Method.java -->
 </resources>

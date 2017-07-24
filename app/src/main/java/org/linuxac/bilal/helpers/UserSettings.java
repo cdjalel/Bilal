@@ -159,4 +159,10 @@ public class UserSettings {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         return sharedPref.getBoolean("calc_round", true);
     }
+
+    public static String getLocale(Context context) {
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+        return sharedPref.getString("locale", "en"); // TODO ar_DZ
+    }
+
 }

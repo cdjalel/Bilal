@@ -43,6 +43,8 @@ import org.linuxac.bilal.receivers.BootAndTimeChangeReceiver;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import static android.content.Context.ALARM_SERVICE;
 
@@ -236,10 +238,14 @@ public class AlarmScheduler {
         Date today = nowCal.getTime();
         GregorianCalendar[] ptCal = new GregorianCalendar[Prayer.NB_PRAYERS + 1];
 
+        TimeZone tz = TimeZone.getTimeZone(city.getTimezone());
 
-        // http://dateandtime.info/citycoordinates.php?id=2479215
+        double gmtDiffHrs = tz.getOffset(nowCal.getTimeInMillis()) / (1000 * 3600);   // TODO nowCal TZ?
+        int dst = tz.inDaylightTime(nowCal.getTime()) ? 1 : 0;
+        Log.w(TAG, "TZ: gmtDiff = " + gmtDiffHrs + ", DST = " + dst);
+
         PTLocation location = new PTLocation(city.getLatitude(), city.getLongitude(),
-            1, 0, 697, 1010, 10);
+            gmtDiffHrs, dst, city.getAltitude(), 1010 /* pressure */, 10 /* temperature */);
 
         if (null == sMethod) {
             sMethod = new Method();
@@ -268,7 +274,7 @@ public class AlarmScheduler {
         ptCal[i].set(Calendar.SECOND, nextPT.second);
         Log.d(TAG, context.getString(R.string.nextfajr) + " " + PrayerTimes.format(ptCal[i], sMethod.round));
 
-        sPrayerTimes = new PrayerTimes(nowCal, ptCal, city.getName(), sMethod.round == 1);
+        sPrayerTimes = new PrayerTimes(nowCal, ptCal, city.toShortString(), sMethod.round == 1);
         sMethod = null;
     }
 

@@ -45,7 +45,7 @@ public class PrayerTimes {
 
     public PrayerTimes(GregorianCalendar now, GregorianCalendar[] all, String cityName, boolean rounded) {
         this.all = all;
-        this.cityName = new String(cityName);
+        this.cityName = cityName;
         this.rounded = rounded;
         findCurrent(now);
     }

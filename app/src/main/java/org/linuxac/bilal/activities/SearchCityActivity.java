@@ -133,7 +133,7 @@ public class SearchCityActivity extends AppCompatActivity
         City item = (City) mCityListAdapter.getItem(i);
         Log.i(TAG, "Selected city: " + item);
 
-        // save new value // TODO check if new is available changeCalculatonMethod()
+        // save new value
         UserSettings.setCityID(this, item.getId());
 
         // adapt preference summary

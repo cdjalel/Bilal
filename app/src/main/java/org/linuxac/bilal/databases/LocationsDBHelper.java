@@ -37,6 +37,7 @@
 package org.linuxac.bilal.databases;
 
 import org.linuxac.bilal.datamodels.City;
+import org.linuxac.bilal.helpers.UserSettings;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -50,17 +51,19 @@ import java.util.List;
 
 public class LocationsDBHelper extends SQLiteAssetHelper {
     private static final String TAG = "LocationsDBHelper";
-    private static final String DATABASE_NAME = "locations.db";
+    private static final String DATABASE_NAME = "locations.db3";
     private static final int DATABASE_VERSION = 1;
     private static final int DATABASE_CLOSED = -1;
     // Add tables and keys names
 
     private SQLiteDatabase mDatabase;
     private int mOpenMode = -1;
+    private final Context mContext;
 
     public LocationsDBHelper(Context context) {
 	    super(context, DATABASE_NAME, null, DATABASE_VERSION);
         mOpenMode = DATABASE_CLOSED;
+        mContext = context;
     }
 
     public void openReadable()
@@ -119,22 +122,25 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
             return null;
         }
 
+        String locale = UserSettings.getLocale(mContext).startsWith("ar")? "AR" : "EN";
+
         String query =
                 "SELECT " +
-                    "locations.id, " +
-                    "locations.nameEn, " +
-                    "countries.nameEN, " +
-                    "countries.regionEN, " +
-                    "locations.latitude, " +
-                    "locations.longitude " +
-                "FROM " +
-                    "locations " +
-                "INNER JOIN countries ON locations.id_contry = countries.id " +
-                "WHERE " +
-                    "locations.id = " + id + ";";
+                    "cities.cityId as id, " +
+                    "cities.name"+locale+", " +
+                    "countries.name"+locale + ", " +
+                    "timezones.nameEN, " +          // used for PT calculations not for display
+                    "cities.latitude, " +
+                    "cities.longitude, " +
+                    "cities.altitude " +
+                "FROM cities " +
+                "INNER JOIN countries ON cities.countryCode = countries.countryCode " +
+                "INNER JOIN timezones ON timezones.tzId = cities.tzId " +
+                "WHERE id = ?";
+        Log.d(TAG, query);
 
         openReadable();
-        Cursor cursor = mDatabase.rawQuery(query, null);
+        Cursor cursor = mDatabase.rawQuery(query, new String[] {String.valueOf(id)});
 
         City city = null;
         if (cursor.moveToNext()) {
@@ -145,7 +151,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
                     cursor.getString(3),
                     cursor.getFloat(4),
                     cursor.getFloat(5),
-                    0           // TODO
+                    cursor.getInt(6)
                 );
         }
         cursor.close();
@@ -155,28 +161,31 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
         return city;
     }
 
-    public List<City> searchCity(String nameEn)
+    public List<City> searchCity(String city)
     {
         if (null == mDatabase) {
             Log.w(TAG, "Open database first!");
             return null;
         }
 
+        String locale = UserSettings.getLocale(mContext).startsWith("ar")? "AR" : "EN";
+
         String query =
                 "SELECT " +
-                    "locations.id, " +
-                    "locations.nameEn as en, " +
-                    "countries.nameEN, " +
-                    "countries.regionEN, " +
-                    "locations.latitude, " +
-                    "locations.longitude " +
-                "FROM " +
-                    "locations " +
-                "INNER JOIN countries ON locations.id_contry = countries.id " +
-                "WHERE " +
-                    "en like '%" + nameEn + "%';";
+                    "cities.cityId, " +
+                    "cities.name"+locale+" as name, " +
+                    "countries.name"+locale + ", " +
+                    "timezones.name"+locale + ", " +
+                    "cities.latitude, " +
+                    "cities.longitude, " +
+                    "cities.altitude " +
+                "FROM cities " +
+                "INNER JOIN countries ON cities.countryCode = countries.countryCode " +
+                "INNER JOIN timezones ON timezones.tzId = cities.tzId " +
+                "WHERE name LIKE ?";
 
-        Cursor cursor = mDatabase.rawQuery(query, null);
+        Log.d(TAG, query);
+        Cursor cursor = mDatabase.rawQuery(query, new String[] {"%"+city+"%"});
 
         List<City> cityList = new ArrayList<>();
         while (cursor.moveToNext()) {
@@ -187,7 +196,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
                     cursor.getString(3),
                     cursor.getFloat(4),
                     cursor.getFloat(5),
-                    0           // TODO
+                    cursor.getInt(6)
             ));
         }
         cursor.close();
@@ -203,21 +212,26 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
             return null;
         }
 
-        String query =  "SELECT " +
-                            "locations.id as ID, " +
-                            "locations.nameEn as en, " +
-                            "countries.nameEN as c_en, " +
-                            "countries.regionEN as r_en " +
-                            "locations.latitude, " +
-                            "locations.longitude " +
-                        "FROM " +
-                            "locations " +
-                        "INNER JOIN countries ON locations.id_contry = countries.id " +
-                        "WHERE " +
-                            "locations.latitude between " + (lat - 0.08) + " and " + (lat + 0.08) + " AND " +
-                            "locations.longitude between " + (lng - 0.08) + " and " + (lng + 0.08) + ";";
+        String locale = UserSettings.getLocale(mContext).startsWith("ar")? "AR" : "EN";
 
-        Cursor cursor = mDatabase.rawQuery(query, null);
+        String query =
+                "SELECT " +
+                    "cities.cityId, " +
+                    "cities.name"+locale+", " +
+                    "countries.name"+locale + ", " +
+                    "timezones.name"+locale + ", " +
+                    "cities.latitude as lat, " +
+                    "cities.longitude, " +
+                    "cities.altitude " +
+                "FROM cities " +
+                "INNER JOIN countries ON cities.countryCode = countries.countryCode " +
+                "INNER JOIN timezones ON timezones.tzId = cities.tzId " +
+                "WHERE lat BETWEEN ? AND ? AND lng BETWEEN ? AND ?";
+        Log.d(TAG, query);
+
+        Cursor cursor = mDatabase.rawQuery(query, new String[] {
+            String.valueOf(lat - 0.08), String.valueOf(lat + 0.08),
+            String.valueOf(lng - 0.08), String.valueOf(lng + 0.08)});
 
         List<City> cityList = new ArrayList<>();
         while (cursor.moveToNext()) {
@@ -228,7 +242,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
                     cursor.getString(3),
                     cursor.getFloat(4),
                     cursor.getFloat(5),
-                    0           // TODO
+                    cursor.getInt(6)
             ));
         }
         cursor.close();
@@ -237,39 +251,48 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
         return cityList;
     }
 
-    public List<String> getAllRegions()
+    public List<String> getAllTimezones()
     {
         if (null == mDatabase) {
             Log.d(TAG, "Open DB first!");
             return null;
         }
 
-        Cursor cursor = mDatabase.rawQuery("SELECT regionEN FROM countries", null);
+        String locale = UserSettings.getLocale(mContext).startsWith("ar")? "AR" : "EN";
 
-        List<String> regions = new ArrayList<>();
+        String query = "SELECT name"+locale+" FROM timezones";
+
+        Cursor cursor = mDatabase.rawQuery(query, null);
+
+        List<String> timezones = new ArrayList<>();
         while (cursor.moveToNext()) {
-            regions.add(cursor.getString(0));
+            timezones.add(cursor.getString(0));
         }
-        Log.d(TAG, "regions:\n" + regions);
+        cursor.close();
+        Log.d(TAG, "timezones:\n" + timezones);
 
-        return regions;
+        return timezones;
     }
 
-    public List<String> getCountries(String region)
+    public List<String> getAllCountries()
     {
         if (null == mDatabase) {
             Log.d(TAG, "Open DB first!");
             return null;
         }
 
-        Cursor cursor = mDatabase.rawQuery(
-                "SELECT nameEN FROM countries WHERE regionEN = ?", new String[] {region});
+        String locale = UserSettings.getLocale(mContext).startsWith("ar")? "AR" : "EN";
+
+        String query = "SELECT name"+locale+" FROM countries";
+
+        Cursor cursor = mDatabase.rawQuery(query, null);
 
         List<String> countries = new ArrayList<>();
         while (cursor.moveToNext()) {
             countries.add(cursor.getString(0));
         }
-        Log.d(TAG, "regions:\n" + countries);
+        cursor.close();
+        Log.d(TAG, "countries:\n" + countries);
 
         return countries;
     }
@@ -281,21 +304,23 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
             return null;
         }
 
+        String locale = UserSettings.getLocale(mContext).startsWith("ar")? "AR" : "EN";
+
         String query =
                 "SELECT " +
-                    "locations.id as ID, " +
-                    "locations.nameEn, " +
-                    "countries.nameEN, " +
-                    "countries.regionEN, " +
-                    "locations.latitude, " +
-                    "locations.longitude " + // TODO alt
-                "FROM " +
-                    "locations " +
-                "INNER JOIN countries ON locations.id_contry = countries.id " +
-                "WHERE " +
-                    "countries.nameEN like '%" + country + "%';";
+                    "cities.cityId, " +
+                    "cities.name"+locale + ", " +
+                    "countries.name"+locale + " as name, " +
+                    "timezones.name"+locale + ", " +
+                    "cities.latitude, " +
+                    "cities.longitude, " +
+                    "cities.altitude " +
+                "FROM cities" +
+                "INNER JOIN countries ON cities.countryCode = countries.countryCode " +
+                "INNER JOIN timezones ON timezones.tzId = cities.tzId " +
+                "WHERE name LIKE ?";
 
-        Cursor cursor = mDatabase.rawQuery(query, null);
+        Cursor cursor = mDatabase.rawQuery(query, new String[] {"%"+country+"%"});
 
         List<City> cities = new ArrayList<>();
         while (cursor.moveToNext()) {
@@ -306,10 +331,11 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
                     cursor.getString(3),
                     cursor.getFloat(4),
                     cursor.getFloat(5),
-                    0           // TODO
+                    cursor.getInt(6)
             ));
         }
-        Log.d(TAG, "regions:\n" + cities);
+        cursor.close();
+        Log.d(TAG, "cities:\n" + cities);
 
         return cities;
     }

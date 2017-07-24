@@ -28,20 +28,16 @@ public class City implements Serializable {
     private int id;
     private String name;
     private String country;
-    private String region;
+    private String timezone;
     private float latitude;
     private float longitude;
     private float altitude;
 
-
-    public City() {
-    }
-
-    public City(int i, String n, String c, String r, float lat, float lon, float alt) {
+    public City(int i, String n, String c, String tz, float lat, float lon, float alt) {
         id = i;
         name = n;
         country = c;
-        region = r;
+        timezone = tz;
         latitude = lat;
         longitude = lon;
         altitude = alt;
@@ -65,44 +61,32 @@ public class City implements Serializable {
         return country;
     }
 
-    public void setCountry(String country) {
-        this.country = country;
-    }
-
-    public String getRegion() {
-        return region;
-    }
-
-    public void setRegionEn(String regionEn) {
-        this.region = region;
+    public String getTimezone() {
+        return timezone;
     }
 
     public float getLatitude() {
         return latitude;
     }
 
-    public void setLatitude(float latitude) {
-        this.latitude = latitude;
-    }
-
     public float getLongitude() {
         return longitude;
-    }
-
-    public void setLongitude(float longitude) {
-        this.longitude = longitude;
     }
 
     public float getAltitude() {
         return altitude;
     }
 
-    public void setAltitude(float altitude) {
-        this.altitude = altitude;
-    }
-
     @Override
     public String toString() {
-        return name + "/" + country + ": (" + getLatitude() + ", " + getLongitude() + ")";
+        return toLongString();
+    }
+
+    public String toShortString() {
+        return name + " (" + country + ")";
+    }
+
+    public String toLongString() {
+        return name + " (" + timezone + ")";
     }
 }

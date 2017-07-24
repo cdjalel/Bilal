@@ -41,7 +41,7 @@ public class CityListAdapter extends BaseAdapter {
         City city = mCities.get(i);
 
         TextView tv = (TextView) v.findViewById(R.id.tv_city);
-        tv.setText(city.getName() + " (" + city.getCountry() + ", " + city.getRegion() + ")");
+        tv.setText(city.toLongString());
 
         return v;
     }
