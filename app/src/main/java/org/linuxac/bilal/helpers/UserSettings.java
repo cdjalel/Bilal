@@ -118,8 +118,8 @@ public class UserSettings {
 
     public static boolean isNotificationEnabled(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean res = sharedPref.getBoolean("notifications_notification", false);
-        Log.d(TAG, "notifications_notification = " + res);
+        boolean res = sharedPref.getBoolean("notifications_screen", false);
+        Log.d(TAG, "notifications_screeh = " + res);
         return res;
     }
 
@@ -138,31 +138,32 @@ public class UserSettings {
 
     public static int getCityID(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        return sharedPref.getInt("city_id", -1);
+        return sharedPref.getInt("locations_search_city", -1);
     }
 
 
     public static void setCityID(Context context, int id) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putInt("city_id", id); // TODO handle locales -> save city ID in prefs DB then query DB
+        editor.putInt("locations_search_city", id);
         editor.apply();
     }
 
     public static int getCalculationMethod(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        return sharedPref.getInt("calc_method", Method.MUSLIM_LEAGUE);
-
+        String method = sharedPref.getString("locations_method", String.valueOf(Method.MUSLIM_LEAGUE));
+        Log.w(TAG, "getCalculationMethod: " + method);
+        return Integer.parseInt(method);
     }
 
     public static boolean getCalculationRound(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        return sharedPref.getBoolean("calc_round", true);
+        return sharedPref.getBoolean("locations_rounding", true);
     }
 
     public static String getLocale(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        return sharedPref.getString("locale", "en"); // TODO ar_DZ
+        return sharedPref.getString("general_language", "en"); // TODO ar_DZ
     }
 
 }

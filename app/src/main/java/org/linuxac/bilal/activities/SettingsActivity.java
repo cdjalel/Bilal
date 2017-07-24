@@ -38,7 +38,6 @@ import android.util.Log;
 import android.view.MenuItem;
 
 import org.linuxac.bilal.AlarmScheduler;
-import org.linuxac.bilal.helpers.PrayerTimes;
 import org.linuxac.bilal.helpers.UserSettings;
 import org.linuxac.bilal.R;
 
@@ -83,7 +82,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == android.R.id.home) {
-            startActivity(new Intent(this, MainActivity.class));
+            super.onBackPressed();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -185,24 +184,13 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_general);
-            setHasOptionsMenu(true);
 
             // Bind the summaries of EditText/List/Dialog/Ringtone preferences
             // to their values. When their values change, their summaries are
             // updated to reflect the new value, per the Android Design
             // guidelines.
-            bindPreferenceSummaryToValue(findPreference("locale"));
+            bindPreferenceSummaryToValue(findPreference("general_language"));
             // TODO: Need to trigger UI locale reconfig in a separate listener?
-        }
-
-        @Override
-        public boolean onOptionsItemSelected(MenuItem item) {
-            int id = item.getItemId();
-            if (id == android.R.id.home) {
-                startActivity(new Intent(getActivity(), SettingsActivity.class));
-                return true;
-            }
-            return super.onOptionsItemSelected(item);
         }
     }
 
@@ -214,7 +202,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             Context ctxt = preference.getContext();
             Method method = new Method();
 
-            if (key.equals("pref_calc_method")) {
+            if (key.equals("locations_method")) {
                 // For list preferences, look up the correct display value in
                 // the preference's 'entries' list.
                 ListPreference listPreference = (ListPreference) preference;
@@ -227,12 +215,13 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 // Trigger new cacl if value change
                 int oldMethodIdx = UserSettings.getCalculationMethod(preference.getContext());
                 if (oldMethodIdx != ++index) {
+                    Log.d(TAG, "New calc method: " + index);
                     method.setMethod(index);
                     method.round = UserSettings.getCalculationRound(ctxt)? 1 : 0;
                     AlarmScheduler.handleLocationChange(ctxt, method);
                 }
             }
-            else if (key.equals("pref_calc_round")) {
+            else if (key.equals("locations_rounding")) {
                 // Trigger new cacl if value change
                 boolean oldRound  = UserSettings.getCalculationRound(preference.getContext());
                 boolean newRound = stringValue.equals("true");
@@ -258,10 +247,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_locations);
-            setHasOptionsMenu(true);
 
-            // Set pref_search_city summary to current user setting or default
-            Preference pref = (Preference) findPreference("pref_search_city");
+            // Set summary to current user setting
+            Preference pref = findPreference("locations_search_city");
             Context ctxt = pref.getContext();
             pref.setSummary(AlarmScheduler.getCityName(ctxt));
 
@@ -275,25 +263,15 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                     }
                    });
 
-            // Set method summary to current user setting or default
-            int index = UserSettings.getCalculationMethod(ctxt);
-            ListPreference listPref = (ListPreference) findPreference("pref_calc_method");
-            listPref.setSummary(index > 0 ? listPref.getEntries()[index - 1] : null);
+            // Set method summary to current user setting
+            int methodIdx = UserSettings.getCalculationMethod(ctxt);
+            ListPreference listPref = (ListPreference) findPreference("locations_method");
+            listPref.setSummary(methodIdx > 0 ? listPref.getEntries()[methodIdx - 1] : null);
 
             listPref.setOnPreferenceChangeListener(sMethodChangeListener);
 
-            pref = (Preference) findPreference("pref_calc_round");
+            pref = findPreference("locations_rounding");
             pref.setOnPreferenceChangeListener(sMethodChangeListener);
-        }
-
-        @Override
-        public boolean onOptionsItemSelected(MenuItem item) {
-            int id = item.getItemId();
-            if (id == android.R.id.home) {
-                startActivity(new Intent(getActivity(), SettingsActivity.class));
-                return true;
-            }
-            return super.onOptionsItemSelected(item);
         }
 
         @Override
@@ -301,7 +279,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             Log.d(TAG, "onActivityResult");
             if (requestCode == REQUEST_SEARCH_CITY) {
                 if(resultCode == Activity.RESULT_OK){
-                    Preference pref = (Preference) findPreference("pref_search_city");
+                    Preference pref = findPreference("locations_search_city");
                     pref.setSummary(data.getStringExtra("name"));
 
                     AlarmScheduler.handleLocationChange(getActivity(), null);
@@ -322,8 +300,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_notification);
-            setHasOptionsMenu(true);
+            addPreferencesFromResource(R.xml.pref_notifications);
 
             // Bind the summaries of EditText/List/Dialog/Ringtone preferences
             // to their values. When their values change, their summaries are
@@ -333,16 +310,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
             Preference pref = findPreference("notifications_prayer_time");
             pref.setOnPreferenceChangeListener(sPrefPrayerTimeListener);
-        }
-
-        @Override
-        public boolean onOptionsItemSelected(MenuItem item) {
-            int id = item.getItemId();
-            if (id == android.R.id.home) {
-                startActivity(new Intent(getActivity(), SettingsActivity.class));
-                return true;
-            }
-            return super.onOptionsItemSelected(item);
         }
 
         private static Preference.OnPreferenceChangeListener sPrefPrayerTimeListener =
@@ -372,7 +339,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_data_sync);
-            setHasOptionsMenu(true);
 
             // Bind the summaries of EditText/List/Dialog/Ringtone preferences
             // to their values. When their values change, their summaries are
@@ -381,15 +347,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             bindPreferenceSummaryToValue(findPreference("sync_frequency"));
         }
 
-        @Override
-        public boolean onOptionsItemSelected(MenuItem item) {
-            int id = item.getItemId();
-            if (id == android.R.id.home) {
-                startActivity(new Intent(getActivity(), SettingsActivity.class));
-                return true;
-            }
-            return super.onOptionsItemSelected(item);
-        }
     }
 */
 }

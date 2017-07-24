@@ -55,7 +55,6 @@ import com.google.android.gms.location.LocationServices;
 import org.arabeyes.prayertime.*;
 import org.linuxac.bilal.AlarmScheduler;
 import org.linuxac.bilal.R;
-import org.linuxac.bilal.helpers.PrayerTimes;
 import org.linuxac.bilal.helpers.UserSettings;
 
 import java.text.DateFormat;
@@ -127,7 +126,7 @@ public class MainActivity extends AppCompatActivity implements
 
         PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
         PreferenceManager.setDefaultValues(this, R.xml.pref_locations, false);
-        PreferenceManager.setDefaultValues(this, R.xml.pref_notification, false);
+        PreferenceManager.setDefaultValues(this, R.xml.pref_notifications, false);
         //PreferenceManager.setDefaultValues(this, R.xml.pref_data_sync, false);
 
         // TODO force SearchCityActivity on 1st run with an intermediate explanatory dialogue
