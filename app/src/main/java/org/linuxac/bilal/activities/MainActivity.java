@@ -60,6 +60,7 @@ import org.linuxac.bilal.helpers.UserSettings;
 import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements
         ConnectionCallbacks, OnConnectionFailedListener {
@@ -76,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements
     private GoogleApiClient mGoogleApiClient;
     private Location mLastLocation;
 
-    private Boolean mReceiverRegistered = false;
+    private Boolean mUVReceiverRegistered = false;
     private BroadcastReceiver mUpdateViewsReceiver = null;
 
     private boolean mIsJumu3a = false;
@@ -89,11 +90,14 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
-
         super.onCreate(savedInstanceState);
+    // TODO sort out launch mode
+        UserSettings.loadLocale(this);
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        setTitle(R.string.app_name);
 
         /*FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -110,11 +114,6 @@ public class MainActivity extends AppCompatActivity implements
             return;
         }
         buildGoogleApiClient();     // needed for Location
-
-
-        // TODO Prayer time calc. method is also set automatically (from DB based on country).
-        // TODO Unless manually overidden by user, or when DB data is missing, UI must
-        // TODO ask user explicitly
 
         // The other two entry points of the app, which run when MainActivity usually does not, are:
         //      - the alarm receiver called at prayer time
@@ -183,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void initReceiver() {
-        mReceiverRegistered = false;
+        mUVReceiverRegistered = false;
         mUpdateViewsReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -193,15 +192,6 @@ public class MainActivity extends AppCompatActivity implements
             }
         };
     }
-
-//    private void deleteReceiver() {
-//        if (mReceiverRegistered) {
-//            assert(null != mUpdateViewsReceiver);
-//            unregisterReceiver(mUpdateViewsReceiver);
-//            mReceiverRegistered = false;
-//        }
-//        mUpdateViewsReceiver = null;
-//    }
 
     @Override
     protected void onStart() {
@@ -221,9 +211,9 @@ public class MainActivity extends AppCompatActivity implements
     protected void onResume() {
         Log.d(TAG, "OnResume");
         super.onResume();
-        if (UserSettings.isAlarmEnabled(this) && !mReceiverRegistered) {
+        if (UserSettings.isAlarmEnabled(this) && !mUVReceiverRegistered) {
             registerReceiver(mUpdateViewsReceiver, new IntentFilter(UPDATE_VIEWS));
-            mReceiverRegistered = true;
+            mUVReceiverRegistered = true;
         }
         PrayerTimesManager.updatePrayerTimes(this, false);
         updatePrayerViews();
@@ -231,9 +221,9 @@ public class MainActivity extends AppCompatActivity implements
 
     protected void onPause() {
         super.onPause();
-        if (mReceiverRegistered) {
+        if (mUVReceiverRegistered) {
             unregisterReceiver(mUpdateViewsReceiver);
-            mReceiverRegistered = false;
+            mUVReceiverRegistered = false;
         }
     }
 
@@ -344,7 +334,9 @@ public class MainActivity extends AppCompatActivity implements
 
         GregorianCalendar now = new GregorianCalendar();
         mTextViewCity.setText(UserSettings.getCityName(this));
-        mTextViewDate.setText(DateFormat.getDateInstance().format(now.getTime()));
+
+        mTextViewDate.setText(DateFormat.getDateInstance(DateFormat.SHORT, Locale.getDefault())
+                .format(now.getTime()));
 
         for (i = 0; i < Prayer.NB_PRAYERS + 1; i++) {
             mTextViewPrayers[i][1].setText(PrayerTimesManager.formatPrayer(i));

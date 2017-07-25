@@ -38,6 +38,7 @@ import org.linuxac.bilal.datamodels.City;
 import org.linuxac.bilal.helpers.UserSettings;
 
 import java.util.List;
+import java.util.Locale;
 
 public class SearchCityActivity extends AppCompatActivity
         implements SearchView.OnQueryTextListener, AdapterView.OnItemClickListener {
@@ -51,11 +52,12 @@ public class SearchCityActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_city);
+        setTitle(getString(R.string.app_name));
 
         mDBHelper = new LocationsDBHelper(this);
         mDBHelper.openReadable();
 
-        mLanguage = UserSettings.getLocale(this).startsWith("ar")? "AR" : "EN";
+        mLanguage = UserSettings.getLanguage(this).toUpperCase(Locale.ENGLISH);
 
         SearchView searchView = (SearchView) findViewById(R.id.search_city_box);
         searchView.setOnQueryTextListener(this);
@@ -79,7 +81,7 @@ public class SearchCityActivity extends AppCompatActivity
     protected void onResume() {
         super.onResume();
         // update locale in case user changed it meanwhile
-        mLanguage = UserSettings.getLocale(this).startsWith("ar")? "AR" : "EN";
+        mLanguage = UserSettings.getLanguage(this).toUpperCase(Locale.ENGLISH);
     }
 
 
@@ -139,16 +141,19 @@ public class SearchCityActivity extends AppCompatActivity
 
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-        City item = (City) mCityListAdapter.getItem(i);
-        Log.i(TAG, "Selected city: " + item);
+        City newCity = (City) mCityListAdapter.getItem(i);
+        Log.i(TAG, "Selected city: " + newCity);
 
-        // save new city
-        UserSettings.setCity(this, item);
+        City oldCity = UserSettings.getCity(this);
+        if (null != oldCity && oldCity.getId() != newCity.getId()) {
+            // save new city
+            UserSettings.setCity(this, newCity);
 
-        // adapt preference summary
-        Intent resultIntent = new Intent();
-        resultIntent.putExtra("name", item.getName());
-        setResult(Activity.RESULT_OK, resultIntent);
+            // adapt preference summary
+            Intent resultIntent = new Intent();
+            resultIntent.putExtra("name", newCity.getName());
+            setResult(Activity.RESULT_OK, resultIntent);
+        }
         finish();
     }
 

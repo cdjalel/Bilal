@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">بلال</string>
-    <string name="title_activity_bilal">بلال</string>
     <string name="action_settings">الإعدادات</string>
     <string name="time_for">حان وقت صلاة %s</string>
     <string name="time_in">في %s</string>
     <string name="stop_athan">وقف الآذان</string>
-    <string name="set_location">إلمس لتحديد الموقع</string>
+    <string name="set_location">إلمس  هنا لتحديد الموقع</string>
     <string name="zero_hour">00:00</string>
 
     <string name="fajr_ar">الفجر</string>
@@ -57,15 +56,13 @@
     <string name="pref_title_language">اللغة</string>
     <string-array name="pref_language_list_titles">
         <item>عربية</item>
-        <item>عربية مع أرقام مشرقية</item>
         <item>إنجليزية</item>
     </string-array>
     <string-array name="pref_language_list_values">
-        <item>ar_DZ</item>
-        <item>ar_EG</item>
+        <item>ar</item>
         <item>en</item>
     </string-array>
-    <string name="pref_language_default_value">ar_DZ</string>
+    <string name="pref_language_default_value">ar</string>
 
     <!-- Example settings for Data & Sync -->
     <string name="pref_header_data_sync">Data &amp; sync</string>

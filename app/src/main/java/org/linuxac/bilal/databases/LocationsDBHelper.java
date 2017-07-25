@@ -129,7 +129,8 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
                     "timezones.nameEN, " +          // used for PT calculations only
                     "cities.latitude, " +
                     "cities.longitude, " +
-                    "cities.altitude " +
+                    "cities.altitude, " +
+                    "cities.countryCode " +
                 "FROM cities " +
                 "INNER JOIN countries ON cities.countryCode = countries.countryCode " +
                 "INNER JOIN timezones ON timezones.tzId = cities.tzId " +
@@ -149,7 +150,8 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
                     cursor.getString(4),
                     cursor.getFloat(5),
                     cursor.getFloat(6),
-                    cursor.getInt(7)
+                    cursor.getInt(7),
+                    cursor.getString(8)
                 );
         }
         cursor.close();
@@ -176,7 +178,8 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
                     "timezones.nameEN, " +          // used for PT calculations only
                     "cities.latitude, " +
                     "cities.longitude, " +
-                    "cities.altitude " +
+                    "cities.altitude, " +
+                    "cities.countryCode " +
                 "FROM cities " +
                 "INNER JOIN countries ON cities.countryCode = countries.countryCode " +
                 "INNER JOIN timezones ON timezones.tzId = cities.tzId " +
@@ -195,7 +198,8 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
                     cursor.getString(4),
                     cursor.getFloat(5),
                     cursor.getFloat(6),
-                    cursor.getInt(7)
+                    cursor.getInt(7),
+                    cursor.getString(8)
             ));
         }
         cursor.close();
@@ -220,7 +224,8 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
                     "timezones.nameEN, " +          // used for PT calculations only
                     "cities.latitude as lat, " +
                     "cities.longitude, " +
-                    "cities.altitude " +
+                    "cities.altitude, " +
+                    "cities.countryCode " +
                 "FROM cities " +
                 "INNER JOIN countries ON cities.countryCode = countries.countryCode " +
                 "INNER JOIN timezones ON timezones.tzId = cities.tzId " +
@@ -241,7 +246,8 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
                     cursor.getString(4),
                     cursor.getFloat(5),
                     cursor.getFloat(6),
-                    cursor.getInt(7)
+                    cursor.getInt(7),
+                    cursor.getString(8)
             ));
         }
         cursor.close();
@@ -308,7 +314,8 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
                     "timezones.nameEN, " +          // used for PT calculations only
                     "cities.latitude, " +
                     "cities.longitude, " +
-                    "cities.altitude " +
+                    "cities.altitude, " +
+                    "cities.countryCode " +
                 "FROM cities" +
                 "INNER JOIN countries ON cities.countryCode = countries.countryCode " +
                 "INNER JOIN timezones ON timezones.tzId = cities.tzId " +
@@ -326,7 +333,8 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
                     cursor.getString(4),
                     cursor.getFloat(5),
                     cursor.getFloat(6),
-                    cursor.getInt(7)
+                    cursor.getInt(7),
+                    cursor.getString(8)
             ));
         }
         cursor.close();

@@ -40,8 +40,9 @@ public class City implements Serializable {
     private float latitude;
     private float longitude;
     private float altitude;
+    private String countryCode;
 
-    public City(int i, String n, String c, String tz, String tzC, float lat, float lon, float alt) {
+    public City(int i, String n, String c, String tz, String tzC, float lat, float lon, float alt, String cc) {
         id = i;
         name = n;
         country = c;
@@ -50,6 +51,7 @@ public class City implements Serializable {
         latitude = lat;
         longitude = lon;
         altitude = alt;
+        countryCode = cc;
     }
 
     public int getId() {
@@ -65,6 +67,8 @@ public class City implements Serializable {
     }
 
     public void setName(String name) { this.name = name; }
+
+    public String getCountryCode() { return countryCode; }
 
     public String getTimezone() {
         return tzCalc;

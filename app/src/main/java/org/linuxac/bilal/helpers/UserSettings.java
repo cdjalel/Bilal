@@ -22,6 +22,9 @@ package org.linuxac.bilal.helpers;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -31,6 +34,8 @@ import org.linuxac.bilal.BuildConfig;
 import org.linuxac.bilal.R;
 import org.linuxac.bilal.databases.LocationsDBHelper;
 import org.linuxac.bilal.datamodels.City;
+
+import java.util.Locale;
 
 public class UserSettings {
     private static String TAG = "UserSettings";
@@ -149,6 +154,10 @@ public class UserSettings {
     }
 
     public static void setCity(Context context, City city) {
+        // update Locale as it depends on city country
+        setLocale(context, null, city.getCountryCode());
+
+        // serialize & save new city in shared pref.
         String cityStream = city.serialize();
         if (null != cityStream) {
             SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
@@ -158,20 +167,19 @@ public class UserSettings {
         }
     }
 
-    public static void updateCity(Context context, String locale)
-    {
+    private static City updateCity(Context context, String language) {
         City city = getCity(context);
         if (null != city) {
-            String language = locale.startsWith("ar")? "AR" : "EN";
-            city = (new LocationsDBHelper(context)).getCity(city.getId(), language);
+            city = (new LocationsDBHelper(context)).getCity(city.getId(), language.toUpperCase());
             if (null != city) {
                 setCity(context, city);
+                return city;
             }
         }
+        return null;
     }
 
-    public static String getCityName(Context context)
-    {
+    public static String getCityName(Context context) {
         City city = getCity(context);
         return null != city ? city.toShortString() : context.getString(R.string.pref_undefined_city);
     }
@@ -193,8 +201,52 @@ public class UserSettings {
         return sharedPref.getBoolean("locations_rounding", true) ? 1 : 0;
     }
 
-    public static String getLocale(Context context) {
+    public static String getLanguage(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        return sharedPref.getString("general_language", "en"); // TODO ar_DZ & flag icons
+        return sharedPref.getString("general_language", "ar"); // TODO flag icons
+    }
+
+    public static Locale getLocale(Context context) {
+        String lang = getLanguage(context);
+        City city = getCity(context);
+        return null != city ? new Locale(lang, city.getCountryCode()) : new Locale(lang);
+    }
+
+    private static void setLocale(Context context, Locale locale) {
+        // Update sys. config
+        Resources res = context.getApplicationContext().getResources();
+        Configuration config = res.getConfiguration();
+        if (Build.VERSION.SDK_INT >= 17) {
+            config.setLocale(locale);
+            config.setLayoutDirection(locale);
+        }
+        else {
+            config.locale = locale;
+        }
+        res.updateConfiguration(config, res.getDisplayMetrics());
+        Locale.setDefault(locale);
+
+        // TODO set inputmethod language for SearchCity
+    }
+
+    public static void setLocale(Context context, String newLang, String newCC) {
+        // saving in shared prefs. is handled by the framework after the caller
+
+        if (null == newLang) {      // there is a new CC
+            newLang = getLanguage(context);
+        }
+        else {                      // there is a new language
+            // update saved city as it depends on it
+            City city = updateCity(context, newLang);
+            if (null != city) {
+                newCC = city.getCountryCode();
+            }
+        }
+
+        setLocale(context, null != newCC ? new Locale(newLang, newCC) : new Locale(newLang));
+    }
+
+    public static void loadLocale(Context context) {
+        setLocale(context, getLocale(context));
     }
 }

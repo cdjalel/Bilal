@@ -26,7 +26,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.ListPreference;
@@ -43,7 +42,6 @@ import org.linuxac.bilal.helpers.UserSettings;
 import org.linuxac.bilal.R;
 
 import java.util.List;
-import java.util.Locale;
 
 import org.arabeyes.prayertime.Method;
 
@@ -67,6 +65,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setupActionBar();
+        setTitle(getString(R.string.app_name));
     }
 
     /**
@@ -128,10 +127,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 int index = listPreference.findIndexOfValue(stringValue);
 
                 // Set the summary to reflect the new value.
-                preference.setSummary(
-                        index >= 0
-                                ? listPreference.getEntries()[index]
-                                : null);
+                preference.setSummary(index >= 0 ? listPreference.getEntries()[index] : null);
 
             } else {
                 // For all other preferences, set the summary to the value's
@@ -190,7 +186,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // Set method summary to current user setting
             ListPreference listPref = (ListPreference) findPreference("general_language");
             Context ctxt = listPref.getContext();
-            int index = listPref.findIndexOfValue(UserSettings.getLocale(ctxt));
+            int index = listPref.findIndexOfValue(UserSettings.getLanguage(ctxt));
             listPref.setSummary(index >= 0 ? listPref.getEntries()[index] : null);
 
             listPref.setOnPreferenceChangeListener(sGeneralPrefsListener);
@@ -214,21 +210,13 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                         preference.setSummary(index >= 0 ? listPreference.getEntries()[index] : null);
 
                         // Change locale?
-                        if (!stringValue.equals(UserSettings.getLocale(ctxt))) {
-                            Log.d(TAG, "New locale: " + stringValue);
-
-                            // update saves city as it depends on language
-                            UserSettings.updateCity(ctxt, stringValue);
-
-                            // update UI
-                            Locale locale = new Locale(stringValue);
-                            Locale.setDefault(locale);
-                            ctxt = ctxt.getApplicationContext();
-                            Resources res = ctxt.getResources();
-                            Configuration config = res.getConfiguration();
-                            config.setLocale(locale);
-                            res.updateConfiguration(config, res.getDisplayMetrics());
-                            // TODO input locale for Search
+                        if (!stringValue.equals(UserSettings.getLanguage(ctxt))) {
+                            Log.d(TAG, "New language: " + stringValue);
+                            UserSettings.setLocale(ctxt, stringValue, null);
+                            // refresh UI (framework part) with new Locale
+                            Intent intent = new Intent(ctxt, MainActivity.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                            startActivity(intent);
                         }
                     break;
 
@@ -292,10 +280,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             @Override
             public boolean onPreferenceChange(Preference preference, Object value) {
                 String stringValue = value.toString();
-                String key = preference.getKey();
                 Context ctxt = preference.getContext();
 
-                switch (key) {
+                switch (preference.getKey()) {
                     case "locations_method":
                         // For list preferences, look up the correct display value in
                         // the preference's 'entries' list.
