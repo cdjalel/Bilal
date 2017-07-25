@@ -194,56 +194,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         }
     }
 
-    private static Preference.OnPreferenceChangeListener sMethodChangeListener = new Preference.OnPreferenceChangeListener() {
-        @Override
-        public boolean onPreferenceChange(Preference preference, Object value) {
-            String stringValue = value.toString();
-            String key = preference.getKey();
-            Context ctxt = preference.getContext();
-            Method method = new Method();
-
-            if (key.equals("locations_method")) {
-                // For list preferences, look up the correct display value in
-                // the preference's 'entries' list.
-                ListPreference listPreference = (ListPreference) preference;
-                int index = listPreference.findIndexOfValue(stringValue);
-
-                // Set the summary to reflect the new value.
-                preference.setSummary(index >= 0 ?
-                            listPreference.getEntries()[index] : null);
-
-                // Trigger new cacl if value change
-                index += Method.V2_MWL;
-                int oldMethodIdx = UserSettings.getCalculationMethod(ctxt);
-                if (oldMethodIdx != index) {
-                    Log.d(TAG, "New calc method: " + index);
-                    method.setMethod(index);
-                    method.round = UserSettings.getCalculationRound(ctxt)? 1 : 0;
-                    AlarmScheduler.handleLocationChange(ctxt, method);
-                }
-            }
-            else if (key.equals("locations_rounding")) {
-                // Trigger new cacl if value change
-                boolean oldRound  = UserSettings.getCalculationRound(ctxt);
-                boolean newRound = stringValue.equals("true");
-                if (oldRound != newRound) {
-                    method.setMethod(UserSettings.getCalculationMethod(ctxt));
-                    method.round = newRound ? 1 : 0;
-                    AlarmScheduler.handleLocationChange(ctxt, method);
-                }
-            }
-            else {
-                // For other preferences, set the summary to the value's
-                // simple string representation.
-                //preference.setSummary(stringValue);
-            }
-
-            return true;
-        }
-    };
-
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static class LocationsPreferenceFragment extends PreferenceFragment {
+        private static Preference mMathhabPref;
+
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
@@ -273,7 +227,74 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
             pref = findPreference("locations_rounding");
             pref.setOnPreferenceChangeListener(sMethodChangeListener);
+
+            mMathhabPref = findPreference("locations_mathhab_hanafi");
+            mMathhabPref.setOnPreferenceChangeListener(sMethodChangeListener);
+            // Mathhab hanafi pref. only for Karachi method.
+            if (3 == index) {
+                mMathhabPref.setEnabled(true);
+            } else {
+                mMathhabPref.setEnabled(false);
+            }
         }
+
+        private static Preference.OnPreferenceChangeListener sMethodChangeListener = new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object value) {
+                String stringValue = value.toString();
+                String key = preference.getKey();
+                Context ctxt = preference.getContext();
+
+                if (key.equals("locations_method")) {
+                    // For list preferences, look up the correct display value in
+                    // the preference's 'entries' list.
+                    ListPreference listPreference = (ListPreference) preference;
+                    int index = listPreference.findIndexOfValue(stringValue);
+
+                    // Set the summary to reflect the new value.
+                    preference.setSummary(index >= 0 ? listPreference.getEntries()[index] : null);
+
+                    // Trigger new cacl if value change
+                    index += Method.V2_MWL;
+                    int oldMethodIdx = UserSettings.getCalculationMethod(ctxt);
+                    if (oldMethodIdx != index) {
+                        Log.d(TAG, "New calc method: " + index);
+
+                        // Mathhab hanafi pref. only for Karachi method.
+                        if (3 == (index - Method.V2_MWL)) {
+                            mMathhabPref.setEnabled(true);
+                        } else {
+                            mMathhabPref.setEnabled(false);
+                        }
+
+                        AlarmScheduler.handleLocationChange(ctxt, index, -1, -1);
+                    }
+                }
+                else if (key.equals("locations_rounding")) {
+                    // Trigger new cacl if value change
+                    int oldRound  = UserSettings.getRounding(ctxt);
+                    int newRound = stringValue.equals("true")? 1 : 0;
+                    if (oldRound != newRound) {
+                        AlarmScheduler.handleLocationChange(ctxt, -1, newRound, -1);
+                    }
+                }
+                else if (key.equals("locations_mathhab_hanafi")) {
+                    // Trigger new cacl if value change
+                    boolean oldMathhab  = UserSettings.isMathhabHanafi(ctxt);
+                    boolean newMathhab = stringValue.equals("true");
+                    if (oldMathhab != newMathhab) {
+                        AlarmScheduler.handleLocationChange(ctxt, -1, -1, newMathhab ? 2 : 1);
+                    }
+                }
+                else {
+                    // For other preferences, set the summary to the value's
+                    // simple string representation.
+                    //preference.setSummary(stringValue);
+                }
+
+                return true;
+            }
+        };
 
         @Override
         public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -283,7 +304,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                     Preference pref = findPreference("locations_search_city");
                     pref.setSummary(data.getStringExtra("name"));
 
-                    AlarmScheduler.handleLocationChange(getActivity(), null);
+                    AlarmScheduler.handleLocationChange(getActivity(), -1, -1, -1);
                 }
                 //else if (resultCode == Activity.RESULT_CANCELED) {
                 //}
@@ -310,14 +331,14 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             bindPreferenceSummaryToValue(findPreference("notifications_muezzin"));
 
             Preference pref = findPreference("notifications_prayer_time");
-            pref.setOnPreferenceChangeListener(sPrefPrayerTimeListener);
+            pref.setOnPreferenceChangeListener(sNotifPrayerTimeListener);
         }
 
-        private static Preference.OnPreferenceChangeListener sPrefPrayerTimeListener =
+        private static Preference.OnPreferenceChangeListener sNotifPrayerTimeListener =
         new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
-                Log.d(TAG, "sPrefPrayerTimeListener: " + newValue.toString());
+                Log.d(TAG, "sNotifPrayerTimeListener: " + newValue.toString());
                 if (newValue.toString().equals("true")) {
                     AlarmScheduler.enableAlarm(preference.getContext());
                 }

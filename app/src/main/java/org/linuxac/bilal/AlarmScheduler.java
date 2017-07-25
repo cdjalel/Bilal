@@ -43,7 +43,6 @@ import org.linuxac.bilal.receivers.BootAndTimeChangeReceiver;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.Locale;
 import java.util.TimeZone;
 
 import static android.content.Context.ALARM_SERVICE;
@@ -134,10 +133,17 @@ public class AlarmScheduler {
         disableBootAndTimeChangeReceiver(context);
     }
 
-    public static void handleLocationChange(Context context, Method method)
+    public static void handleLocationChange(Context context, int m, int r, int h)
     {
+        if (!(-1 == m && -1 == r && -1 == h)) {
+            sMethod = new Method();
+            sMethod.setMethod(m > -1 ? m : (m = UserSettings.getCalculationMethod(context)));
+            sMethod.round = r > -1 ? r : UserSettings.getRounding(context);
+            if (m == Method.V2_KARACHI) {
+                sMethod.mathhab = h > -1 ? h : (UserSettings.isMathhabHanafi(context) ? 2 : 1);
+            }
+        }
         sLastTime = sLongLongTimeAgo;       // force recalculation of prayer times
-        sMethod = method;
         updatePrayerTimes(context, false);
     }
 
@@ -248,9 +254,13 @@ public class AlarmScheduler {
             gmtDiffHrs, dst, city.getAltitude(), 1010 /* pressure */, 10 /* temperature */);
 
         if (null == sMethod) {
+            int m = UserSettings.getCalculationMethod(context);
             sMethod = new Method();
-            sMethod.setMethod(UserSettings.getCalculationMethod(context));
-            sMethod.round = UserSettings.getCalculationRound(context)? 1 : 0;
+            sMethod.setMethod(m);
+            sMethod.round = UserSettings.getRounding(context);
+            if (m == Method.V2_KARACHI && UserSettings.isMathhabHanafi(context)) {
+                sMethod.mathhab = 2;
+            }
         }
 
         Log.d(TAG, "Last time: " + PrayerTimes.format(sLastTime, sMethod.round));

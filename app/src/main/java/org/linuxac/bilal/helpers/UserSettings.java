@@ -156,14 +156,18 @@ public class UserSettings {
         return Integer.parseInt(method);
     }
 
-    public static boolean getCalculationRound(Context context) {
+    public static boolean isMathhabHanafi(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        return sharedPref.getBoolean("locations_rounding", true);
+        return sharedPref.getBoolean("locations_mathhab_hanafi", false);
+    }
+
+    public static int getRounding(Context context) {
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+        return sharedPref.getBoolean("locations_rounding", true) ? 1 : 0;
     }
 
     public static String getLocale(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        return sharedPref.getString("general_language", "en"); // TODO ar_DZ
+        return sharedPref.getString("general_language", "en"); // TODO ar_DZ & flag icons
     }
-
 }

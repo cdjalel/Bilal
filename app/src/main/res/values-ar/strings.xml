@@ -156,14 +156,15 @@
     <string-array name="pref_method_list_values">
         <item>10</item>
         <item>11</item>
-        <item>11</item>
+        <item>12</item>
         <item>13</item>
         <item>14</item>
         <item>15</item>
         <item>16</item>
     </string-array>
+    <string name="pref_title_mathhab_hanafi">المذهب الحنفي</string>
+    <string name="pref_description_mathhab_hanafi">اتباع المذهب الحنفي لوقت العصر</string>
 
     <string name="pref_title_round">تقريب الثواني</string>
 
-    <!-- TODO: add mathab and other config. from Method.java -->
 </resources>

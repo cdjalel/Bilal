@@ -326,7 +326,7 @@ public class MainActivity extends AppCompatActivity implements
         Log.d(TAG, "onActivityResult");
         if (requestCode == REQUEST_SEARCH_CITY) {
             if(resultCode == Activity.RESULT_OK){
-                AlarmScheduler.handleLocationChange(this, null);
+                AlarmScheduler.handleLocationChange(this, -1, -1, -1);
                 //updatePrayerViews(); // This is called by OnResume anyway
             }
         }
