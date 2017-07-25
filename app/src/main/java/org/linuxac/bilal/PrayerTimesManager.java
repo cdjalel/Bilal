@@ -47,19 +47,18 @@ import java.util.TimeZone;
 
 import static android.content.Context.ALARM_SERVICE;
 
-public class AlarmScheduler {
-    private static final String TAG = "AlarmScheduler";
+public class PrayerTimesManager {
+    private static final String TAG = "PrayerTimesManager";
 
 
     private static final GregorianCalendar sLongLongTimeAgo = new GregorianCalendar(0,0,0);
     private static GregorianCalendar sLastTime = sLongLongTimeAgo;
     private static PrayerTimes sPrayerTimes = null;
     private static Method sMethod = null;
-
-    public static final String ALARM_TXT = "org.linuxac.bilal.ALARM_TXT";
     private static PendingIntent sAlarmIntent = null;
+    private static boolean sNewCalc = false;
 
-    private AlarmScheduler() {}
+    private PrayerTimesManager() {}
 
     public static boolean prayerTimesNotAvailable()
     {
@@ -111,14 +110,6 @@ public class AlarmScheduler {
         return sPrayerTimes.format(i);
     }
 
-    public static String getCityName(Context context)
-    {
-        if (BuildConfig.DEBUG && null == sPrayerTimes) {
-            return context.getString(R.string.pref_undefined_city);
-        }
-        return sPrayerTimes.getCityName(context);
-    }
-
     public static void enableAlarm(Context context)
     {
         Log.d(TAG, "Enabling Alarm.");
@@ -143,7 +134,7 @@ public class AlarmScheduler {
                 sMethod.mathhab = h > -1 ? h : (UserSettings.isMathhabHanafi(context) ? 2 : 1);
             }
         }
-        sLastTime = sLongLongTimeAgo;       // force recalculation of prayer times
+        sNewCalc = true;
         updatePrayerTimes(context, false);
     }
 
@@ -154,11 +145,10 @@ public class AlarmScheduler {
 
     public static void handleTimeChange(Context context)
     {
-        sLastTime = sLongLongTimeAgo;       // force recalculation of prayer times
+        sNewCalc = true;
         cancelAlarm(context);     // avoid unwanted alarm trigger from AlarmService
         updatePrayerTimes(context, false);
     }
-
 
     private static void logBootAndTimeChangeReceiverSetting(Context context)
     {
@@ -209,20 +199,19 @@ public class AlarmScheduler {
             logBootAndTimeChangeReceiverSetting(context);
         }
 
-        int cityID = UserSettings.getCityID(context);
-        if (-1 == cityID) {
-            Log.w(TAG, "Location not set! Nothing todo until user starts UI.");
+        City city = UserSettings.getCity(context);
+        if (null == city) {
+            Log.w(TAG, "Location not set! Nothing todo until user chooses a city.");
             return;
         }
 
         GregorianCalendar nowCal = new GregorianCalendar();
         // next test includes location & time change see handlers above
-        if (null != sPrayerTimes && sameDay(sLastTime, nowCal)) {
+        if (null != sPrayerTimes && !sNewCalc && sameDay(sLastTime, nowCal)) {
             sPrayerTimes.updateCurrent(nowCal);
             Log.d(TAG, "Call it a day :)");
         }
         else {
-            City city = (new LocationsDBHelper(context)).getCity(cityID);
             calcPrayerTimes(context, nowCal, city);
         }
 
@@ -284,8 +273,9 @@ public class AlarmScheduler {
         ptCal[i].set(Calendar.SECOND, nextPT.second);
         Log.d(TAG, context.getString(R.string.nextfajr) + " " + PrayerTimes.format(ptCal[i], sMethod.round));
 
-        sPrayerTimes = new PrayerTimes(nowCal, ptCal, city.toShortString(), sMethod.round == 1);
+        sPrayerTimes = new PrayerTimes(nowCal, ptCal, sMethod.round == 1);
         sMethod = null;
+        sNewCalc = false;
     }
 
     private static PendingIntent createAlarmIntent(Context context)

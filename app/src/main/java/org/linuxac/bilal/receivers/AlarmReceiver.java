@@ -31,8 +31,8 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 
-import org.linuxac.bilal.AlarmScheduler;
-import org.linuxac.bilal.AthanService;
+import org.linuxac.bilal.PrayerTimesManager;
+import org.linuxac.bilal.services.AthanService;
 import org.linuxac.bilal.R;
 import org.linuxac.bilal.activities.MainActivity;
 import org.linuxac.bilal.activities.StopAthanActivity;
@@ -76,7 +76,7 @@ public class AlarmReceiver extends BroadcastReceiver
         context.sendBroadcast(updateIntent);
 
         // Re-arm alarm.
-        AlarmScheduler.updatePrayerTimes(context, false);
+        PrayerTimesManager.updatePrayerTimes(context, false);
     }
 
     private void showNotification(Context context, int index)
@@ -100,8 +100,7 @@ public class AlarmReceiver extends BroadcastReceiver
 
         String contentTitle = String.format(context.getString(R.string.time_for),
                 PrayerTimes.getName(context, index));
-        String contentTxt = String.format(context.getString(R.string.time_in),
-                AlarmScheduler.getCityName(context));
+        String contentTxt = String.format(context.getString(R.string.time_in), UserSettings.getCityName(context));
         String actionTxt = context.getString(R.string.stop_athan);
 
         NotificationCompat.Builder notificationBuilder =

@@ -27,7 +27,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
-import org.linuxac.bilal.AthanService;
+import org.linuxac.bilal.services.AthanService;
 
 public class StopAthanActivity extends Activity {
 

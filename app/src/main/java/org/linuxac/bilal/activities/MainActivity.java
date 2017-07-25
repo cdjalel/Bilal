@@ -53,7 +53,7 @@ import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListe
 import com.google.android.gms.location.LocationServices;
 
 import org.arabeyes.prayertime.*;
-import org.linuxac.bilal.AlarmScheduler;
+import org.linuxac.bilal.PrayerTimesManager;
 import org.linuxac.bilal.R;
 import org.linuxac.bilal.helpers.UserSettings;
 
@@ -225,7 +225,7 @@ public class MainActivity extends AppCompatActivity implements
             registerReceiver(mUpdateViewsReceiver, new IntentFilter(UPDATE_VIEWS));
             mReceiverRegistered = true;
         }
-        AlarmScheduler.updatePrayerTimes(this, false);
+        PrayerTimesManager.updatePrayerTimes(this, false);
         updatePrayerViews();
     }
 
@@ -326,26 +326,28 @@ public class MainActivity extends AppCompatActivity implements
         Log.d(TAG, "onActivityResult");
         if (requestCode == REQUEST_SEARCH_CITY) {
             if(resultCode == Activity.RESULT_OK){
-                AlarmScheduler.handleLocationChange(this, -1, -1, -1);
-                //updatePrayerViews(); // This is called by OnResume anyway
+                PrayerTimesManager.handleLocationChange(this, -1, -1, -1);
+                //updatePrayerViews(); // This is called by OnResume anyway.
+                // It will also retrieve new city name from settings, so no need to read it
+                // from the intent here
             }
         }
     }
 
     private void updatePrayerViews()
     {
-        if (AlarmScheduler.prayerTimesNotAvailable()) {
+        if (PrayerTimesManager.prayerTimesNotAvailable()) {
             return;
         }
 
         int i, j;
 
         GregorianCalendar now = new GregorianCalendar();
-        mTextViewCity.setText(AlarmScheduler.getCityName(this));
+        mTextViewCity.setText(UserSettings.getCityName(this));
         mTextViewDate.setText(DateFormat.getDateInstance().format(now.getTime()));
 
         for (i = 0; i < Prayer.NB_PRAYERS + 1; i++) {
-            mTextViewPrayers[i][1].setText(AlarmScheduler.formatPrayer(i));
+            mTextViewPrayers[i][1].setText(PrayerTimesManager.formatPrayer(i));
         }
 
         // change Dhuhur to Jumuaa if needed.
@@ -369,11 +371,11 @@ public class MainActivity extends AppCompatActivity implements
         }
 
         // signal the new important prayer, which is the current if its time is recent, next otherwise
-        GregorianCalendar current = AlarmScheduler.getCurrentPrayer();
+        GregorianCalendar current = PrayerTimesManager.getCurrentPrayer();
         long elapsed = now.getTimeInMillis() - current.getTimeInMillis();
         if (elapsed >= 0 && elapsed <= BLINK_INTERVAL) {
             // blink Current Prayers
-            mImportant = AlarmScheduler.getCurrentPrayerIndex();
+            mImportant = PrayerTimesManager.getCurrentPrayerIndex();
             Animation anim = new AlphaAnimation(0.0f, 1.0f);
             anim.setDuration(BLINK_DURATION);
             anim.setRepeatMode(Animation.REVERSE);
@@ -387,7 +389,7 @@ public class MainActivity extends AppCompatActivity implements
         }
         else {
             // Bold Next Prayers
-            mImportant = AlarmScheduler.getNextPrayerIndex();
+            mImportant = PrayerTimesManager.getNextPrayerIndex();
             for (i = 0; i < Prayer.NB_PRAYERS + 1; i++) {
                 for (j = 0; j < 3; j++) {
                     mTextViewPrayers[mImportant][j].setTypeface(null, Typeface.BOLD);

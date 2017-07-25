@@ -18,7 +18,7 @@
  *
  */
 
-package org.linuxac.bilal;
+package org.linuxac.bilal.services;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -32,6 +32,7 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
 
+import org.linuxac.bilal.PrayerTimesManager;
 import org.linuxac.bilal.helpers.UserSettings;
 import org.linuxac.bilal.receivers.AlarmReceiver;
 
@@ -47,7 +48,7 @@ public class AthanService extends Service implements MediaPlayer.OnPreparedListe
     private BroadcastReceiver mVolumeChangeReceiver = null;
 
     public int onStartCommand(Intent intent, int flags, int startId) {
-        mPrayerIndex = AlarmScheduler.getNextPrayerIndex();
+        mPrayerIndex = PrayerTimesManager.getNextPrayerIndex();
         if (-1 == mPrayerIndex) {
             if (null != intent) {
                 mPrayerIndex = intent.getIntExtra(AlarmReceiver.EXTRA_PRAYER_INDEX, 0);

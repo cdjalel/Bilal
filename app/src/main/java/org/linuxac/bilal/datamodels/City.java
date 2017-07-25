@@ -21,6 +21,13 @@
 
 package org.linuxac.bilal.datamodels;
 
+import android.util.Base64;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 public class City implements Serializable {
@@ -29,15 +36,17 @@ public class City implements Serializable {
     private String name;
     private String country;
     private String timezone;
+    private String tzCalc;
     private float latitude;
     private float longitude;
     private float altitude;
 
-    public City(int i, String n, String c, String tz, float lat, float lon, float alt) {
+    public City(int i, String n, String c, String tz, String tzC, float lat, float lon, float alt) {
         id = i;
         name = n;
         country = c;
         timezone = tz;
+        tzCalc = tzC;
         latitude = lat;
         longitude = lon;
         altitude = alt;
@@ -57,12 +66,8 @@ public class City implements Serializable {
 
     public void setName(String name) { this.name = name; }
 
-    public String getCountry() {
-        return country;
-    }
-
     public String getTimezone() {
-        return timezone;
+        return tzCalc;
     }
 
     public float getLatitude() {
@@ -88,5 +93,35 @@ public class City implements Serializable {
 
     public String toLongString() {
         return name + " (" + timezone + ")";
+    }
+
+    public String serialize() {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(baos);
+            oos.writeObject(this);
+            oos.close();
+            return Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static City deserialize(String str) {
+        try {
+            byte [] data = Base64.decode(str, Base64.DEFAULT);
+            ObjectInputStream ois = new ObjectInputStream(
+                    new ByteArrayInputStream(data));
+            City city = (City) ois.readObject();
+            ois.close();
+            return city;
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 }

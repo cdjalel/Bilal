@@ -59,7 +59,7 @@
             </intent-filter>
         </receiver>
 
-        <service android:name=".AthanService" android:enabled="true"/>
+        <service android:name=".services.AthanService" android:enabled="true"/>
 
     </application>
 

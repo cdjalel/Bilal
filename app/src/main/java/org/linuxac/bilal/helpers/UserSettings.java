@@ -27,7 +27,10 @@ import android.util.Log;
 
 import org.arabeyes.prayertime.Method;
 import org.arabeyes.prayertime.Prayer;
+import org.linuxac.bilal.BuildConfig;
 import org.linuxac.bilal.R;
+import org.linuxac.bilal.databases.LocationsDBHelper;
+import org.linuxac.bilal.datamodels.City;
 
 public class UserSettings {
     private static String TAG = "UserSettings";
@@ -136,17 +139,41 @@ public class UserSettings {
         return Integer.parseInt(str);
     }
 
-    public static int getCityID(Context context) {
+    public static City getCity(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        return sharedPref.getInt("locations_search_city", -1);
+        String cityStream = sharedPref.getString("locations_search_city", "");
+        if (!cityStream.isEmpty()) {
+            return City.deserialize(cityStream);
+        }
+        return null;
     }
 
+    public static void setCity(Context context, City city) {
+        String cityStream = city.serialize();
+        if (null != cityStream) {
+            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putString("locations_search_city", cityStream);
+            editor.apply();
+        }
+    }
 
-    public static void setCityID(Context context, int id) {
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putInt("locations_search_city", id);
-        editor.apply();
+    public static void updateCity(Context context, String locale)
+    {
+        City city = getCity(context);
+        if (null != city) {
+            String language = locale.startsWith("ar")? "AR" : "EN";
+            city = (new LocationsDBHelper(context)).getCity(city.getId(), language);
+            if (null != city) {
+                setCity(context, city);
+            }
+        }
+    }
+
+    public static String getCityName(Context context)
+    {
+        City city = getCity(context);
+        return null != city ? city.toShortString() : context.getString(R.string.pref_undefined_city);
     }
 
     public static int getCalculationMethod(Context context) {

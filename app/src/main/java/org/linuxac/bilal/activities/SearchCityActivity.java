@@ -31,7 +31,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import org.linuxac.bilal.BuildConfig;
 import org.linuxac.bilal.R;
 import org.linuxac.bilal.adapters.CityListAdapter;
 import org.linuxac.bilal.databases.LocationsDBHelper;
@@ -43,10 +42,10 @@ import java.util.List;
 public class SearchCityActivity extends AppCompatActivity
         implements SearchView.OnQueryTextListener, AdapterView.OnItemClickListener {
     private static String TAG = "SearchCityActivity";
-    private LocationsDBHelper mDBHelper; // TODO: static?
+    private LocationsDBHelper mDBHelper;
     private CityListAdapter mCityListAdapter;
     private ListView mCityListView;
-
+    private String mLanguage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +54,8 @@ public class SearchCityActivity extends AppCompatActivity
 
         mDBHelper = new LocationsDBHelper(this);
         mDBHelper.openReadable();
+
+        mLanguage = UserSettings.getLocale(this).startsWith("ar")? "AR" : "EN";
 
         SearchView searchView = (SearchView) findViewById(R.id.search_city_box);
         searchView.setOnQueryTextListener(this);
@@ -73,6 +74,14 @@ public class SearchCityActivity extends AppCompatActivity
         setIntent(intent);
         handleIntent(intent);
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // update locale in case user changed it meanwhile
+        mLanguage = UserSettings.getLocale(this).startsWith("ar")? "AR" : "EN";
+    }
+
 
     @Override
     public boolean onQueryTextSubmit(String query) {
@@ -118,7 +127,7 @@ public class SearchCityActivity extends AppCompatActivity
 
     private void searchCity(String query)
     {
-        List<City> cityList = mDBHelper.searchCity(query);
+        List<City> cityList = mDBHelper.searchCity(query, mLanguage);
 
         if (cityList != null){
             mCityListAdapter = new CityListAdapter(this, cityList);
@@ -133,13 +142,12 @@ public class SearchCityActivity extends AppCompatActivity
         City item = (City) mCityListAdapter.getItem(i);
         Log.i(TAG, "Selected city: " + item);
 
-        // save new value
-        UserSettings.setCityID(this, item.getId());
+        // save new city
+        UserSettings.setCity(this, item);
 
         // adapt preference summary
         Intent resultIntent = new Intent();
         resultIntent.putExtra("name", item.getName());
-        //resultIntent.putExtra("id", item.getId());
         setResult(Activity.RESULT_OK, resultIntent);
         finish();
     }

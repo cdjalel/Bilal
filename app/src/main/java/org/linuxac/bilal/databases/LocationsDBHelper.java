@@ -37,7 +37,6 @@
 package org.linuxac.bilal.databases;
 
 import org.linuxac.bilal.datamodels.City;
-import org.linuxac.bilal.helpers.UserSettings;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -58,12 +57,10 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
 
     private SQLiteDatabase mDatabase;
     private int mOpenMode = -1;
-    private final Context mContext;
 
     public LocationsDBHelper(Context context) {
 	    super(context, DATABASE_NAME, null, DATABASE_VERSION);
         mOpenMode = DATABASE_CLOSED;
-        mContext = context;
     }
 
     public void openReadable()
@@ -115,21 +112,21 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
         mDatabase = null;
     }
 
-    public City getCity(int id)
+    // called only when other settings affecting DB (e.g., language) changes
+    public City getCity(int id, String language)
     {
         if (-1 >= id) {
             Log.e(TAG, "Bad city id: " + id);
             return null;
         }
 
-        String locale = UserSettings.getLocale(mContext).startsWith("ar")? "AR" : "EN";
-
         String query =
                 "SELECT " +
                     "cities.cityId as id, " +
-                    "cities.name"+locale+", " +
-                    "countries.name"+locale + ", " +
-                    "timezones.nameEN, " +          // used for PT calculations not for display
+                    "cities.name"+language + ", " +
+                    "countries.name"+language + ", " +
+                    "timezones.name"+language + ", " +
+                    "timezones.nameEN, " +          // used for PT calculations only
                     "cities.latitude, " +
                     "cities.longitude, " +
                     "cities.altitude " +
@@ -149,9 +146,10 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
                     cursor.getString(1),
                     cursor.getString(2),
                     cursor.getString(3),
-                    cursor.getFloat(4),
+                    cursor.getString(4),
                     cursor.getFloat(5),
-                    cursor.getInt(6)
+                    cursor.getFloat(6),
+                    cursor.getInt(7)
                 );
         }
         cursor.close();
@@ -161,21 +159,21 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
         return city;
     }
 
-    public List<City> searchCity(String city)
+    // Remaining methods are called only for city search
+    public List<City> searchCity(String city, String language)
     {
         if (null == mDatabase) {
             Log.w(TAG, "Open database first!");
             return null;
         }
 
-        String locale = UserSettings.getLocale(mContext).startsWith("ar")? "AR" : "EN";
-
         String query =
                 "SELECT " +
                     "cities.cityId, " +
-                    "cities.name"+locale+" as name, " +
-                    "countries.name"+locale + ", " +
-                    "timezones.name"+locale + ", " +
+                    "cities.name"+language + " as name, " +
+                    "countries.name"+language + ", " +
+                    "timezones.name"+language + ", " +
+                    "timezones.nameEN, " +          // used for PT calculations only
                     "cities.latitude, " +
                     "cities.longitude, " +
                     "cities.altitude " +
@@ -194,9 +192,10 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
                     cursor.getString(1),
                     cursor.getString(2),
                     cursor.getString(3),
-                    cursor.getFloat(4),
+                    cursor.getString(4),
                     cursor.getFloat(5),
-                    cursor.getInt(6)
+                    cursor.getFloat(6),
+                    cursor.getInt(7)
             ));
         }
         cursor.close();
@@ -205,21 +204,20 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
         return cityList;
     }
 
-    public List<City> searchCity(double lat, double lng)
+    public List<City> searchCity(double lat, double lng, String language)
     {
         if (null == mDatabase) {
             Log.w(TAG, "Open database first!");
             return null;
         }
 
-        String locale = UserSettings.getLocale(mContext).startsWith("ar")? "AR" : "EN";
-
         String query =
                 "SELECT " +
                     "cities.cityId, " +
-                    "cities.name"+locale+", " +
-                    "countries.name"+locale + ", " +
-                    "timezones.name"+locale + ", " +
+                    "cities.name"+language + ", " +
+                    "countries.name"+language + ", " +
+                    "timezones.name"+language + ", " +
+                    "timezones.nameEN, " +          // used for PT calculations only
                     "cities.latitude as lat, " +
                     "cities.longitude, " +
                     "cities.altitude " +
@@ -240,9 +238,10 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
                     cursor.getString(1),
                     cursor.getString(2),
                     cursor.getString(3),
-                    cursor.getFloat(4),
+                    cursor.getString(4),
                     cursor.getFloat(5),
-                    cursor.getInt(6)
+                    cursor.getFloat(6),
+                    cursor.getInt(7)
             ));
         }
         cursor.close();
@@ -251,16 +250,14 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
         return cityList;
     }
 
-    public List<String> getAllTimezones()
+    public List<String> getAllTimezones(String language)
     {
         if (null == mDatabase) {
             Log.d(TAG, "Open DB first!");
             return null;
         }
 
-        String locale = UserSettings.getLocale(mContext).startsWith("ar")? "AR" : "EN";
-
-        String query = "SELECT name"+locale+" FROM timezones";
+        String query = "SELECT name"+language + " FROM timezones";
 
         Cursor cursor = mDatabase.rawQuery(query, null);
 
@@ -274,16 +271,14 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
         return timezones;
     }
 
-    public List<String> getAllCountries()
+    public List<String> getAllCountries(String language)
     {
         if (null == mDatabase) {
             Log.d(TAG, "Open DB first!");
             return null;
         }
 
-        String locale = UserSettings.getLocale(mContext).startsWith("ar")? "AR" : "EN";
-
-        String query = "SELECT name"+locale+" FROM countries";
+        String query = "SELECT name"+language + " FROM countries";
 
         Cursor cursor = mDatabase.rawQuery(query, null);
 
@@ -297,21 +292,20 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
         return countries;
     }
 
-    public List<City> getCities(String country)
+    public List<City> getCities(String country, String language)
     {
         if (null == mDatabase) {
             Log.d(TAG, "Open DB first!");
             return null;
         }
 
-        String locale = UserSettings.getLocale(mContext).startsWith("ar")? "AR" : "EN";
-
         String query =
                 "SELECT " +
                     "cities.cityId, " +
-                    "cities.name"+locale + ", " +
-                    "countries.name"+locale + " as name, " +
-                    "timezones.name"+locale + ", " +
+                    "cities.name"+language + ", " +
+                    "countries.name"+language + " as name, " +
+                    "timezones.name"+language + ", " +
+                    "timezones.nameEN, " +          // used for PT calculations only
                     "cities.latitude, " +
                     "cities.longitude, " +
                     "cities.altitude " +
@@ -329,9 +323,10 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
                     cursor.getString(1),
                     cursor.getString(2),
                     cursor.getString(3),
-                    cursor.getFloat(4),
+                    cursor.getString(4),
                     cursor.getFloat(5),
-                    cursor.getInt(6)
+                    cursor.getFloat(6),
+                    cursor.getInt(7)
             ));
         }
         cursor.close();

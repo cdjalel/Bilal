@@ -24,7 +24,6 @@ import android.content.Context;
 import android.util.Log;
 
 import org.arabeyes.prayertime.Prayer;
-import org.linuxac.bilal.AlarmScheduler;
 import org.linuxac.bilal.BuildConfig;
 import org.linuxac.bilal.R;
 
@@ -40,12 +39,10 @@ public class PrayerTimes {
     private GregorianCalendar next;
     private int c;                          // current prayer index
     private int n;                          // next prayer index
-    private String cityName;
     private boolean rounded;
 
-    public PrayerTimes(GregorianCalendar now, GregorianCalendar[] all, String cityName, boolean rounded) {
+    public PrayerTimes(GregorianCalendar now, GregorianCalendar[] all, boolean rounded) {
         this.all = all;
-        this.cityName = cityName;
         this.rounded = rounded;
         findCurrent(now);
     }
@@ -83,7 +80,7 @@ public class PrayerTimes {
                 // use "fajr" instead of "next fajr"
                 // FALLTHROUGH
             case 0:
-                prayerNameResId = R.string.fajr_en;
+                prayerNameResId = R.string.fajr;
                 break;
             case 1:
                 prayerNameResId = R.string.shuruk;
@@ -162,10 +159,5 @@ public class PrayerTimes {
         }
         current = all[c];
         next = all[n];
-    }
-
-    public String getCityName(Context context)
-    {
-        return null != cityName ? cityName : context.getString(R.string.pref_undefined_city);
     }
 }

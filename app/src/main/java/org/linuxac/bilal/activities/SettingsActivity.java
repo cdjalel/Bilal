@@ -26,6 +26,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.ListPreference;
@@ -37,11 +38,12 @@ import android.support.v7.app.ActionBar;
 import android.util.Log;
 import android.view.MenuItem;
 
-import org.linuxac.bilal.AlarmScheduler;
+import org.linuxac.bilal.PrayerTimesManager;
 import org.linuxac.bilal.helpers.UserSettings;
 import org.linuxac.bilal.R;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.arabeyes.prayertime.Method;
 
@@ -185,13 +187,61 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_general);
 
-            // Bind the summaries of EditText/List/Dialog/Ringtone preferences
-            // to their values. When their values change, their summaries are
-            // updated to reflect the new value, per the Android Design
-            // guidelines.
-            bindPreferenceSummaryToValue(findPreference("general_language"));
-            // TODO: Need to trigger UI locale reconfig in a separate listener?
+            // Set method summary to current user setting
+            ListPreference listPref = (ListPreference) findPreference("general_language");
+            Context ctxt = listPref.getContext();
+            int index = listPref.findIndexOfValue(UserSettings.getLocale(ctxt));
+            listPref.setSummary(index >= 0 ? listPref.getEntries()[index] : null);
+
+            listPref.setOnPreferenceChangeListener(sGeneralPrefsListener);
         }
+
+        private /*static*/ Preference.OnPreferenceChangeListener sGeneralPrefsListener = new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object value) {
+                String stringValue = value.toString();
+                String key = preference.getKey();
+                Context ctxt = preference.getContext();
+
+                switch (key) {
+                    case "general_language":
+                        // For list preferences, look up the correct display value in
+                        // the preference's 'entries' list.
+                        ListPreference listPreference = (ListPreference) preference;
+                        int index = listPreference.findIndexOfValue(stringValue);
+
+                        // Set the summary to reflect the new value.
+                        preference.setSummary(index >= 0 ? listPreference.getEntries()[index] : null);
+
+                        // Change locale?
+                        if (!stringValue.equals(UserSettings.getLocale(ctxt))) {
+                            Log.d(TAG, "New locale: " + stringValue);
+
+                            // update saves city as it depends on language
+                            UserSettings.updateCity(ctxt, stringValue);
+
+                            // update UI
+                            Locale locale = new Locale(stringValue);
+                            Locale.setDefault(locale);
+                            ctxt = ctxt.getApplicationContext();
+                            Resources res = ctxt.getResources();
+                            Configuration config = res.getConfiguration();
+                            config.setLocale(locale);
+                            res.updateConfiguration(config, res.getDisplayMetrics());
+                            // TODO input locale for Search
+                        }
+                    break;
+
+                default:
+                    // For other preferences, set the summary to the value's
+                    // simple string representation.
+                    //preference.setSummary(stringValue);
+                    break;
+                }
+
+                return true;
+            }
+        };
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
@@ -206,7 +256,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // Set summary to current user setting
             Preference pref = findPreference("locations_search_city");
             Context ctxt = pref.getContext();
-            pref.setSummary(AlarmScheduler.getCityName(ctxt));
+            pref.setSummary(UserSettings.getCityName(ctxt));
 
             // bind listener to start SearchCity activity
             pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -245,53 +295,54 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 String key = preference.getKey();
                 Context ctxt = preference.getContext();
 
-                if (key.equals("locations_method")) {
-                    // For list preferences, look up the correct display value in
-                    // the preference's 'entries' list.
-                    ListPreference listPreference = (ListPreference) preference;
-                    int index = listPreference.findIndexOfValue(stringValue);
+                switch (key) {
+                    case "locations_method":
+                        // For list preferences, look up the correct display value in
+                        // the preference's 'entries' list.
+                        ListPreference listPreference = (ListPreference) preference;
+                        int index = listPreference.findIndexOfValue(stringValue);
 
-                    // Set the summary to reflect the new value.
-                    preference.setSummary(index >= 0 ? listPreference.getEntries()[index] : null);
+                        // Set the summary to reflect the new value.
+                        preference.setSummary(index >= 0 ? listPreference.getEntries()[index] : null);
 
-                    // Trigger new cacl if value change
-                    index += Method.V2_MWL;
-                    int oldMethodIdx = UserSettings.getCalculationMethod(ctxt);
-                    if (oldMethodIdx != index) {
-                        Log.d(TAG, "New calc method: " + index);
+                        // Trigger new cacl if value change
+                        index += Method.V2_MWL;
+                        int oldMethodIdx = UserSettings.getCalculationMethod(ctxt);
+                        if (oldMethodIdx != index) {
+                            Log.d(TAG, "New calc method: " + index);
 
-                        // Mathhab hanafi pref. only for Karachi method.
-                        if (3 == (index - Method.V2_MWL)) {
-                            mMathhabPref.setEnabled(true);
-                        } else {
-                            mMathhabPref.setEnabled(false);
+                            // Mathhab hanafi pref. only for Karachi method.
+                            if (3 == (index - Method.V2_MWL)) {
+                                mMathhabPref.setEnabled(true);
+                            } else {
+                                mMathhabPref.setEnabled(false);
+                            }
+
+                            PrayerTimesManager.handleLocationChange(ctxt, index, -1, -1);
                         }
-
-                        AlarmScheduler.handleLocationChange(ctxt, index, -1, -1);
-                    }
+                        break;
+                    case "locations_rounding":
+                        // Trigger new cacl if value change
+                        int oldRound = UserSettings.getRounding(ctxt);
+                        int newRound = stringValue.equals("true") ? 1 : 0;
+                        if (oldRound != newRound) {
+                            PrayerTimesManager.handleLocationChange(ctxt, -1, newRound, -1);
+                        }
+                        break;
+                    case "locations_mathhab_hanafi":
+                        // Trigger new cacl if value change
+                        boolean oldMathhab = UserSettings.isMathhabHanafi(ctxt);
+                        boolean newMathhab = stringValue.equals("true");
+                        if (oldMathhab != newMathhab) {
+                            PrayerTimesManager.handleLocationChange(ctxt, -1, -1, newMathhab ? 2 : 1);
+                        }
+                        break;
+                    default:
+                        // For other preferences, set the summary to the value's
+                        // simple string representation.
+                        //preference.setSummary(stringValue);
+                        break;
                 }
-                else if (key.equals("locations_rounding")) {
-                    // Trigger new cacl if value change
-                    int oldRound  = UserSettings.getRounding(ctxt);
-                    int newRound = stringValue.equals("true")? 1 : 0;
-                    if (oldRound != newRound) {
-                        AlarmScheduler.handleLocationChange(ctxt, -1, newRound, -1);
-                    }
-                }
-                else if (key.equals("locations_mathhab_hanafi")) {
-                    // Trigger new cacl if value change
-                    boolean oldMathhab  = UserSettings.isMathhabHanafi(ctxt);
-                    boolean newMathhab = stringValue.equals("true");
-                    if (oldMathhab != newMathhab) {
-                        AlarmScheduler.handleLocationChange(ctxt, -1, -1, newMathhab ? 2 : 1);
-                    }
-                }
-                else {
-                    // For other preferences, set the summary to the value's
-                    // simple string representation.
-                    //preference.setSummary(stringValue);
-                }
-
                 return true;
             }
         };
@@ -304,7 +355,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                     Preference pref = findPreference("locations_search_city");
                     pref.setSummary(data.getStringExtra("name"));
 
-                    AlarmScheduler.handleLocationChange(getActivity(), -1, -1, -1);
+                    PrayerTimesManager.handleLocationChange(getActivity(), -1, -1, -1);
                 }
                 //else if (resultCode == Activity.RESULT_CANCELED) {
                 //}
@@ -340,10 +391,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 Log.d(TAG, "sNotifPrayerTimeListener: " + newValue.toString());
                 if (newValue.toString().equals("true")) {
-                    AlarmScheduler.enableAlarm(preference.getContext());
+                    PrayerTimesManager.enableAlarm(preference.getContext());
                 }
                 else {
-                    AlarmScheduler.disableAlarm(preference.getContext());
+                    PrayerTimesManager.disableAlarm(preference.getContext());
                 }
                 return sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, newValue);
             }
