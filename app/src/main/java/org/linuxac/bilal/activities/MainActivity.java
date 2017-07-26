@@ -269,39 +269,32 @@ public class MainActivity extends AppCompatActivity implements
         mTextViewDate = (TextView) findViewById(R.id.textViewDate);
         mTextViewPrayers = new TextView[][] {
             {
-                    (TextView) findViewById(R.id.textViewFajrAR),
-                    (TextView) findViewById(R.id.textViewFajr),
-                    (TextView) findViewById(R.id.textViewFajrEN)
+                    (TextView) findViewById(R.id.textViewFajrName),
+                    (TextView) findViewById(R.id.textViewFajrTime)
             },
             {
-                    (TextView) findViewById(R.id.textViewSunriseAR),
-                    (TextView) findViewById(R.id.textViewSunrise),
-                    (TextView) findViewById(R.id.textViewSunriseEN)
+                    (TextView) findViewById(R.id.textViewSunriseName),
+                    (TextView) findViewById(R.id.textViewSunriseTime)
             },
             {
-                    (TextView) findViewById(R.id.textViewDhuhurAR),
-                    (TextView) findViewById(R.id.textViewDhuhur),
-                    (TextView) findViewById(R.id.textViewDhuhurEN)
+                    (TextView) findViewById(R.id.textViewDhuhrName),
+                    (TextView) findViewById(R.id.textViewDhuhrTime)
             },
             {
-                    (TextView) findViewById(R.id.textViewAsrAR),
-                    (TextView) findViewById(R.id.textViewAsr),
-                    (TextView) findViewById(R.id.textViewAsrEN)
+                    (TextView) findViewById(R.id.textViewAsrName),
+                    (TextView) findViewById(R.id.textViewAsrTime)
             },
             {
-                    (TextView) findViewById(R.id.textViewMaghribAR),
-                    (TextView) findViewById(R.id.textViewMaghrib),
-                    (TextView) findViewById(R.id.textViewMaghribEN)
+                    (TextView) findViewById(R.id.textViewMaghribName),
+                    (TextView) findViewById(R.id.textViewMaghribTime)
             },
             {
-                    (TextView) findViewById(R.id.textViewIshaAR),
-                    (TextView) findViewById(R.id.textViewIsha),
-                    (TextView) findViewById(R.id.textViewIshaEN)
+                    (TextView) findViewById(R.id.textViewIshaName),
+                    (TextView) findViewById(R.id.textViewIshaTime)
             },
             {
-                    (TextView) findViewById(R.id.textViewNextFajrAR),
-                    (TextView) findViewById(R.id.textViewNextFajr),
-                    (TextView) findViewById(R.id.textViewNextFajrEN)
+                    (TextView) findViewById(R.id.textViewNextFajrName),
+                    (TextView) findViewById(R.id.textViewNextFajrTime)
             }
         };
 
@@ -348,21 +341,19 @@ public class MainActivity extends AppCompatActivity implements
             mTextViewPrayers[i][1].setText(PrayerTimesManager.formatPrayer(i));
         }
 
-        // change Dhuhur to Jumuaa if needed.
+        // change Dhuhr to Jumuaa if needed.
         if (now.get(Calendar.DAY_OF_WEEK) == Calendar.FRIDAY) {
-            mTextViewPrayers[2][0].setText(getString(R.string.jumu3a_ar));
-            mTextViewPrayers[2][2].setText(getString(R.string.jumu3a_en));
+            mTextViewPrayers[2][0].setText(getString(R.string.jumu3a));
             mIsJumu3a = true;
         }
         else if (mIsJumu3a) {
-            mTextViewPrayers[2][0].setText(getString(R.string.dhuhur_ar));
-            mTextViewPrayers[2][2].setText(getString(R.string.dhuhur_en));
+            mTextViewPrayers[2][0].setText(getString(R.string.dhuhr));
             mIsJumu3a = false;
         }
 
         // Reset old important prayer to normal
         if (mImportant != -1) {
-            for (j = 0; j < 3; j++) {
+            for (j = 0; j < mTextViewPrayers[0].length; j++) {
                 mTextViewPrayers[mImportant][j].setTypeface(null, Typeface.NORMAL);
                 mTextViewPrayers[mImportant][j].clearAnimation();
             }
@@ -378,7 +369,7 @@ public class MainActivity extends AppCompatActivity implements
             anim.setDuration(BLINK_DURATION);
             anim.setRepeatMode(Animation.REVERSE);
             anim.setRepeatCount(BLINK_COUNT);
-            for (j = 0; j < 3; j++) {
+            for (j = 0; j < mTextViewPrayers[0].length; j++) {
                 mTextViewPrayers[mImportant][j].setTypeface(null, Typeface.BOLD );
                 mTextViewPrayers[mImportant][j].startAnimation(anim);
             }
@@ -389,7 +380,7 @@ public class MainActivity extends AppCompatActivity implements
             // Bold Next Prayers
             mImportant = PrayerTimesManager.getNextPrayerIndex();
             for (i = 0; i < Prayer.NB_PRAYERS + 1; i++) {
-                for (j = 0; j < 3; j++) {
+                for (j = 0; j < mTextViewPrayers[0].length; j++) {
                     mTextViewPrayers[mImportant][j].setTypeface(null, Typeface.BOLD);
                 }
             }

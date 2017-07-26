@@ -86,7 +86,7 @@ public class PrayerTimes {
                 prayerNameResId = R.string.shuruk;
                 break;
             case 2:
-                prayerNameResId = R.string.dhuhur;
+                prayerNameResId = R.string.dhuhr;
                 break;
             case 3:
                 prayerNameResId = R.string.asr;
