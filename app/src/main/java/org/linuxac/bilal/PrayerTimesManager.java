@@ -35,7 +35,6 @@ import org.arabeyes.prayertime.Prayer;
 import org.arabeyes.prayertime.PrayerTime;
 import org.linuxac.bilal.helpers.PrayerTimes;
 import org.linuxac.bilal.helpers.UserSettings;
-import org.linuxac.bilal.databases.LocationsDBHelper;
 import org.linuxac.bilal.datamodels.City;
 import org.linuxac.bilal.receivers.AlarmReceiver;
 import org.linuxac.bilal.receivers.BootAndTimeChangeReceiver;
@@ -233,7 +232,7 @@ public class PrayerTimesManager {
         Date today = nowCal.getTime();
         GregorianCalendar[] ptCal = new GregorianCalendar[Prayer.NB_PRAYERS + 1];
 
-        TimeZone tz = TimeZone.getTimeZone(city.getTimezone());
+        TimeZone tz = TimeZone.getTimeZone(city.getTimezoneEN());
 
         double gmtDiffHrs = tz.getOffset(nowCal.getTimeInMillis()) / (1000 * 3600);   // TODO nowCal TZ?
         int dst = tz.inDaylightTime(nowCal.getTime()) ? 1 : 0;

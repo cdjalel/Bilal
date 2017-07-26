@@ -170,7 +170,10 @@ public class UserSettings {
     private static City updateCity(Context context, String language) {
         City city = getCity(context);
         if (null != city) {
-            city = (new LocationsDBHelper(context)).getCity(city.getId(), language.toUpperCase());
+            LocationsDBHelper dbHelper = new LocationsDBHelper(context);
+            dbHelper.openReadable();
+            city = dbHelper.getCity(city.getId(), language.toUpperCase());
+            dbHelper.close();
             if (null != city) {
                 setCity(context, city);
                 return city;

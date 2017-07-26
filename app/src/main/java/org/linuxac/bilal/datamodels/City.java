@@ -35,19 +35,19 @@ public class City implements Serializable {
     private int id;
     private String name;
     private String country;
+    private String timezoneEN;
     private String timezone;
-    private String tzCalc;
     private float latitude;
     private float longitude;
     private float altitude;
     private String countryCode;
 
-    public City(int i, String n, String c, String tz, String tzC, float lat, float lon, float alt, String cc) {
+    public City(int i, String n, String c, String tzE, String tz, float lat, float lon, float alt, String cc) {
         id = i;
         name = n;
         country = c;
+        timezoneEN = tzE;
         timezone = tz;
-        tzCalc = tzC;
         latitude = lat;
         longitude = lon;
         altitude = alt;
@@ -70,9 +70,7 @@ public class City implements Serializable {
 
     public String getCountryCode() { return countryCode; }
 
-    public String getTimezone() {
-        return tzCalc;
-    }
+    public String getTimezoneEN() { return timezoneEN; }
 
     public float getLatitude() {
         return latitude;

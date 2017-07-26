@@ -142,10 +142,12 @@ public class SearchCityActivity extends AppCompatActivity
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
         City newCity = (City) mCityListAdapter.getItem(i);
+        // get city name in Locale as search could be in EN
+        newCity = mDBHelper.getCity(newCity.getId(), mLanguage);
         Log.i(TAG, "Selected city: " + newCity);
 
         City oldCity = UserSettings.getCity(this);
-        if (null != oldCity && oldCity.getId() != newCity.getId()) {
+        if (null == oldCity || oldCity.getId() != newCity.getId()) {
             // save new city
             UserSettings.setCity(this, newCity);
 

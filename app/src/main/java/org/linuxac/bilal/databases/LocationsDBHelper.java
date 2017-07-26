@@ -55,6 +55,33 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
     private static final int DATABASE_CLOSED = -1;
     // Add tables and keys names
 
+    private static final String FORMAT_CITY_QUERY_PREFIX =
+            "SELECT\n" +
+                    "cities.cityId as id,\n";
+    private static final String FORMAT_CITY_QUERY_SUFFIX =
+                    "cities.name%s as nameL,\n" +           // Local name
+                    "countries.name%s as country,\n" +
+                    "timezones.nameEN,\n" +                 // used calculations, not display
+                    "timezones.name%s,\n" +
+                    "cities.latitude as lat,\n" +
+                    "cities.longitude as lng,\n" +
+                    "cities.altitude,\n" +
+                    "cities.countryCode\n" +
+            "FROM cities\n" +
+            "INNER JOIN countries ON cities.countryCode = countries.countryCode\n" +
+            "INNER JOIN timezones ON timezones.tzId = cities.tzId\n" +
+            "%s;";          // WHERE placeholder
+
+
+    private static final String FORMAT_CITY_QUERY_2NAMES =
+            FORMAT_CITY_QUERY_PREFIX +
+                    "cities.nameEN as nameEN,\n" +
+            FORMAT_CITY_QUERY_SUFFIX;
+
+    private static final String FORMAT_CITY_QUERY_1NAME =
+            FORMAT_CITY_QUERY_PREFIX + FORMAT_CITY_QUERY_SUFFIX;
+
+
     private SQLiteDatabase mDatabase;
     private int mOpenMode = -1;
 
@@ -112,6 +139,18 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
         mDatabase = null;
     }
 
+    private String prepareCityQuery(String format, String nameL, String language, String where) {
+        String query = String.format(format,
+                nameL,      // city local name
+                language,   // country
+                language,   // timezone
+                where);
+        Log.d(TAG, query);
+        return query;
+    }
+
+    // Caller is in charge of DB open/close as it might issue many calls to browse DB.
+
     // called only when other settings affecting DB (e.g., language) changes
     public City getCity(int id, String language)
     {
@@ -120,48 +159,29 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
             return null;
         }
 
-        String query =
-                "SELECT " +
-                    "cities.cityId as id, " +
-                    "cities.name"+language + ", " +
-                    "countries.name"+language + ", " +
-                    "timezones.name"+language + ", " +
-                    "timezones.nameEN, " +          // used for PT calculations only
-                    "cities.latitude, " +
-                    "cities.longitude, " +
-                    "cities.altitude, " +
-                    "cities.countryCode " +
-                "FROM cities " +
-                "INNER JOIN countries ON cities.countryCode = countries.countryCode " +
-                "INNER JOIN timezones ON timezones.tzId = cities.tzId " +
-                "WHERE id = ?";
-        Log.d(TAG, query);
-
-        openReadable();
+        String query = prepareCityQuery(FORMAT_CITY_QUERY_2NAMES, language, language, "WHERE id = ?");
         Cursor cursor = mDatabase.rawQuery(query, new String[] {String.valueOf(id)});
-
         City city = null;
         if (cursor.moveToNext()) {
             city = new City(
                     cursor.getInt(0),
-                    cursor.getString(1),
-                    cursor.getString(2),
+                    cursor.getString(2).isEmpty()? cursor.getString(1):cursor.getString(2),
                     cursor.getString(3),
                     cursor.getString(4),
-                    cursor.getFloat(5),
+                    cursor.getString(5),
                     cursor.getFloat(6),
-                    cursor.getInt(7),
-                    cursor.getString(8)
+                    cursor.getFloat(7),
+                    cursor.getInt(8),
+                    cursor.getString(9)
                 );
         }
         cursor.close();
-        close();
         Log.d(TAG, "city:\n" + city);
 
         return city;
     }
 
-    // Remaining methods are called only for city search
+    // Remaining methods are called only for city search.
     public List<City> searchCity(String city, String language)
     {
         if (null == mDatabase) {
@@ -169,25 +189,16 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
             return null;
         }
 
-        String query =
-                "SELECT " +
-                    "cities.cityId, " +
-                    "cities.name"+language + " as name, " +
-                    "countries.name"+language + ", " +
-                    "timezones.name"+language + ", " +
-                    "timezones.nameEN, " +          // used for PT calculations only
-                    "cities.latitude, " +
-                    "cities.longitude, " +
-                    "cities.altitude, " +
-                    "cities.countryCode " +
-                "FROM cities " +
-                "INNER JOIN countries ON cities.countryCode = countries.countryCode " +
-                "INNER JOIN timezones ON timezones.tzId = cities.tzId " +
-                "WHERE name LIKE ?";
+        city = "%"+city+"%";
 
-        Log.d(TAG, query);
-        Cursor cursor = mDatabase.rawQuery(query, new String[] {"%"+city+"%"});
-
+        // search local name column first, then fall back to english name if none
+        String query = prepareCityQuery(FORMAT_CITY_QUERY_1NAME, language, language, "WHERE nameL LIKE ?");
+        Cursor cursor = mDatabase.rawQuery(query, new String[] {city});
+        if (cursor.getCount() == 0) {
+            cursor.close();
+            query = prepareCityQuery(FORMAT_CITY_QUERY_1NAME, "EN", language, "WHERE nameL LIKE ?");
+            cursor = mDatabase.rawQuery(query, new String[] {city});
+        }
         List<City> cityList = new ArrayList<>();
         while (cursor.moveToNext()) {
             cityList.add(new City(
@@ -215,22 +226,8 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
             return null;
         }
 
-        String query =
-                "SELECT " +
-                    "cities.cityId, " +
-                    "cities.name"+language + ", " +
-                    "countries.name"+language + ", " +
-                    "timezones.name"+language + ", " +
-                    "timezones.nameEN, " +          // used for PT calculations only
-                    "cities.latitude as lat, " +
-                    "cities.longitude, " +
-                    "cities.altitude, " +
-                    "cities.countryCode " +
-                "FROM cities " +
-                "INNER JOIN countries ON cities.countryCode = countries.countryCode " +
-                "INNER JOIN timezones ON timezones.tzId = cities.tzId " +
-                "WHERE lat BETWEEN ? AND ? AND lng BETWEEN ? AND ?";
-        Log.d(TAG, query);
+        String query = prepareCityQuery(FORMAT_CITY_QUERY_2NAMES, language, language,
+                "WHERE lat BETWEEN ? AND ? AND lng BETWEEN ? AND ?");
 
         Cursor cursor = mDatabase.rawQuery(query, new String[] {
             String.valueOf(lat - 0.08), String.valueOf(lat + 0.08),
@@ -240,14 +237,14 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
         while (cursor.moveToNext()) {
             cityList.add(new City(
                     cursor.getInt(0),
-                    cursor.getString(1),
-                    cursor.getString(2),
+                    cursor.getString(2).isEmpty()? cursor.getString(1):cursor.getString(2),
                     cursor.getString(3),
                     cursor.getString(4),
-                    cursor.getFloat(5),
+                    cursor.getString(5),
                     cursor.getFloat(6),
-                    cursor.getInt(7),
-                    cursor.getString(8)
+                    cursor.getFloat(7),
+                    cursor.getInt(8),
+                    cursor.getString(9)
             ));
         }
         cursor.close();
@@ -305,21 +302,8 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
             return null;
         }
 
-        String query =
-                "SELECT " +
-                    "cities.cityId, " +
-                    "cities.name"+language + ", " +
-                    "countries.name"+language + " as name, " +
-                    "timezones.name"+language + ", " +
-                    "timezones.nameEN, " +          // used for PT calculations only
-                    "cities.latitude, " +
-                    "cities.longitude, " +
-                    "cities.altitude, " +
-                    "cities.countryCode " +
-                "FROM cities" +
-                "INNER JOIN countries ON cities.countryCode = countries.countryCode " +
-                "INNER JOIN timezones ON timezones.tzId = cities.tzId " +
-                "WHERE name LIKE ?";
+        String query = prepareCityQuery(FORMAT_CITY_QUERY_2NAMES, language, language,
+                "WHERE country LIKE ?");
 
         Cursor cursor = mDatabase.rawQuery(query, new String[] {"%"+country+"%"});
 
@@ -327,14 +311,14 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
         while (cursor.moveToNext()) {
             cities.add(new City(
                     cursor.getInt(0),
-                    cursor.getString(1),
-                    cursor.getString(2),
+                    cursor.getString(2).isEmpty()? cursor.getString(1):cursor.getString(2),
                     cursor.getString(3),
                     cursor.getString(4),
-                    cursor.getFloat(5),
+                    cursor.getString(5),
                     cursor.getFloat(6),
-                    cursor.getInt(7),
-                    cursor.getString(8)
+                    cursor.getFloat(7),
+                    cursor.getInt(8),
+                    cursor.getString(9)
             ));
         }
         cursor.close();
