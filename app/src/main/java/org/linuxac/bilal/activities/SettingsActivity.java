@@ -23,7 +23,9 @@ package org.linuxac.bilal.activities;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Build;
@@ -32,7 +34,6 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
-import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBar;
 import android.util.Log;
 import android.view.MenuItem;
@@ -44,6 +45,7 @@ import org.linuxac.bilal.R;
 import java.util.List;
 
 import org.arabeyes.prayertime.Method;
+import org.linuxac.bilal.services.AthanService;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -112,54 +114,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     }
 
     /**
-     * A preference value change listener that updates the preference's summary
-     * to reflect its new value.
-     */
-    private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
-        @Override
-        public boolean onPreferenceChange(Preference preference, Object value) {
-            String stringValue = value.toString();
-
-            if (preference instanceof ListPreference) {
-                // For list preferences, look up the correct display value in
-                // the preference's 'entries' list.
-                ListPreference listPreference = (ListPreference) preference;
-                int index = listPreference.findIndexOfValue(stringValue);
-
-                // Set the summary to reflect the new value.
-                preference.setSummary(index >= 0 ? listPreference.getEntries()[index] : null);
-
-            } else {
-                // For all other preferences, set the summary to the value's
-                // simple string representation.
-                preference.setSummary(stringValue);
-            }
-            return true;
-        }
-    };
-
-    /**
-     * Binds a preference's summary to its value. More specifically, when the
-     * preference's value is changed, its summary (line of text below the
-     * preference title) is updated to reflect the value. The summary is also
-     * immediately updated upon calling this method. The exact display format is
-     * dependent on the type of preference.
-     *
-     * @see #sBindPreferenceSummaryToValueListener
-     */
-    private static void bindPreferenceSummaryToValue(Preference preference) {
-        // Set the listener to watch for value changes.
-        preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
-
-        // Trigger the listener immediately with the preference's
-        // current value.
-        sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
-                PreferenceManager
-                        .getDefaultSharedPreferences(preference.getContext())
-                        .getString(preference.getKey(), ""));
-    }
-
-    /**
      * This method stops fragment injection in malicious applications.
      * Make sure to deny any unknown fragments here.
      */
@@ -171,11 +125,17 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 || NotificationPreferenceFragment.class.getName().equals(fragmentName);
     }
 
+    private static int setListPrefSummary(Preference pref, String value) {
+        ListPreference listPref = (ListPreference) pref;
+        int index = listPref.findIndexOfValue(value);
+        listPref.setSummary(index >= 0 ? listPref.getEntries()[index] : null);
+        return index;
+    }
+
     /**
      * This fragment shows general preferences only. It is used when the
      * activity is showing a two-pane settings UI.
      */
-
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static class GeneralPreferenceFragment extends PreferenceFragment {
         @Override
@@ -183,13 +143,12 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_general);
 
-            // Set method summary to current user setting
-            ListPreference listPref = (ListPreference) findPreference("general_language");
-            Context ctxt = listPref.getContext();
-            int index = listPref.findIndexOfValue(UserSettings.getLanguage(ctxt));
-            listPref.setSummary(index >= 0 ? listPref.getEntries()[index] : null);
+            // Set language summary to current user setting
+            Preference pref = findPreference("general_language");
+            setListPrefSummary(pref, UserSettings.getLanguage(pref.getContext()));
 
-            listPref.setOnPreferenceChangeListener(sGeneralPrefsListener);
+            // bind it to change listener
+            pref.setOnPreferenceChangeListener(sGeneralPrefsListener);
         }
 
         private /*static*/ Preference.OnPreferenceChangeListener sGeneralPrefsListener = new Preference.OnPreferenceChangeListener() {
@@ -197,24 +156,19 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             public boolean onPreferenceChange(Preference preference, Object value) {
                 String stringValue = value.toString();
                 String key = preference.getKey();
-                Context ctxt = preference.getContext();
+                Context context = preference.getContext();
 
                 switch (key) {
                     case "general_language":
-                        // For list preferences, look up the correct display value in
-                        // the preference's 'entries' list.
-                        ListPreference listPreference = (ListPreference) preference;
-                        int index = listPreference.findIndexOfValue(stringValue);
-
                         // Set the summary to reflect the new value.
-                        preference.setSummary(index >= 0 ? listPreference.getEntries()[index] : null);
+                        setListPrefSummary(preference, stringValue);
 
                         // Change locale?
-                        if (!stringValue.equals(UserSettings.getLanguage(ctxt))) {
+                        if (!stringValue.equals(UserSettings.getLanguage(context))) {
                             Log.d(TAG, "New language: " + stringValue);
-                            UserSettings.setLocale(ctxt, stringValue, null);
+                            UserSettings.setLocale(context, stringValue, null);
                             // refresh UI (framework part) with new Locale
-                            Intent intent = new Intent(ctxt, MainActivity.class);
+                            Intent intent = new Intent(context, MainActivity.class);
                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                             startActivity(intent);
                         }
@@ -241,12 +195,12 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_locations);
 
-            // Set summary to current user setting
+            // Set city summary to current user setting
             Preference pref = findPreference("locations_search_city");
-            Context ctxt = pref.getContext();
-            pref.setSummary(UserSettings.getCityName(ctxt));
+            Context context = pref.getContext();
+            pref.setSummary(UserSettings.getCityName(context));
 
-            // bind listener to start SearchCity activity
+            // bind on click listener to start SearchCityActivity
             pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                     @Override
                     public boolean onPreferenceClick(Preference preference) {
@@ -256,20 +210,25 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                     }
                    });
 
+
             // Set method summary to current user setting
-            ListPreference listPref = (ListPreference) findPreference("locations_method");
-            int index = UserSettings.getCalculationMethod(ctxt) - Method.V2_MWL;
-            listPref.setSummary(index >= 0 ? listPref.getEntries()[index] : null);
+            pref = findPreference("locations_method");
+            int index = setListPrefSummary(pref,
+                    String.valueOf(UserSettings.getCalculationMethod(context)));
+            // Bind to onchange listener
+            pref.setOnPreferenceChangeListener(sMethodChangeListener);
 
-            listPref.setOnPreferenceChangeListener(sMethodChangeListener);
 
+            // Bind to change listener
             pref = findPreference("locations_rounding");
             pref.setOnPreferenceChangeListener(sMethodChangeListener);
 
+
+            // Bind mathhab pref to its change listener
             mMathhabPref = findPreference("locations_mathhab_hanafi");
             mMathhabPref.setOnPreferenceChangeListener(sMethodChangeListener);
             // Mathhab hanafi pref. only for Karachi method.
-            if (3 == index) {
+            if (index + Method.V2_MWL == Method.V2_KARACHI) {
                 mMathhabPref.setEnabled(true);
             } else {
                 mMathhabPref.setEnabled(false);
@@ -280,48 +239,43 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             @Override
             public boolean onPreferenceChange(Preference preference, Object value) {
                 String stringValue = value.toString();
-                Context ctxt = preference.getContext();
+                Context context = preference.getContext();
 
                 switch (preference.getKey()) {
                     case "locations_method":
-                        // For list preferences, look up the correct display value in
-                        // the preference's 'entries' list.
-                        ListPreference listPreference = (ListPreference) preference;
-                        int index = listPreference.findIndexOfValue(stringValue);
-
                         // Set the summary to reflect the new value.
-                        preference.setSummary(index >= 0 ? listPreference.getEntries()[index] : null);
+                        int index = setListPrefSummary(preference, stringValue);
 
                         // Trigger new cacl if value change
                         index += Method.V2_MWL;
-                        int oldMethodIdx = UserSettings.getCalculationMethod(ctxt);
+                        int oldMethodIdx = UserSettings.getCalculationMethod(context);
                         if (oldMethodIdx != index) {
                             Log.d(TAG, "New calc method: " + index);
 
                             // Mathhab hanafi pref. only for Karachi method.
-                            if (3 == (index - Method.V2_MWL)) {
+                            if (index == Method.V2_KARACHI) {
                                 mMathhabPref.setEnabled(true);
                             } else {
                                 mMathhabPref.setEnabled(false);
                             }
 
-                            PrayerTimesManager.handleLocationChange(ctxt, index, -1, -1);
+                            PrayerTimesManager.handleLocationChange(context, index, -1, -1);
                         }
                         break;
                     case "locations_rounding":
                         // Trigger new cacl if value change
-                        int oldRound = UserSettings.getRounding(ctxt);
+                        int oldRound = UserSettings.getRounding(context);
                         int newRound = stringValue.equals("true") ? 1 : 0;
                         if (oldRound != newRound) {
-                            PrayerTimesManager.handleLocationChange(ctxt, -1, newRound, -1);
+                            PrayerTimesManager.handleLocationChange(context, -1, newRound, -1);
                         }
                         break;
                     case "locations_mathhab_hanafi":
                         // Trigger new cacl if value change
-                        boolean oldMathhab = UserSettings.isMathhabHanafi(ctxt);
+                        boolean oldMathhab = UserSettings.isMathhabHanafi(context);
                         boolean newMathhab = stringValue.equals("true");
                         if (oldMathhab != newMathhab) {
-                            PrayerTimesManager.handleLocationChange(ctxt, -1, -1, newMathhab ? 2 : 1);
+                            PrayerTimesManager.handleLocationChange(context, -1, -1, newMathhab ? 2 : 1);
                         }
                         break;
                     default:
@@ -350,7 +304,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         }
     }
 
-
     /**
      * This fragment shows notification preferences only. It is used when the
      * activity is showing a two-pane settings UI.
@@ -362,14 +315,16 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_notifications);
 
-            // Bind the summaries of EditText/List/Dialog/Ringtone preferences
-            // to their values. When their values change, their summaries are
-            // updated to reflect the new value, per the Android Design
-            // guidelines.
-            bindPreferenceSummaryToValue(findPreference("notifications_muezzin"));
-
+            // Bind prayer time pref to its change listener
             Preference pref = findPreference("notifications_prayer_time");
             pref.setOnPreferenceChangeListener(sNotifPrayerTimeListener);
+
+            // Bind muezzin to its change listener
+            pref = findPreference("notifications_muezzin");
+            pref.setOnPreferenceChangeListener(sMuezzinChangeListener);
+
+            // Set summary to current value
+            setListPrefSummary(pref, UserSettings.getMuezzin(pref.getContext()));
         }
 
         private static Preference.OnPreferenceChangeListener sNotifPrayerTimeListener =
@@ -383,7 +338,60 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 else {
                     PrayerTimesManager.disableAlarm(preference.getContext());
                 }
-                return sBindPreferenceSummaryToValueListener.onPreferenceChange(preference, newValue);
+                return true;
+            }
+        };
+
+        private static Preference.OnPreferenceChangeListener sMuezzinChangeListener =
+        new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                final String stringValue = newValue.toString();
+                final Context context = preference.getContext();
+                final ListPreference listPref = (ListPreference) preference;
+                int index = listPref.findIndexOfValue(stringValue);
+                final String name = index >= 0 ? listPref.getEntries()[index].toString() : "";
+
+                Log.d(TAG, "sMuezzinChangeListener: " + name);
+
+                // start Athan Audio
+                Intent audioIntent = new Intent(context, AthanService.class);
+                audioIntent.putExtra(AthanService.EXTRA_PRAYER, 2);
+                audioIntent.putExtra(AthanService.EXTRA_MUEZZIN, stringValue);
+                context.startService(audioIntent);
+
+                // Use the Builder class for convenient dialog construction
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                builder.setMessage(context.getString(R.string.select_muezzin, name))
+                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                listPref.setValue(stringValue);
+                                listPref.setSummary(name);
+                                UserSettings.setMuezzin(context, stringValue);
+                                stopAthan(context);
+                            }
+                        })
+                        .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                stopAthan(context);
+                            }
+                        })
+                        .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                            @Override
+                            public void onDismiss(DialogInterface dialog) {
+                                stopAthan(context);
+                            }
+                        })
+                        .create()
+                        .show();
+
+                return false;
+            }
+
+            private void stopAthan(Context context) {
+                // stop athan audio
+                Intent stopIntent = new Intent(context, AthanService.class);
+                context.stopService(stopIntent);
             }
         };
     }

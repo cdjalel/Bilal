@@ -34,29 +34,32 @@ import android.util.Log;
 
 import org.linuxac.bilal.PrayerTimesManager;
 import org.linuxac.bilal.helpers.UserSettings;
-import org.linuxac.bilal.receivers.AlarmReceiver;
 
 import java.io.IOException;
 
 
 public class AthanService extends Service implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener, AudioManager.OnAudioFocusChangeListener  {
-    protected static final String TAG = "AthanAudioService";
+    private static final String TAG = "AthanAudioService";
+    public static final String EXTRA_PRAYER = "org.linuxac.bilal.PRAYER";
+    public static final String EXTRA_MUEZZIN = "org.linuxac.bilal.MUEZZIN";
 
     private int mPrayerIndex;
+    private String mMuezzin;
     private MediaPlayer mAudioPlayer = null;
     private BroadcastReceiver mVolumeChangeReceiver = null;
 
     public int onStartCommand(Intent intent, int flags, int startId) {
-        mPrayerIndex = PrayerTimesManager.getNextPrayerIndex();
-        if (-1 == mPrayerIndex) {
-            if (null != intent) {
-                mPrayerIndex = intent.getIntExtra(AlarmReceiver.EXTRA_PRAYER_INDEX, 0);
-            } else {
-                Log.w(TAG, "onStartCommand: intent == null");
-                mPrayerIndex = 2;        // 80% chance correct :)
-            }
+        if (null != intent) {
+            Log.e(TAG, "onStartCommand: intent == null");
+            mPrayerIndex = intent.getIntExtra(EXTRA_PRAYER, 2);
+            mMuezzin = intent.getStringExtra(EXTRA_MUEZZIN);
         }
+        else { // fallback
+            mPrayerIndex = PrayerTimesManager.getNextPrayerIndex();
+            mMuezzin = UserSettings.getMuezzin(this);
+        }
+
         initMediaPlayer();
         registerVolumeChangeReceiver();
         return Service.START_NOT_STICKY;
@@ -85,7 +88,7 @@ public class AthanService extends Service implements MediaPlayer.OnPreparedListe
         if (null == mAudioPlayer) {
             mAudioPlayer = new MediaPlayer();
             String path = "android.resource://" + getPackageName() + "/" +
-                    UserSettings.getMuezzin(this, mPrayerIndex);
+                    UserSettings.getMuezzinRes(mMuezzin, mPrayerIndex);
 
             try {
                 mAudioPlayer.setDataSource(this, Uri.parse(path));
@@ -158,11 +161,11 @@ public class AthanService extends Service implements MediaPlayer.OnPreparedListe
         }
         unregisterReceiver(mVolumeChangeReceiver);
     }
-	
+
 	public void onPause() {
         if (mAudioPlayer.isPlaying()) mAudioPlayer.stop();
 	}
-	
+
 	public void onDestroy() {
         onStop();
     }

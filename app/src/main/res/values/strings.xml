@@ -87,13 +87,13 @@
 
     <string name="pref_title_muezzin">Muezzin</string>
     <string-array name="pref_muezzin_list_titles">
-        <item>Abdulbaset Abdesamad - Egypt</item>
-        <item>Ali Mullah - Mecca</item>
-        <item>Naser Alqatami - Al-Riyadh</item>
-        <item>Abdulmajeed Aserehy - Al-Madinah</item>
-        <item>İsmail Coşar - Turkey</item>
-        <item>Kefah Issa - Palestine</item>
-        <item>Riad Aït-Hamou - Algeria</item>
+        <item>Abdulbaset Abdesamad (Egypt)</item>
+        <item>Ali Mullah (Mecca)</item>
+        <item>Naser Alqatami (Al-Riyadh)</item>
+        <item>Abdulmajeed Aserehy (Al-Madinah)</item>
+        <item>İsmail Coşar (Turkey)</item>
+        <item>Kefah Issa (Palestine)</item>
+        <item>Riad Aït-Hamou (Algeria)</item>
     </string-array>
     <string-array name="pref_muezzin_list_values">
         <item>ABDELBASET</item>
@@ -104,6 +104,7 @@
         <item>KEFAH</item>
         <item>RIAD</item>
     </string-array>
+    <string name="select_muezzin">Select muezzin %1$s?</string>
 
     <string name="pref_title_notification">Screen and smart watch message</string>
 

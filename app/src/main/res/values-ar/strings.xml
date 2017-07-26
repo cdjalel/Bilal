@@ -87,13 +87,13 @@
 
     <string name="pref_title_muezzin">المؤذن</string>
     <string-array name="pref_muezzin_list_titles">
-        <item>عبد الباسط عبد الصمد - مصر</item>
-        <item>علي ملا - مكة</item>
-        <item>ناصر القطامي - الرياض</item>
-        <item>عبد المجيد السريحي - المدينة</item>
-        <item>إسماعيل جُشر - تركيا</item>
-        <item>كفاح عيسى - فلسطين</item>
-        <item>رياض آيت حمو - الجزائر</item>
+        <item>عبد الباسط عبد الصمد (مصر)</item>
+        <item>علي ملا (مكة)</item>
+        <item>ناصر القطامي (الرياض)</item>
+        <item>عبد المجيد السريحي (المدينة)</item>
+        <item>إسماعيل جُشر (تركيا)</item>
+        <item>كفاح عيسى (فلسطين)</item>
+        <item>رياض آيت حمو (الجزائر)</item>
     </string-array>
     <string-array name="pref_muezzin_list_values">
         <item>ABDELBASET</item>
@@ -104,6 +104,7 @@
         <item>KEFAH</item>
         <item>RIAD</item>
     </string-array>
+    <string name="select_muezzin">اختيار المؤذن %1$s؟</string>
 
     <string name="pref_title_notification">على الشاشة وعلى الساعة الذكية</string>
 

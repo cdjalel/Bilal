@@ -44,15 +44,12 @@ import static android.content.Context.VIBRATOR_SERVICE;
 public class AlarmReceiver extends BroadcastReceiver
 {
     protected static final String TAG = "AlarmReceiver";
-    public static final String EXTRA_PRAYER_INDEX = "org.linuxac.bilal";
 
     @Override
     public void onReceive(Context context, Intent intent)
     {
-        String alarmTxt = intent.getStringExtra(EXTRA_PRAYER_INDEX);
-        Log.i(TAG, "Athan alarm is ON: " + alarmTxt);
-
-        int index = Integer.parseInt(alarmTxt.substring(0,1));          // 1st char = prayer index
+        int prayer = intent.getIntExtra(AthanService.EXTRA_PRAYER, 2);
+        Log.i(TAG, "Athan alarm is ON: " + prayer);
 
         if (UserSettings.isVibrateEnabled(context)) {
             // this is independent of notification setVibrate
@@ -63,12 +60,13 @@ public class AlarmReceiver extends BroadcastReceiver
         if (UserSettings.isAthanEnabled(context)) {
             // don't use notification setSound as system can stop and we can't!
             Intent audioIntent = new Intent(context, AthanService.class);
-            audioIntent.putExtra(EXTRA_PRAYER_INDEX, index);
+            audioIntent.putExtra(AthanService.EXTRA_PRAYER, prayer);
+            audioIntent.putExtra(AthanService.EXTRA_MUEZZIN, UserSettings.getMuezzin(context));
             context.startService(audioIntent);
         }
 
         if (UserSettings.isNotificationEnabled(context)) {
-            showNotification(context, index);
+            showNotification(context, prayer);
         }
 
         // Broadcast to MainActivity so it updates its screen if on

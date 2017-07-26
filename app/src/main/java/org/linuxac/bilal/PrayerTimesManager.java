@@ -38,6 +38,7 @@ import org.linuxac.bilal.helpers.UserSettings;
 import org.linuxac.bilal.datamodels.City;
 import org.linuxac.bilal.receivers.AlarmReceiver;
 import org.linuxac.bilal.receivers.BootAndTimeChangeReceiver;
+import org.linuxac.bilal.services.AthanService;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -95,7 +96,7 @@ public class PrayerTimesManager {
     {
         if (BuildConfig.DEBUG && null == sPrayerTimes) {
             Log.w(TAG, "sPrayerTimes == null");
-            return -1;
+            return 2;           // fallback to dhuhr
         }
         return sPrayerTimes.getNextIndex();
     }
@@ -281,7 +282,7 @@ public class PrayerTimesManager {
     {
         int idx = null == sPrayerTimes? 2 : sPrayerTimes.getNextIndex();
         Intent intent = new Intent(context, AlarmReceiver.class);
-        intent.putExtra(AlarmReceiver.EXTRA_PRAYER_INDEX, "" + idx);
+        intent.putExtra(AthanService.EXTRA_PRAYER, idx);
         return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
     }
 

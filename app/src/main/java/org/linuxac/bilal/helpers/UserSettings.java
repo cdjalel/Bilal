@@ -58,14 +58,25 @@ public class UserSettings {
         return res;
     }
 
-    public static int getMuezzin(Context context, int i) {
-        int resId;
+    public static void setMuezzin(Context context, String newValue) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        String muezzin = sharedPref.getString("notifications_muezzin", "ABDELBASET");
-        Log.d(TAG, "notifications_muezzin = " + muezzin);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString("notifications_muezzin", newValue);
+        editor.apply();
+    }
 
-        if (i == 0 || i == Prayer.NB_PRAYERS) {
-            switch (muezzin) {
+    public static String getMuezzin(Context context) {
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+        String name = sharedPref.getString("notifications_muezzin", "ABDELBASET");
+        Log.d(TAG, "notifications_muezzin = " + name);
+        return name;
+    }
+
+    public static int getMuezzinRes(String name, int prayerIdx) {
+        int resId;
+
+        if (prayerIdx == 0 || prayerIdx == Prayer.NB_PRAYERS) {
+            switch (name) {
                 case "ABDELBASET":
                     resId = R.raw.abdulbaset_fajr;
                     break;
@@ -93,7 +104,7 @@ public class UserSettings {
             }
         }
         else {
-            switch (muezzin) {
+            switch (name) {
                 case "ABDELBASET":
                     resId = R.raw.abdulbaset;
                     break;
@@ -209,7 +220,7 @@ public class UserSettings {
         return sharedPref.getString("general_language", "ar"); // TODO flag icons
     }
 
-    public static Locale getLocale(Context context) {
+    private static Locale getLocale(Context context) {
         String lang = getLanguage(context);
         City city = getCity(context);
         return null != city ? new Locale(lang, city.getCountryCode()) : new Locale(lang);
