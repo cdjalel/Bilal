@@ -91,7 +91,13 @@ public class MainActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
-    // TODO sort out launch mode
+
+        // MainActivity launch mode is default, so a its task is :
+        // - (re)created when started by the notification manager (from AlarmReceiver) as it uses
+        //    Intent.FLAG_ACTIVITY_NEW_TASK
+        // - cleared (i.e. all activities are finished, especially the Settings one) as it hte latter
+        //   starts this one with Intent.FLAG_ACTIVITY_NEW_TASK when Language changes to force UI refresh.
+
         UserSettings.loadLocale(this);
 
         setContentView(R.layout.activity_main);
