@@ -41,6 +41,19 @@
     </string-array>
     <string name="pref_language_default_value">ar</string>
 
+    <string name="pref_title_numerals">الأرقام</string>
+    <string-array name="pref_numerals_list_titles">
+        <item>تبع للموقع</item>
+        <item>عربية</item>
+        <item>شرق أوسطية</item>
+    </string-array>
+    <string-array name="pref_numerals_list_values">
+        <item>CC</item>
+        <item>DZ</item>
+        <item>EG</item>
+    </string-array>
+    <string name="pref_numerals_default_value">CC</string>
+
     <!-- Example settings for Data & Sync -->
     <string name="pref_header_data_sync">Data &amp; sync</string>
 

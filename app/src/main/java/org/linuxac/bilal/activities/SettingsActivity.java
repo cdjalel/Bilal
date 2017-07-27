@@ -145,10 +145,25 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
             // Set language summary to current user setting
             Preference pref = findPreference("general_language");
-            setListPrefSummary(pref, UserSettings.getLanguage(pref.getContext()));
+            String language = UserSettings.getLanguage(pref.getContext());
+            setListPrefSummary(pref, language);
 
             // bind it to change listener
             pref.setOnPreferenceChangeListener(sGeneralPrefsListener);
+
+
+            // Set numerals summary to current user setting
+            pref = findPreference("general_numerals");
+            setListPrefSummary(pref, UserSettings.getNumerals(pref.getContext()));
+
+            // bind it to change listener
+            pref.setOnPreferenceChangeListener(sGeneralPrefsListener);
+            // Numerals pref. available only when language is arabic.
+            if (language.equals(getString(R.string.pref_language_default_value))) {
+                pref.setEnabled(true);
+            } else {
+                pref.setEnabled(false);
+            }
         }
 
         private /*static*/ Preference.OnPreferenceChangeListener sGeneralPrefsListener = new Preference.OnPreferenceChangeListener() {
@@ -167,10 +182,30 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                         if (!stringValue.equals(UserSettings.getLanguage(context))) {
                             Log.d(TAG, "New language: " + stringValue);
                             UserSettings.setLocale(context, stringValue, null);
-                            // refresh UI (framework part) with new Locale
-                            Intent intent = new Intent(context, MainActivity.class);
-                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                            startActivity(intent);
+
+                            // numerals pref. only ON for arabic.
+                            Preference numeralsPref = findPreference("general_numerals");
+                            if (stringValue.equals(
+                                    context.getString(R.string.pref_language_default_value))) {
+                                numeralsPref.setEnabled(true);
+                            }
+                            else {
+                                numeralsPref.setEnabled(false);
+                            }
+
+                            refreshUI(context);
+                        }
+                    break;
+
+                    case  "general_numerals":
+                        // Set the summary to reflect the new value.
+                        setListPrefSummary(preference, stringValue);
+
+                        // Change locale?
+                        if (!stringValue.equals(UserSettings.getNumerals(context))) {
+                            Log.d(TAG, "New numerals: " + stringValue);
+                            UserSettings.setLocale(context, null, stringValue);
+                            refreshUI(context);
                         }
                     break;
 
@@ -183,13 +218,18 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
                 return true;
             }
+
+            private void refreshUI(Context context) {
+                // refresh UI (framework part) with new Locale
+                Intent intent = new Intent(context, MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+            }
         };
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static class LocationsPreferenceFragment extends PreferenceFragment {
-        private static Preference mMathhabPref;
-
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
@@ -213,8 +253,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
             // Set method summary to current user setting
             pref = findPreference("locations_method");
-            int index = setListPrefSummary(pref,
-                    String.valueOf(UserSettings.getCalculationMethod(context)));
+            int method = UserSettings.getCalculationMethod(context);
+            setListPrefSummary(pref, String.valueOf(method));
             // Bind to onchange listener
             pref.setOnPreferenceChangeListener(sMethodChangeListener);
 
@@ -225,17 +265,17 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
 
             // Bind mathhab pref to its change listener
-            mMathhabPref = findPreference("locations_mathhab_hanafi");
-            mMathhabPref.setOnPreferenceChangeListener(sMethodChangeListener);
+            pref = findPreference("locations_mathhab_hanafi");
+            pref.setOnPreferenceChangeListener(sMethodChangeListener);
             // Mathhab hanafi pref. only for Karachi method.
-            if (index + Method.V2_MWL == Method.V2_KARACHI) {
-                mMathhabPref.setEnabled(true);
+            if (method == Method.V2_KARACHI) {
+                pref.setEnabled(true);
             } else {
-                mMathhabPref.setEnabled(false);
+                pref.setEnabled(false);
             }
         }
 
-        private static Preference.OnPreferenceChangeListener sMethodChangeListener = new Preference.OnPreferenceChangeListener() {
+        private /*static*/ Preference.OnPreferenceChangeListener sMethodChangeListener = new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object value) {
                 String stringValue = value.toString();
@@ -253,10 +293,11 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                             Log.d(TAG, "New calc method: " + index);
 
                             // Mathhab hanafi pref. only for Karachi method.
+                            Preference mathhabPref = findPreference("locations_mathhab_hanafi");
                             if (index == Method.V2_KARACHI) {
-                                mMathhabPref.setEnabled(true);
+                                mathhabPref.setEnabled(true);
                             } else {
-                                mMathhabPref.setEnabled(false);
+                                mathhabPref.setEnabled(false);
                             }
 
                             PrayerTimesManager.handleLocationChange(context, index, -1, -1);

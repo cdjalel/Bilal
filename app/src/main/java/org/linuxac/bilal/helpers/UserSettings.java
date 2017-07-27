@@ -164,10 +164,19 @@ public class UserSettings {
         return null;
     }
 
-    public static void setCity(Context context, City city) {
-        // update Locale as it depends on city country
-        setLocale(context, null, city.getCountryCode());
+    private static boolean numeralsUseCountryCode(Context context, String numerals) {
+        return numerals.equals(context.getString(R.string.pref_numerals_default_value));
+    }
 
+    public static void setCity(Context context, City city) {
+        if (numeralsUseCountryCode(context, getNumerals(context))) {
+            // update Locale as it depends on city country
+            setLocale(context, null, city.getCountryCode());
+        }
+        saveCity(context, city);
+    }
+
+    private static void saveCity(Context context, City city) {
         // serialize & save new city in shared pref.
         String cityStream = city.serialize();
         if (null != cityStream) {
@@ -186,7 +195,7 @@ public class UserSettings {
             city = dbHelper.getCity(city.getId(), language.toUpperCase());
             dbHelper.close();
             if (null != city) {
-                setCity(context, city);
+                saveCity(context, city);
                 return city;
             }
         }
@@ -217,13 +226,26 @@ public class UserSettings {
 
     public static String getLanguage(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        return sharedPref.getString("general_language", "ar"); // TODO flag icons
+        return sharedPref.getString("general_language", "ar"); // TODO drop down button on Main
+    }
+
+    public static String getNumerals(Context context) {
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+        return sharedPref.getString("general_numerals", "CC");
     }
 
     private static Locale getLocale(Context context) {
         String lang = getLanguage(context);
-        City city = getCity(context);
-        return null != city ? new Locale(lang, city.getCountryCode()) : new Locale(lang);
+        String numerals = getNumerals(context);
+        String cc;
+        if (numeralsUseCountryCode(context, numerals)) {
+            City city = getCity(context);
+            cc = null != city ? city.getCountryCode() : null;
+        }
+        else {
+            cc = numerals;
+        }
+        return null != cc? new Locale(lang, cc) : new Locale(lang);
     }
 
     private static void setLocale(Context context, Locale locale) {
@@ -245,18 +267,34 @@ public class UserSettings {
 
     public static void setLocale(Context context, String newLang, String newCC) {
         // saving in shared prefs. is handled by the framework after the caller
+        Log.e(TAG, "setLocale IN: " + newLang +" "+ newCC);
+        City city = null;
 
-        if (null == newLang) {      // there is a new CC
+        if (null != newLang) {
+            // update saved city as it depends on language
+            city = updateCity(context, newLang);
+        }
+        else {
             newLang = getLanguage(context);
         }
-        else {                      // there is a new language
-            // update saved city as it depends on it
-            City city = updateCity(context, newLang);
+
+        if (null == newCC) {
+            newCC = getNumerals(context);
+        }
+
+        if (numeralsUseCountryCode(context, newCC)) {
+            if (null == city) {
+                city = getCity(context);
+            }
             if (null != city) {
                 newCC = city.getCountryCode();
             }
+            else {
+                newCC = null;
+            }
         }
 
+        Log.e(TAG, "setLocale OUT:" + (null != newCC ? newLang +" "+ newCC : newLang));
         setLocale(context, null != newCC ? new Locale(newLang, newCC) : new Locale(newLang));
     }
 

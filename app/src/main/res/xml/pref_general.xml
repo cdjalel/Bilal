@@ -34,4 +34,13 @@
         android:negativeButtonText="@null"
         android:positiveButtonText="@null" />
 
+    <ListPreference
+        android:key="general_numerals"
+        android:title="@string/pref_title_numerals"
+        android:defaultValue="@string/pref_numerals_default_value"
+        android:entries="@array/pref_numerals_list_titles"
+        android:entryValues="@array/pref_numerals_list_values"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null" />
+
 </PreferenceScreen>
