@@ -26,11 +26,9 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Build;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 import org.arabeyes.prayertime.Method;
 import org.arabeyes.prayertime.Prayer;
-import org.linuxac.bilal.BuildConfig;
 import org.linuxac.bilal.R;
 import org.linuxac.bilal.databases.LocationsDBHelper;
 import org.linuxac.bilal.datamodels.City;
@@ -47,14 +45,12 @@ public class UserSettings {
     public static boolean isAlarmEnabled(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         boolean res = sharedPref.getBoolean("notifications_prayer_time", false);
-        Log.d(TAG, "notifications_prayer_time = " + res);
         return res;
     }
 
     public static boolean isAthanEnabled(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         boolean res = sharedPref.getBoolean("notifications_athan", false);
-        Log.d(TAG, "notifications_athan = " + res);
         return res;
     }
 
@@ -68,7 +64,6 @@ public class UserSettings {
     public static String getMuezzin(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         String name = sharedPref.getString("notifications_muezzin", "ABDELBASET");
-        Log.d(TAG, "notifications_muezzin = " + name);
         return name;
     }
 
@@ -138,14 +133,12 @@ public class UserSettings {
     public static boolean isNotificationEnabled(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         boolean res = sharedPref.getBoolean("notifications_screen", false);
-        Log.d(TAG, "notifications_screeh = " + res);
         return res;
     }
 
     public static boolean isVibrateEnabled(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         boolean res = sharedPref.getBoolean("notifications_vibrate", false);
-        Log.d(TAG, "notifications_vibrate = " + res);
         return res;
     }
 
@@ -210,7 +203,6 @@ public class UserSettings {
     public static int getCalculationMethod(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         String method = sharedPref.getString("locations_method", String.valueOf(Method.V2_MWL));
-        Log.w(TAG, "getCalculationMethod: " + method);
         return Integer.parseInt(method);
     }
 
@@ -267,7 +259,6 @@ public class UserSettings {
 
     public static void setLocale(Context context, String newLang, String newCC) {
         // saving in shared prefs. is handled by the framework after the caller
-        Log.e(TAG, "setLocale IN: " + newLang +" "+ newCC);
         City city = null;
 
         if (null != newLang) {
@@ -294,7 +285,6 @@ public class UserSettings {
             }
         }
 
-        Log.e(TAG, "setLocale OUT:" + (null != newCC ? newLang +" "+ newCC : newLang));
         setLocale(context, null != newCC ? new Locale(newLang, newCC) : new Locale(newLang));
     }
 
