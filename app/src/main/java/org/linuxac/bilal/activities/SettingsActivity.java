@@ -145,7 +145,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
             // Set language summary to current user setting
             Preference pref = findPreference("general_language");
-            String language = UserSettings.getLanguage(pref.getContext());
+            String language = UserSettings.getPrefLanguage(pref.getContext());
             setListPrefSummary(pref, language);
 
             // bind it to change listener
@@ -159,7 +159,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // bind it to change listener
             pref.setOnPreferenceChangeListener(sGeneralPrefsListener);
             // Numerals pref. available only when language is arabic.
-            if (language.equals(getString(R.string.pref_language_default_value))) {
+            if (UserSettings.languageIsArabic(getActivity(), language)) {
                 pref.setEnabled(true);
             } else {
                 pref.setEnabled(false);
@@ -179,14 +179,13 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                         setListPrefSummary(preference, stringValue);
 
                         // Change locale?
-                        if (!stringValue.equals(UserSettings.getLanguage(context))) {
+                        if (!stringValue.equals(UserSettings.getPrefLanguage(context))) {
                             Log.d(TAG, "New language: " + stringValue);
                             UserSettings.setLocale(context, stringValue, null);
 
                             // numerals pref. only ON for arabic.
                             Preference numeralsPref = findPreference("general_numerals");
-                            if (stringValue.equals(
-                                    context.getString(R.string.pref_language_default_value))) {
+                            if (UserSettings.languageIsArabic(getActivity(), stringValue)) {
                                 numeralsPref.setEnabled(true);
                             }
                             else {
@@ -336,6 +335,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 if(resultCode == Activity.RESULT_OK){
                     Preference pref = findPreference("locations_search_city");
                     pref.setSummary(data.getStringExtra("name"));
+
+                    // Main UI will be refreshed automatically by it's OnResume
 
                     PrayerTimesManager.handleLocationChange(getActivity(), -1, -1, -1);
                 }

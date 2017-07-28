@@ -32,21 +32,23 @@
 
     <string name="pref_title_language">Language</string>
     <string-array name="pref_language_list_titles">
+        <item>Follow device settings</item>
         <item>Arabic</item>
         <item>English</item>
     </string-array>
     <string-array name="pref_language_list_values">
+        <item>--</item>
         <item>ar</item>
         <item>en</item>
     </string-array>
-    <string name="pref_language_default_value">ar</string>
+    <string name="pref_language_default_value">--</string>
 
     <string name="pref_title_hindu_nbrs">Middle eastern numbers</string>
     <string name="pref_description_hindu_nbrs">٠ ١ ٢ ٣ ٤ ٥ ٦ ٧ ٨ ٩</string>
 
     <string name="pref_title_numerals">Numerals</string>
     <string-array name="pref_numerals_list_titles">
-        <item>Following location</item>
+        <item>Follow location</item>
         <item>Arabic</item>
         <item>Middle eastern</item>
     </string-array>

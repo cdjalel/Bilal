@@ -41,6 +41,7 @@ import org.linuxac.bilal.datamodels.City;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.readystatesoftware.sqliteasset.SQLiteAssetHelper;
@@ -149,6 +150,22 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
         return query;
     }
 
+
+    @NonNull
+    private String sanitizeLanguage(String language) {
+        // TODO update DB & query when a new language support is added
+        switch (language) {
+            case "AR":
+            case "EN":
+                break;
+            default:
+                Log.e(TAG, "Language " + language + " is not supported! Falling back to EN");
+                language = "EN";
+                break;
+        }
+        return language;
+    }
+
     // Caller is in charge of DB open/close as it might issue many calls to browse DB.
 
     // called only when other settings affecting DB (e.g., language) changes
@@ -158,6 +175,8 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
             Log.e(TAG, "Bad city id: " + id);
             return null;
         }
+
+        language = sanitizeLanguage(language);
 
         String query = prepareCityQuery(FORMAT_CITY_QUERY_2NAMES, language, language, "WHERE id = ?");
         Cursor cursor = mDatabase.rawQuery(query, new String[] {String.valueOf(id)});
@@ -181,6 +200,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
         return city;
     }
 
+
     // Remaining methods are called only for city search.
     public List<City> searchCity(String city, String language)
     {
@@ -188,6 +208,8 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
             Log.w(TAG, "Open database first!");
             return null;
         }
+
+        language = sanitizeLanguage(language);
 
         city = "%"+city+"%";
 
@@ -226,6 +248,8 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
             return null;
         }
 
+        language = sanitizeLanguage(language);
+
         String query = prepareCityQuery(FORMAT_CITY_QUERY_2NAMES, language, language,
                 "WHERE lat BETWEEN ? AND ? AND lng BETWEEN ? AND ?");
 
@@ -260,6 +284,8 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
             return null;
         }
 
+        language = sanitizeLanguage(language);
+
         String query = "SELECT name"+language + " FROM timezones";
 
         Cursor cursor = mDatabase.rawQuery(query, null);
@@ -281,6 +307,8 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
             return null;
         }
 
+        language = sanitizeLanguage(language);
+
         String query = "SELECT name"+language + " FROM countries";
 
         Cursor cursor = mDatabase.rawQuery(query, null);
@@ -301,6 +329,8 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
             Log.d(TAG, "Open DB first!");
             return null;
         }
+
+        language = sanitizeLanguage(language);
 
         String query = prepareCityQuery(FORMAT_CITY_QUERY_2NAMES, language, language,
                 "WHERE country LIKE ?");

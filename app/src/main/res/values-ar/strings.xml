@@ -32,14 +32,16 @@
 
     <string name="pref_title_language">اللغة</string>
     <string-array name="pref_language_list_titles">
+        <item>تبع لإعدادات الجهاز</item>
         <item>عربية</item>
         <item>إنجليزية</item>
     </string-array>
     <string-array name="pref_language_list_values">
+        <item>--</item>
         <item>ar</item>
         <item>en</item>
     </string-array>
-    <string name="pref_language_default_value">ar</string>
+    <string name="pref_language_default_value">--</string>
 
     <string name="pref_title_numerals">الأرقام</string>
     <string-array name="pref_numerals_list_titles">

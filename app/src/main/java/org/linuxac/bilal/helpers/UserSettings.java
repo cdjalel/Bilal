@@ -36,11 +36,6 @@ import org.linuxac.bilal.datamodels.City;
 import java.util.Locale;
 
 public class UserSettings {
-    private static String TAG = "UserSettings";
-
-//    public enum Muezzin {
-//        ABDULBASET, ALIMULLA, ALQATAMI, ALQAZAZ, ASEREHY, JOSHAR, RIAD
-//    }
 
     public static boolean isAlarmEnabled(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
@@ -213,18 +208,45 @@ public class UserSettings {
         return sharedPref.getBoolean("locations_rounding", true) ? 1 : 0;
     }
 
+    public static boolean languageUsesDeviceSettings(Context context, String language) {
+        return language.equals(context.getString(R.string.pref_language_default_value));
+    }
+
+    private static String getDeviceLanguage()
+    {
+        return Resources.getSystem().getConfiguration().locale.getLanguage();
+    }
+
     public static String getLanguage(Context context) {
+        String lang = getPrefLanguage(context);
+        if (languageUsesDeviceSettings(context, lang)) {
+            lang = getDeviceLanguage();
+        }
+        return lang;
+    }
+
+    public static String getPrefLanguage(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        return sharedPref.getString("general_language", "ar"); // TODO drop down button on Main
+        return sharedPref.getString("general_language", context.getString(R.string.pref_language_default_value));
+    }
+
+    public static boolean languageIsArabic(Context context, String language)
+    {
+        return language.equals("ar") ||
+                (languageUsesDeviceSettings(context, language) && getDeviceLanguage().equals("ar"));
     }
 
     public static String getNumerals(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        return sharedPref.getString("general_numerals", "CC");
+        return sharedPref.getString("general_numerals", context.getString(R.string.pref_numerals_default_value));
     }
 
     private static Locale getLocale(Context context) {
-        String lang = getLanguage(context);
+        String lang = getPrefLanguage(context);
+        if (languageUsesDeviceSettings(context, lang)) {
+            lang = getDeviceLanguage();
+        }
+
         String numerals = getNumerals(context);
         String cc;
         if (numeralsUseCountryCode(context, numerals)) {
@@ -259,6 +281,9 @@ public class UserSettings {
         City city = null;
 
         if (null != newLang) {
+            if (languageUsesDeviceSettings(context, newLang)) {
+                newLang = getDeviceLanguage();
+            }
             // update saved city as it depends on language
             city = updateCity(context, newLang);
         }
