@@ -44,14 +44,12 @@ public class UserSettings {
 
     public static boolean isAlarmEnabled(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean res = sharedPref.getBoolean("notifications_prayer_time", false);
-        return res;
+        return sharedPref.getBoolean("notifications_prayer_time", false);
     }
 
     public static boolean isAthanEnabled(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean res = sharedPref.getBoolean("notifications_athan", false);
-        return res;
+        return sharedPref.getBoolean("notifications_athan", false);
     }
 
     public static void setMuezzin(Context context, String newValue) {
@@ -63,8 +61,7 @@ public class UserSettings {
 
     public static String getMuezzin(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        String name = sharedPref.getString("notifications_muezzin", "ABDELBASET");
-        return name;
+        return sharedPref.getString("notifications_muezzin", "ABDELBASET");
     }
 
     public static int getMuezzinRes(String name, int prayerIdx) {
@@ -132,21 +129,21 @@ public class UserSettings {
 
     public static boolean isNotificationEnabled(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean res = sharedPref.getBoolean("notifications_screen", false);
-        return res;
+        return sharedPref.getBoolean("notifications_screen", false);
     }
 
     public static boolean isVibrateEnabled(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean res = sharedPref.getBoolean("notifications_vibrate", false);
-        return res;
+        return sharedPref.getBoolean("notifications_vibrate", false);
     }
 
+/*
     private int getPrefSyncFrequency(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         String str = sharedPref.getString("sync_frequency", "180");
         return Integer.parseInt(str);
     }
+*/
 
     public static City getCity(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
