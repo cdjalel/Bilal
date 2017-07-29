@@ -38,9 +38,12 @@ import org.linuxac.bilal.helpers.UserSettings;
 import java.io.IOException;
 
 
-public class AthanService extends Service implements MediaPlayer.OnPreparedListener,
-        MediaPlayer.OnErrorListener, AudioManager.OnAudioFocusChangeListener  {
-    private static final String TAG = "AthanAudioService";
+public class AthanService extends Service implements
+        MediaPlayer.OnPreparedListener,
+        MediaPlayer.OnErrorListener,
+        AudioManager.OnAudioFocusChangeListener
+{
+    private static final String TAG = "AthanService";
     public static final String EXTRA_PRAYER = "org.linuxac.bilal.PRAYER";
     public static final String EXTRA_MUEZZIN = "org.linuxac.bilal.MUEZZIN";
 
@@ -48,24 +51,32 @@ public class AthanService extends Service implements MediaPlayer.OnPreparedListe
     private String mMuezzin;
     private MediaPlayer mAudioPlayer = null;
     private BroadcastReceiver mVolumeChangeReceiver = null;
+    private boolean mReceiverRegistered = false;
 
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d(TAG, "onStartCommand");
+
+        stopAthan();           // athan can be played by Alarm or from settings in parallel
+
         if (null != intent) {
-            Log.e(TAG, "onStartCommand: intent == null");
             mPrayerIndex = intent.getIntExtra(EXTRA_PRAYER, 2);
             mMuezzin = intent.getStringExtra(EXTRA_MUEZZIN);
         }
         else { // fallback
+            Log.e(TAG, "onStartCommand: intent == null");
             mPrayerIndex = PrayerTimesManager.getNextPrayerIndex();
             mMuezzin = UserSettings.getMuezzin(this);
         }
 
-        initMediaPlayer();
         registerVolumeChangeReceiver();
+        initMediaPlayer();
         return Service.START_NOT_STICKY;
     }
 
     private void registerVolumeChangeReceiver() {
+        if (mReceiverRegistered) {
+            return;
+        }
         mVolumeChangeReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -74,7 +85,7 @@ public class AthanService extends Service implements MediaPlayer.OnPreparedListe
                 final int oldLevel = intent.getIntExtra("AudioManager.EXTRA_PREV_VOLUME_STREAM_VALUE", -1);
                 Log.i(TAG, "VOLUME_CHANGED_ACTION stream=" + " level=" + level + " oldLevel=" + oldLevel);
                 if (oldLevel < level) {
-                    onStop();
+                    stopAthan();
                 }
             }
         };
@@ -82,6 +93,14 @@ public class AthanService extends Service implements MediaPlayer.OnPreparedListe
         // Here is an alternative with MediaSession & MediaController
         // https://stackoverflow.com/questions/10154118/listen-to-volume-buttons-in-background-service
         registerReceiver(mVolumeChangeReceiver, new IntentFilter("android.media.VOLUME_CHANGED_ACTION"));
+        mReceiverRegistered = true;
+    }
+
+    private void unregisterVolumeChangeReceiver() {
+        if (mReceiverRegistered) {
+            unregisterReceiver(mVolumeChangeReceiver);
+            mReceiverRegistered = false;
+        }
     }
 
     private void initMediaPlayer() {
@@ -96,7 +115,7 @@ public class AthanService extends Service implements MediaPlayer.OnPreparedListe
                 mAudioPlayer.setOnErrorListener(this);
                 mAudioPlayer.setWakeMode(this, PowerManager.PARTIAL_WAKE_LOCK);
                 mAudioPlayer.prepareAsync(); // prepare async to not block main thread
-                Log.d(TAG, "Audio player started asynchronously!");
+                Log.d(TAG, "Audio player prepared asynchronously!");
             } catch (IOException e) {
                 e.printStackTrace();
                 Log.e(TAG, e.getMessage(), e);
@@ -152,22 +171,23 @@ public class AthanService extends Service implements MediaPlayer.OnPreparedListe
         }
     }
 
-	public void onStop() {
-
+	private void stopAthan() {
 		if (mAudioPlayer != null) {
-            if (mAudioPlayer.isPlaying()) mAudioPlayer.stop();
+            Log.d(TAG, "Stopping Athan");
+            if (mAudioPlayer.isPlaying()) { mAudioPlayer.stop(); }
             mAudioPlayer.release();
             mAudioPlayer = null;
         }
-        unregisterReceiver(mVolumeChangeReceiver);
+        unregisterVolumeChangeReceiver();
     }
 
 	public void onPause() {
-        if (mAudioPlayer.isPlaying()) mAudioPlayer.stop();
+        if (mAudioPlayer.isPlaying()) { mAudioPlayer.stop(); }
 	}
 
 	public void onDestroy() {
-        onStop();
+        Log.d(TAG, "onDestroy");
+        stopAthan();
     }
 
 	@Override
