@@ -75,3 +75,6 @@ Session.vim
 tags
 
 cscope.*
+
+# signning keys
+keystore.properties
