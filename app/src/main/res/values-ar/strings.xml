@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">بلال</string>
+    <string name="app_name">آذان بلال</string>
     <string name="action_settings">الإعدادات</string>
     <string name="time_for">حان وقت صلاة %s</string>
     <string name="time_in">في %s</string>
@@ -47,7 +47,7 @@
     <string-array name="pref_numerals_list_titles">
         <item>تبع للموقع</item>
         <item>عربية</item>
-        <item>شرق أوسطية</item>
+        <item>عربية شرقية</item>
     </string-array>
     <string-array name="pref_numerals_list_values">
         <item>CC</item>
@@ -156,5 +156,9 @@
     <string name="pref_description_mathhab_hanafi">اتباع المذهب الحنفي لوقت العصر</string>
 
     <string name="pref_title_round">تقريب الثواني</string>
+
+    <string name="pref_title_hindu_nbrs">أرقام هندية</string>
+    <string name="pref_description_hindu_nbrs">٠ ١ ٢ ٣ ٤ ٥ ٦ ٧ ٨ ٩</string>
+
 
 </resources>

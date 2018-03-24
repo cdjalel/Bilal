@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Bilal</string>
+    <string name="app_name">Athan Bilal</string>
     <string name="action_settings">Settings</string>
     <string name="time_for">Time for %s prayer</string>
     <string name="time_in">In %s</string>
@@ -43,14 +43,14 @@
     </string-array>
     <string name="pref_language_default_value">--</string>
 
-    <string name="pref_title_hindu_nbrs">Middle eastern numbers</string>
+    <string name="pref_title_hindu_nbrs">Eastern Arabic numerals</string>
     <string name="pref_description_hindu_nbrs">٠ ١ ٢ ٣ ٤ ٥ ٦ ٧ ٨ ٩</string>
 
     <string name="pref_title_numerals">Numerals</string>
     <string-array name="pref_numerals_list_titles">
         <item>Follow location</item>
         <item>Arabic</item>
-        <item>Middle eastern</item>
+        <item>Arabic Eastern</item>
     </string-array>
     <string-array name="pref_numerals_list_values">
         <item>CC</item>
