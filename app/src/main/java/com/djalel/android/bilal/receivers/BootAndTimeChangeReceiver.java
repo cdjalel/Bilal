@@ -34,7 +34,7 @@ public class BootAndTimeChangeReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
-        Log.i(TAG, action);
+        //Log.i(TAG, action);
 
         if (action.equals(Intent.ACTION_BOOT_COMPLETED))
         {

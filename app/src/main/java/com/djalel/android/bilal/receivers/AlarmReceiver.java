@@ -29,11 +29,10 @@ import android.graphics.BitmapFactory;
 import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
-import android.util.Log;
 
 import org.linuxac.bilal.PrayerTimesManager;
 import org.linuxac.bilal.services.AthanService;
-import org.linuxac.bilal.R;
+import bilal.linuxac.bilal.R;
 import org.linuxac.bilal.activities.MainActivity;
 import org.linuxac.bilal.activities.StopAthanActivity;
 import org.linuxac.bilal.helpers.PrayerTimes;
@@ -49,7 +48,7 @@ public class AlarmReceiver extends BroadcastReceiver
     public void onReceive(Context context, Intent intent)
     {
         int prayer = intent.getIntExtra(AthanService.EXTRA_PRAYER, 2);
-        Log.i(TAG, "Athan alarm is ON: " + prayer);
+        //Log.i(TAG, "Athan alarm is ON: " + prayer);
 
         if (UserSettings.isVibrateEnabled(context)) {
             // this is independent of notification setVibrate

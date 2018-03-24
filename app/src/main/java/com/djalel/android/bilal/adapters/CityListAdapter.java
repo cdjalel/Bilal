@@ -6,7 +6,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import org.linuxac.bilal.R;
+import bilal.linuxac.bilal.R;
 import org.linuxac.bilal.datamodels.City;
 
 import java.util.List;

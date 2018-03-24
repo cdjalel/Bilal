@@ -26,12 +26,11 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import org.linuxac.bilal.R;
+import bilal.linuxac.bilal.R;
 import org.linuxac.bilal.adapters.CityListAdapter;
 import org.linuxac.bilal.databases.LocationsDBHelper;
 import org.linuxac.bilal.datamodels.City;
@@ -66,13 +65,13 @@ public class SearchCityActivity extends AppCompatActivity
 
         // Get the intent, verify the action and get the query
         Intent intent = getIntent();
-        Log.i(TAG, "onCreate: intent.action = " + intent.getAction());
+        //Log.i(TAG, "onCreate: intent.action = " + intent.getAction());
         handleIntent(getIntent());
     }
 
     @Override
     public void onNewIntent(Intent intent) {
-        Log.i(TAG, "onNewIntent: intent.action = " + intent.getAction());
+        //Log.i(TAG, "onNewIntent: intent.action = " + intent.getAction());
         setIntent(intent);
         handleIntent(intent);
     }
@@ -87,7 +86,7 @@ public class SearchCityActivity extends AppCompatActivity
 
     @Override
     public boolean onQueryTextSubmit(String query) {
-        Log.i(TAG, "onQueryTextSubmit: " + query);
+        //Log.i(TAG, "onQueryTextSubmit: " + query);
         if (null != query && !query.isEmpty()) {
             searchCity(query);
         }
@@ -101,7 +100,7 @@ public class SearchCityActivity extends AppCompatActivity
 
     @Override
     public boolean onQueryTextChange(String newText) {
-        Log.d(TAG, "onQueryTextChange: " + newText);
+        //Log.d(TAG, "onQueryTextChange: " + newText);
         if (null != newText && !newText.isEmpty()) {
             searchCity(newText);
         }
@@ -144,7 +143,7 @@ public class SearchCityActivity extends AppCompatActivity
         City newCity = (City) mCityListAdapter.getItem(i);
         // get city name in Locale as search could be in EN
         newCity = mDBHelper.getCity(newCity.getId(), mLanguage);
-        Log.i(TAG, "Selected city: " + newCity);
+        //Log.i(TAG, "Selected city: " + newCity);
 
         City oldCity = UserSettings.getCity(this);
         if (null == oldCity || oldCity.getId() != newCity.getId()) {

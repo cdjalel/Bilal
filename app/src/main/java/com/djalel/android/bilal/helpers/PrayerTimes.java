@@ -21,11 +21,10 @@
 package org.linuxac.bilal.helpers;
 
 import android.content.Context;
-import android.util.Log;
 
 import org.arabeyes.prayertime.Prayer;
 import org.linuxac.bilal.BuildConfig;
-import org.linuxac.bilal.R;
+import bilal.linuxac.bilal.R;
 
 import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
@@ -99,7 +98,7 @@ public class PrayerTimes {
                 break;
             default:
                 if (BuildConfig.DEBUG) {
-                    Log.e(TAG, "Invalid prayer index: " + prayer);
+                    //Log.e(TAG, "Invalid prayer index: " + prayer);
                     return "";
                 }
                 break;
@@ -123,7 +122,7 @@ public class PrayerTimes {
     public String format(int i)
     {
         if (BuildConfig.DEBUG  && (i < 0 || i >= all.length || null == all)) {
-            Log.w(TAG, "index out of range or prayers array is null");
+            //Log.w(TAG, "index out of range or prayers array is null");
             return null;
         }
         return format(all[i], rounded? 1:0);

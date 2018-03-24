@@ -68,7 +68,7 @@ public class PrayerTimesManager {
     public static GregorianCalendar getCurrentPrayer()
     {
         if (BuildConfig.DEBUG && null == sPrayerTimes) {
-            Log.w(TAG, "sPrayerTimes == null");
+            //Log.w(TAG, "sPrayerTimes == null");
             return null;
         }
         return sPrayerTimes.getCurrent();
@@ -77,7 +77,7 @@ public class PrayerTimesManager {
     public static int getCurrentPrayerIndex()
     {
         if (BuildConfig.DEBUG && null == sPrayerTimes) {
-            Log.w(TAG, "sPrayerTimes == null");
+            //Log.w(TAG, "sPrayerTimes == null");
             return -1;
         }
         return sPrayerTimes.getCurrentIndex();
@@ -86,7 +86,7 @@ public class PrayerTimesManager {
     public static GregorianCalendar getNextPrayer()
     {
         if (BuildConfig.DEBUG && null == sPrayerTimes) {
-            Log.w(TAG, "sPrayerTimes == null");
+            //Log.w(TAG, "sPrayerTimes == null");
             return null;
         }
         return sPrayerTimes.getNext();
@@ -95,7 +95,7 @@ public class PrayerTimesManager {
     public static int getNextPrayerIndex()
     {
         if (BuildConfig.DEBUG && null == sPrayerTimes) {
-            Log.w(TAG, "sPrayerTimes == null");
+            //Log.w(TAG, "sPrayerTimes == null");
             return 2;           // fallback to dhuhr
         }
         return sPrayerTimes.getNextIndex();
@@ -104,7 +104,7 @@ public class PrayerTimesManager {
     public static String formatPrayer(int i)
     {
         if (BuildConfig.DEBUG && null == sPrayerTimes) {
-            Log.w(TAG, "sPrayerTimes == null");
+            //Log.w(TAG, "sPrayerTimes == null");
             return "";
         }
         return sPrayerTimes.format(i);
@@ -112,14 +112,14 @@ public class PrayerTimesManager {
 
     public static void enableAlarm(Context context)
     {
-        Log.d(TAG, "Enabling Alarm.");
+        //Log.d(TAG, "Enabling Alarm.");
         enableBootAndTimeChangeReceiver(context);
         updatePrayerTimes(context, true);
     }
 
     public static void disableAlarm(Context context)
     {
-        Log.d(TAG, "Disabling Alarm.");
+        //Log.d(TAG, "Disabling Alarm.");
         cancelAlarm(context);
         disableBootAndTimeChangeReceiver(context);
     }
@@ -154,8 +154,8 @@ public class PrayerTimesManager {
     {
         ComponentName receiver = new ComponentName(context, BootAndTimeChangeReceiver.class);
         PackageManager pm = context.getPackageManager();
-        Log.d(TAG, "BootAndTimeChangeReceiver Setting = " +
-                pm.getComponentEnabledSetting(receiver));
+        //Log.d(TAG, "BootAndTimeChangeReceiver Setting = " +
+        //        pm.getComponentEnabledSetting(receiver));
     }
 
     private static void enableBootAndTimeChangeReceiver(Context context)
@@ -193,7 +193,7 @@ public class PrayerTimesManager {
      */
     public static void updatePrayerTimes(Context context, boolean enableAlarm)
     {
-        Log.i(TAG, "--- updatePrayerTimes(..., " + enableAlarm + ")");
+        //Log.i(TAG, "--- updatePrayerTimes(..., " + enableAlarm + ")");
 
         if (BuildConfig.DEBUG) {
             logBootAndTimeChangeReceiverSetting(context);
@@ -201,7 +201,7 @@ public class PrayerTimesManager {
 
         City city = UserSettings.getCity(context);
         if (null == city) {
-            Log.w(TAG, "Location not set! Nothing todo until user chooses a city.");
+            //Log.w(TAG, "Location not set! Nothing todo until user chooses a city.");
             return;
         }
 
@@ -209,15 +209,15 @@ public class PrayerTimesManager {
         // next test includes location & time change see handlers above
         if (null != sPrayerTimes && !sNewCalc && sameDay(sLastTime, nowCal)) {
             sPrayerTimes.updateCurrent(nowCal);
-            Log.d(TAG, "Call it a day :)");
+            //Log.d(TAG, "Call it a day :)");
         }
         else {
             calcPrayerTimes(context, nowCal, city);
         }
 
-        Log.d(TAG, "Current time: " + sPrayerTimes.format(nowCal));
-        Log.d(TAG, "Current prayer: " + sPrayerTimes.getCurrentName(context));
-        Log.i(TAG, "Next prayer: " + sPrayerTimes.getNextName(context));
+        //Log.d(TAG, "Current time: " + sPrayerTimes.format(nowCal));
+        //Log.d(TAG, "Current prayer: " + sPrayerTimes.getCurrentName(context));
+        //Log.i(TAG, "Next prayer: " + sPrayerTimes.getNextName(context));
 
         // In SettingsActivity, listener calls us before setting is committed to shared prefs.
         if (enableAlarm || UserSettings.isAlarmEnabled(context)) {
@@ -237,7 +237,7 @@ public class PrayerTimesManager {
 
         double gmtDiffHrs = tz.getOffset(nowCal.getTimeInMillis()) / (1000 * 3600);   // TODO nowCal TZ?
         int dst = tz.inDaylightTime(nowCal.getTime()) ? 1 : 0;
-        Log.w(TAG, "TZ: gmtDiff = " + gmtDiffHrs + ", DST = " + dst);
+        //Log.w(TAG, "TZ: gmtDiff = " + gmtDiffHrs + ", DST = " + dst);
 
         PTLocation location = new PTLocation(city.getLatitude(), city.getLongitude(),
             gmtDiffHrs, dst, city.getAltitude(), 1010 /* pressure */, 10 /* temperature */);
@@ -252,7 +252,7 @@ public class PrayerTimesManager {
             }
         }
 
-        Log.d(TAG, "Last time: " + PrayerTimes.format(sLastTime, sMethod.round));
+        //Log.d(TAG, "Last time: " + PrayerTimes.format(sLastTime, sMethod.round));
         sLastTime = nowCal;
 
         /* Call the main library function to fill the Prayer times */
@@ -262,7 +262,7 @@ public class PrayerTimesManager {
             ptCal[i].set(Calendar.HOUR_OF_DAY, pt[i].hour);
             ptCal[i].set(Calendar.MINUTE, pt[i].minute);
             ptCal[i].set(Calendar.SECOND, pt[i].second);
-            Log.d(TAG, PrayerTimes.getName(context, i) + " " + PrayerTimes.format(ptCal[i], sMethod.round));
+            //Log.d(TAG, PrayerTimes.getName(context, i) + " " + PrayerTimes.format(ptCal[i], sMethod.round));
         }
 
         PrayerTime nextPT = prayer.getNextDayFajr(location, sMethod, today);
@@ -271,7 +271,7 @@ public class PrayerTimesManager {
         ptCal[i].set(Calendar.HOUR_OF_DAY, nextPT.hour);
         ptCal[i].set(Calendar.MINUTE, nextPT.minute);
         ptCal[i].set(Calendar.SECOND, nextPT.second);
-        Log.d(TAG, context.getString(R.string.nextfajr) + " " + PrayerTimes.format(ptCal[i], sMethod.round));
+        //Log.d(TAG, context.getString(R.string.nextfajr) + " " + PrayerTimes.format(ptCal[i], sMethod.round));
 
         sPrayerTimes = new PrayerTimes(nowCal, ptCal, sMethod.round == 1);
         sMethod = null;
@@ -297,7 +297,7 @@ public class PrayerTimesManager {
         AlarmManager alarmMgr = (AlarmManager) context.getSystemService(ALARM_SERVICE);
         alarmMgr.cancel(sAlarmIntent);
         sAlarmIntent = null;
-        Log.i(TAG, "Old alarm cancelled.");
+        //Log.i(TAG, "Old alarm cancelled.");
     }
 
     private static void scheduleAlarm(Context context)
@@ -305,6 +305,6 @@ public class PrayerTimesManager {
         sAlarmIntent = createAlarmIntent(context);
         AlarmManager alarmMgr = (AlarmManager)context.getSystemService(ALARM_SERVICE);
         alarmMgr.set(AlarmManager.RTC_WAKEUP, sPrayerTimes.getNext().getTimeInMillis(), sAlarmIntent);
-        Log.i(TAG, "New Alarm set for " + sPrayerTimes.format(sPrayerTimes.getNextIndex()));
+        //Log.i(TAG, "New Alarm set for " + sPrayerTimes.format(sPrayerTimes.getNextIndex()));
     }
 }

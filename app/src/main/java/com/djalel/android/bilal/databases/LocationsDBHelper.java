@@ -95,7 +95,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
     {
         switch (mOpenMode) {
             case SQLiteDatabase.OPEN_READONLY:
-                Log.d(TAG, "DB already open readonly!");
+                //Log.d(TAG, "DB already open readonly!");
                 break;
 
             case SQLiteDatabase.OPEN_READWRITE:
@@ -114,7 +114,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
     {
         switch (mOpenMode) {
             case SQLiteDatabase.OPEN_READWRITE:
-                Log.d(TAG, "DB already open readwrite!");
+                //Log.d(TAG, "DB already open readwrite!");
                 break;
 
             case SQLiteDatabase.OPEN_READONLY:
@@ -132,7 +132,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
     public void close()
     {
         if (null == mDatabase) {
-            Log.d(TAG, "DB already closed!");
+            //Log.d(TAG, "DB already closed!");
             return;
         }
         mOpenMode = DATABASE_CLOSED;
@@ -146,7 +146,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
                 language,   // country
                 language,   // timezone
                 where);
-        Log.d(TAG, query);
+        //Log.d(TAG, query);
         return query;
     }
 
@@ -159,7 +159,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
             case "EN":
                 break;
             default:
-                Log.e(TAG, "Language " + language + " is not supported! Falling back to EN");
+                //Log.e(TAG, "Language " + language + " is not supported! Falling back to EN");
                 language = "EN";
                 break;
         }
@@ -172,7 +172,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
     public City getCity(int id, String language)
     {
         if (-1 >= id) {
-            Log.e(TAG, "Bad city id: " + id);
+            //Log.e(TAG, "Bad city id: " + id);
             return null;
         }
 
@@ -195,7 +195,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
                 );
         }
         cursor.close();
-        Log.d(TAG, "city:\n" + city);
+        //Log.d(TAG, "city:\n" + city);
 
         return city;
     }
@@ -205,7 +205,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
     public List<City> searchCity(String city, String language)
     {
         if (null == mDatabase) {
-            Log.w(TAG, "Open database first!");
+            //Log.w(TAG, "Open database first!");
             return null;
         }
 
@@ -236,7 +236,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
             ));
         }
         cursor.close();
-        Log.d(TAG, "cityList:\n" + cityList);
+        //Log.d(TAG, "cityList:\n" + cityList);
 
         return cityList;
     }
@@ -244,7 +244,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
     public List<City> searchCity(double lat, double lng, String language)
     {
         if (null == mDatabase) {
-            Log.w(TAG, "Open database first!");
+            //Log.w(TAG, "Open database first!");
             return null;
         }
 
@@ -272,7 +272,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
             ));
         }
         cursor.close();
-        Log.d(TAG, "cityList:\n" + cityList);
+        //Log.d(TAG, "cityList:\n" + cityList);
 
         return cityList;
     }
@@ -280,7 +280,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
     public List<String> getAllTimezones(String language)
     {
         if (null == mDatabase) {
-            Log.d(TAG, "Open DB first!");
+            //Log.d(TAG, "Open DB first!");
             return null;
         }
 
@@ -295,7 +295,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
             timezones.add(cursor.getString(0));
         }
         cursor.close();
-        Log.d(TAG, "timezones:\n" + timezones);
+        //Log.d(TAG, "timezones:\n" + timezones);
 
         return timezones;
     }
@@ -303,7 +303,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
     public List<String> getAllCountries(String language)
     {
         if (null == mDatabase) {
-            Log.d(TAG, "Open DB first!");
+            //Log.d(TAG, "Open DB first!");
             return null;
         }
 
@@ -318,7 +318,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
             countries.add(cursor.getString(0));
         }
         cursor.close();
-        Log.d(TAG, "countries:\n" + countries);
+        //Log.d(TAG, "countries:\n" + countries);
 
         return countries;
     }
@@ -326,7 +326,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
     public List<City> getCities(String country, String language)
     {
         if (null == mDatabase) {
-            Log.d(TAG, "Open DB first!");
+            //Log.d(TAG, "Open DB first!");
             return null;
         }
 
@@ -352,7 +352,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
             ));
         }
         cursor.close();
-        Log.d(TAG, "cities:\n" + cities);
+        //Log.d(TAG, "cities:\n" + cities);
 
         return cities;
     }

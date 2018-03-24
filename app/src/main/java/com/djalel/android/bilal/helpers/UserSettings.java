@@ -29,7 +29,7 @@ import android.preference.PreferenceManager;
 
 import org.arabeyes.prayertime.Method;
 import org.arabeyes.prayertime.Prayer;
-import org.linuxac.bilal.R;
+import bilal.linuxac.bilal.R;
 import org.linuxac.bilal.databases.LocationsDBHelper;
 import org.linuxac.bilal.datamodels.City;
 

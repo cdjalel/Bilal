@@ -35,12 +35,11 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.support.v7.app.ActionBar;
-import android.util.Log;
 import android.view.MenuItem;
 
 import org.linuxac.bilal.PrayerTimesManager;
 import org.linuxac.bilal.helpers.UserSettings;
-import org.linuxac.bilal.R;
+import bilal.linuxac.bilal.R;
 
 import java.util.List;
 
@@ -180,7 +179,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
                         // Change locale?
                         if (!stringValue.equals(UserSettings.getPrefLanguage(context))) {
-                            Log.d(TAG, "New language: " + stringValue);
+                            //Log.d(TAG, "New language: " + stringValue);
                             UserSettings.setLocale(context, stringValue, null);
 
                             // numerals pref. only ON for arabic.
@@ -202,7 +201,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
                         // Change locale?
                         if (!stringValue.equals(UserSettings.getNumerals(context))) {
-                            Log.d(TAG, "New numerals: " + stringValue);
+                            //Log.d(TAG, "New numerals: " + stringValue);
                             UserSettings.setLocale(context, null, stringValue);
                             refreshUI(context);
                         }
@@ -243,7 +242,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                     @Override
                     public boolean onPreferenceClick(Preference preference) {
-                        Log.d(TAG, "onPrefClick");
+                        //Log.d(TAG, "onPrefClick");
                         startActivityForResult(preference.getIntent(), REQUEST_SEARCH_CITY);
                         return true;
                     }
@@ -289,7 +288,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                         index += Method.V2_MWL;
                         int oldMethodIdx = UserSettings.getCalculationMethod(context);
                         if (oldMethodIdx != index) {
-                            Log.d(TAG, "New calc method: " + index);
+                            //Log.d(TAG, "New calc method: " + index);
 
                             // Mathhab hanafi pref. only for Karachi method.
                             Preference mathhabPref = findPreference("locations_mathhab_hanafi");
@@ -330,7 +329,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
         @Override
         public void onActivityResult(int requestCode, int resultCode, Intent data) {
-            Log.d(TAG, "onActivityResult");
+            //Log.d(TAG, "onActivityResult");
             if (requestCode == REQUEST_SEARCH_CITY) {
                 if(resultCode == Activity.RESULT_OK){
                     Preference pref = findPreference("locations_search_city");
@@ -373,7 +372,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
-                Log.d(TAG, "sNotifPrayerTimeListener: " + newValue.toString());
+                //Log.d(TAG, "sNotifPrayerTimeListener: " + newValue.toString());
                 if (newValue.toString().equals("true")) {
                     PrayerTimesManager.enableAlarm(preference.getContext());
                 }
@@ -394,7 +393,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 int index = listPref.findIndexOfValue(stringValue);
                 final String name = index >= 0 ? listPref.getEntries()[index].toString() : "";
 
-                Log.d(TAG, "sMuezzinChangeListener: " + name);
+                //Log.d(TAG, "sMuezzinChangeListener: " + name);
 
                 // start Athan Audio
                 Intent audioIntent = new Intent(context, AthanService.class);

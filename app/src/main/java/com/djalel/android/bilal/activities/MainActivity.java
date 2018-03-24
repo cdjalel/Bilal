@@ -36,7 +36,6 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.animation.AlphaAnimation;
@@ -54,7 +53,7 @@ import com.google.android.gms.location.LocationServices;
 
 import org.arabeyes.prayertime.*;
 import org.linuxac.bilal.PrayerTimesManager;
-import org.linuxac.bilal.R;
+import bilal.linuxac.bilal.R;
 import org.linuxac.bilal.helpers.UserSettings;
 
 import java.text.DateFormat;
@@ -89,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d(TAG, "onCreate");
+        //Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
 
         // MainActivity launch mode is default, so a its task is :
@@ -115,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements
         });*/
 
         if (!isGooglePlayServicesAvailable()) {
-            Log.e(TAG, "Google Play services unavailable.");
+            //Log.e(TAG, "Google Play services unavailable.");
             finish();
             return;
         }
@@ -171,10 +170,10 @@ public class MainActivity extends AppCompatActivity implements
     private boolean isGooglePlayServicesAvailable() {
         int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
         if (ConnectionResult.SUCCESS == resultCode) {
-            Log.d(TAG, "Google Play services unavailable.");
+            //Log.d(TAG, "Google Play services unavailable.");
             return true;
         } else {
-            Log.e(TAG, "Google Play services is unavailable.");
+            //Log.e(TAG, "Google Play services is unavailable.");
             return false;
         }
     }
@@ -192,7 +191,7 @@ public class MainActivity extends AppCompatActivity implements
         mUpdateViewsReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                Log.d(TAG, "Receiver kicked by action: " + intent.getAction());
+                //Log.d(TAG, "Receiver kicked by action: " + intent.getAction());
                 // prayer times have been update by the Alarm Receiver which is the action sender
                 updatePrayerViews();
             }
@@ -201,7 +200,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     protected void onStart() {
-        Log.d(TAG, "onStart");
+        //Log.d(TAG, "onStart");
         super.onStart();
         mGoogleApiClient.connect();
     }
@@ -215,7 +214,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     protected void onResume() {
-        Log.d(TAG, "OnResume");
+        //Log.d(TAG, "OnResume");
         super.onResume();
         if (UserSettings.isAlarmEnabled(this) && !mUVReceiverRegistered) {
             registerReceiver(mUpdateViewsReceiver, new IntentFilter(UPDATE_VIEWS));
@@ -242,10 +241,10 @@ public class MainActivity extends AppCompatActivity implements
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         if (mLastLocation == null) {
             //Toast.makeText(this, R.string.no_location_detected, Toast.LENGTH_LONG).show();
-            Log.w(TAG, "onConnected: No location detected");
+            //Log.w(TAG, "onConnected: No location detected");
         }
         else {
-            Log.w(TAG, "onConnected: location detected");
+            //Log.w(TAG, "onConnected: location detected");
         }
     }
 
@@ -253,14 +252,14 @@ public class MainActivity extends AppCompatActivity implements
     public void onConnectionFailed(ConnectionResult result) {
         // Refer to the javadoc for ConnectionResult to see what error codes might be returned in
         // onConnectionFailed.
-        Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = " + result.getErrorCode());
+        //Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = " + result.getErrorCode());
     }
 
     @Override
     public void onConnectionSuspended(int cause) {
         // The connection to Google Play services was lost for some reason. We call connect() to
         // attempt to re-establish the connection.
-        Log.i(TAG, "Connection suspended");
+        //Log.i(TAG, "Connection suspended");
         mGoogleApiClient.connect();
     }
 
@@ -312,7 +311,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d(TAG, "onActivityResult");
+        //Log.d(TAG, "onActivityResult");
         if (requestCode == REQUEST_SEARCH_CITY) {
             if(resultCode == Activity.RESULT_OK){
                 PrayerTimesManager.handleLocationChange(this, -1, -1, -1);

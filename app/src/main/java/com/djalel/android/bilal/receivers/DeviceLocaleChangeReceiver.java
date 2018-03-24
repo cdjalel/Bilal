@@ -17,7 +17,7 @@ public class DeviceLocaleChangeReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
-        Log.i(TAG, action);
+        //Log.i(TAG, action);
         String prefLanguage = UserSettings.getPrefLanguage(context);
         if (UserSettings.languageUsesDeviceSettings(context, prefLanguage)) {
             UserSettings.setLocale(context, prefLanguage, null);

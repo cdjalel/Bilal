@@ -54,7 +54,7 @@ public class AthanService extends Service implements
     private boolean mReceiverRegistered = false;
 
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(TAG, "onStartCommand");
+        //Log.d(TAG, "onStartCommand");
 
         stopAthan();           // athan can be played by Alarm or from settings in parallel
 
@@ -63,7 +63,7 @@ public class AthanService extends Service implements
             mMuezzin = intent.getStringExtra(EXTRA_MUEZZIN);
         }
         else { // fallback
-            Log.e(TAG, "onStartCommand: intent == null");
+            //Log.e(TAG, "onStartCommand: intent == null");
             mPrayerIndex = PrayerTimesManager.getNextPrayerIndex();
             mMuezzin = UserSettings.getMuezzin(this);
         }
@@ -83,7 +83,7 @@ public class AthanService extends Service implements
                 // TODO: the level checking code doesn't work. It returns -1 for old & new level.
                 final int level = intent.getIntExtra("AudioManager.EXTRA_VOLUME_STREAM_VALUE", -1);
                 final int oldLevel = intent.getIntExtra("AudioManager.EXTRA_PREV_VOLUME_STREAM_VALUE", -1);
-                Log.i(TAG, "VOLUME_CHANGED_ACTION stream=" + " level=" + level + " oldLevel=" + oldLevel);
+                //Log.i(TAG, "VOLUME_CHANGED_ACTION stream=" + " level=" + level + " oldLevel=" + oldLevel);
                 if (oldLevel < level) {
                     stopAthan();
                 }
@@ -115,10 +115,10 @@ public class AthanService extends Service implements
                 mAudioPlayer.setOnErrorListener(this);
                 mAudioPlayer.setWakeMode(this, PowerManager.PARTIAL_WAKE_LOCK);
                 mAudioPlayer.prepareAsync(); // prepare async to not block main thread
-                Log.d(TAG, "Audio player prepared asynchronously!");
+                //Log.d(TAG, "Audio player prepared asynchronously!");
             } catch (IOException e) {
                 e.printStackTrace();
-                Log.e(TAG, e.getMessage(), e);
+                //Log.e(TAG, e.getMessage(), e);
             }
         }
     }
@@ -126,9 +126,9 @@ public class AthanService extends Service implements
     /** Called when MediaPlayer is ready */
     public void onPrepared(MediaPlayer player) {
         mAudioPlayer.start();
-        Log.i(TAG, "Audio started playing!");
+        //Log.i(TAG, "Audio started playing!");
         if(!mAudioPlayer.isPlaying()) {
-	        Log.w(TAG, "Problem in playing audio");
+	        //Log.w(TAG, "Problem in playing audio");
 	    }
     }
 
@@ -136,7 +136,7 @@ public class AthanService extends Service implements
     public boolean onError(MediaPlayer mp, int what, int extra) {
         // TODO ... react appropriately ...
         // The MediaPlayer has moved to the Error state, must be reset!
-        Log.e(TAG, "what=" + what + " extra=" + extra);
+        //Log.e(TAG, "what=" + what + " extra=" + extra);
         return false; // TODO change to true if error is handled by here.
     }
 
@@ -173,7 +173,7 @@ public class AthanService extends Service implements
 
 	private void stopAthan() {
 		if (mAudioPlayer != null) {
-            Log.d(TAG, "Stopping Athan");
+            //Log.d(TAG, "Stopping Athan");
             if (mAudioPlayer.isPlaying()) { mAudioPlayer.stop(); }
             mAudioPlayer.release();
             mAudioPlayer = null;
@@ -186,7 +186,7 @@ public class AthanService extends Service implements
 	}
 
 	public void onDestroy() {
-        Log.d(TAG, "onDestroy");
+        //Log.d(TAG, "onDestroy");
         stopAthan();
     }
 
