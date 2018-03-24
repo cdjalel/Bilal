@@ -18,7 +18,7 @@
  *
  */
 
-package org.linuxac.bilal.activities;
+package com.djalel.android.bilal.activities;
 
 import android.content.res.Configuration;
 import android.os.Bundle;

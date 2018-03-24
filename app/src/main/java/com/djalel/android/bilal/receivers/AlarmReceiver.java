@@ -18,7 +18,7 @@
  *
  */
 
-package org.linuxac.bilal.receivers;
+package com.djalel.android.bilal.receivers;
 
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -30,13 +30,13 @@ import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 
-import org.linuxac.bilal.PrayerTimesManager;
-import org.linuxac.bilal.services.AthanService;
+import com.djalel.android.bilal.PrayerTimesManager;
+import com.djalel.android.bilal.services.AthanService;
 import bilal.linuxac.bilal.R;
-import org.linuxac.bilal.activities.MainActivity;
-import org.linuxac.bilal.activities.StopAthanActivity;
-import org.linuxac.bilal.helpers.PrayerTimes;
-import org.linuxac.bilal.helpers.UserSettings;
+import com.djalel.android.bilal.activities.MainActivity;
+import com.djalel.android.bilal.activities.StopAthanActivity;
+import com.djalel.android.bilal.helpers.PrayerTimes;
+import com.djalel.android.bilal.helpers.UserSettings;
 
 import static android.content.Context.VIBRATOR_SERVICE;
 

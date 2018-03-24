@@ -1,4 +1,4 @@
-package org.linuxac.bilal.adapters;
+package com.djalel.android.bilal.adapters;
 
 import android.content.Context;
 import android.view.View;
@@ -7,7 +7,7 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import bilal.linuxac.bilal.R;
-import org.linuxac.bilal.datamodels.City;
+import com.djalel.android.bilal.datamodels.City;
 
 import java.util.List;
 

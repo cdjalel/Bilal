@@ -18,12 +18,12 @@
  *
  */
 
-package org.linuxac.bilal.helpers;
+package com.djalel.android.bilal.helpers;
 
 import android.content.Context;
 
 import org.arabeyes.prayertime.Prayer;
-import org.linuxac.bilal.BuildConfig;
+import com.djalel.android.bilal.BuildConfig;
 import bilal.linuxac.bilal.R;
 
 import java.text.SimpleDateFormat;

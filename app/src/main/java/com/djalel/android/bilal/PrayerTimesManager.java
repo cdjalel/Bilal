@@ -18,7 +18,7 @@
  *
  */
 
-package org.linuxac.bilal;
+package com.djalel.android.bilal;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -33,12 +33,12 @@ import org.arabeyes.prayertime.Method;
 import org.arabeyes.prayertime.PTLocation;
 import org.arabeyes.prayertime.Prayer;
 import org.arabeyes.prayertime.PrayerTime;
-import org.linuxac.bilal.helpers.PrayerTimes;
-import org.linuxac.bilal.helpers.UserSettings;
-import org.linuxac.bilal.datamodels.City;
-import org.linuxac.bilal.receivers.AlarmReceiver;
-import org.linuxac.bilal.receivers.BootAndTimeChangeReceiver;
-import org.linuxac.bilal.services.AthanService;
+import com.djalel.android.bilal.helpers.PrayerTimes;
+import com.djalel.android.bilal.helpers.UserSettings;
+import com.djalel.android.bilal.datamodels.City;
+import com.djalel.android.bilal.receivers.AlarmReceiver;
+import com.djalel.android.bilal.receivers.BootAndTimeChangeReceiver;
+import com.djalel.android.bilal.services.AthanService;
 
 import java.util.Calendar;
 import java.util.Date;

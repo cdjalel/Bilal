@@ -18,14 +18,14 @@
  *
  */
 
-package org.linuxac.bilal.receivers;
+package com.djalel.android.bilal.receivers;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import org.linuxac.bilal.PrayerTimesManager;
+import com.djalel.android.bilal.PrayerTimesManager;
 
 public class BootAndTimeChangeReceiver extends BroadcastReceiver {
 

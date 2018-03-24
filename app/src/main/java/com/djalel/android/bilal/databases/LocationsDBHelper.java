@@ -34,9 +34,9 @@
  *  limitations under the License.
  */
 
-package org.linuxac.bilal.databases;
+package com.djalel.android.bilal.databases;
 
-import org.linuxac.bilal.datamodels.City;
+import com.djalel.android.bilal.datamodels.City;
 
 import android.content.Context;
 import android.database.Cursor;

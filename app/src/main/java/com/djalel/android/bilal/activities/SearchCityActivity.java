@@ -18,7 +18,7 @@
  *
  */
 
-package org.linuxac.bilal.activities;
+package com.djalel.android.bilal.activities;
 
 import android.app.Activity;
 import android.app.SearchManager;
@@ -31,10 +31,10 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import bilal.linuxac.bilal.R;
-import org.linuxac.bilal.adapters.CityListAdapter;
-import org.linuxac.bilal.databases.LocationsDBHelper;
-import org.linuxac.bilal.datamodels.City;
-import org.linuxac.bilal.helpers.UserSettings;
+import com.djalel.android.bilal.adapters.CityListAdapter;
+import com.djalel.android.bilal.databases.LocationsDBHelper;
+import com.djalel.android.bilal.datamodels.City;
+import com.djalel.android.bilal.helpers.UserSettings;
 
 import java.util.List;
 import java.util.Locale;

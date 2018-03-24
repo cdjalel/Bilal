@@ -18,7 +18,7 @@
  *
  */
 
-package org.linuxac.bilal.activities;
+package com.djalel.android.bilal.activities;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -52,9 +52,9 @@ import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListe
 import com.google.android.gms.location.LocationServices;
 
 import org.arabeyes.prayertime.*;
-import org.linuxac.bilal.PrayerTimesManager;
+import com.djalel.android.bilal.PrayerTimesManager;
 import bilal.linuxac.bilal.R;
-import org.linuxac.bilal.helpers.UserSettings;
+import com.djalel.android.bilal.helpers.UserSettings;
 
 import java.text.DateFormat;
 import java.util.Calendar;
@@ -64,7 +64,7 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity implements
         ConnectionCallbacks, OnConnectionFailedListener {
 
-    public static final String UPDATE_VIEWS = "org.linuxac.bilal.UPDATE";
+    public static final String UPDATE_VIEWS = "com.djalel.android.bilal.UPDATE";
     private static final String TAG = "MainActivity";
 
     private static int BLINK_INTERVAL = 5 * 60 * 1000;

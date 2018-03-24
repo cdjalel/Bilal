@@ -5,8 +5,8 @@
         android:title="@string/pref_title_search_city"
         android:summary="@string/pref_undefined_city" >
         <intent android:action="android.intent.action.VIEW"
-            android:targetPackage="org.linuxac.bilal"
-            android:targetClass="org.linuxac.bilal.activities.SearchCityActivity"/>
+            android:targetPackage="com.djalel.android.bilal"
+            android:targetClass="com.djalel.android.bilal.activities.SearchCityActivity"/>
     </Preference>
 
     <!-- NOTE: Hide buttons to simplify the UI. Users can touch outside the dialog to

@@ -19,7 +19,7 @@
  *
  */
 
-package org.linuxac.bilal.datamodels;
+package com.djalel.android.bilal.datamodels;
 
 import android.util.Base64;
 

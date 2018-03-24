@@ -18,7 +18,7 @@
  *
  */
 
-package org.linuxac.bilal.activities;
+package com.djalel.android.bilal.activities;
 
 
 import android.annotation.TargetApi;
@@ -37,14 +37,14 @@ import android.preference.PreferenceFragment;
 import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
 
-import org.linuxac.bilal.PrayerTimesManager;
-import org.linuxac.bilal.helpers.UserSettings;
+import com.djalel.android.bilal.PrayerTimesManager;
+import com.djalel.android.bilal.helpers.UserSettings;
 import bilal.linuxac.bilal.R;
 
 import java.util.List;
 
 import org.arabeyes.prayertime.Method;
-import org.linuxac.bilal.services.AthanService;
+import com.djalel.android.bilal.services.AthanService;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On

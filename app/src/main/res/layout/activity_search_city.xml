@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="org.linuxac.bilal.activities.SearchCityActivity">
+    tools:context="com.djalel.android.bilal.activities.SearchCityActivity">
 
     <!--<EditText-->
         <!--android:id="@+id/search_city_box"-->

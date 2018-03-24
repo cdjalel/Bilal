@@ -18,7 +18,7 @@
  *
  */
 
-package org.linuxac.bilal.helpers;
+package com.djalel.android.bilal.helpers;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -30,8 +30,8 @@ import android.preference.PreferenceManager;
 import org.arabeyes.prayertime.Method;
 import org.arabeyes.prayertime.Prayer;
 import bilal.linuxac.bilal.R;
-import org.linuxac.bilal.databases.LocationsDBHelper;
-import org.linuxac.bilal.datamodels.City;
+import com.djalel.android.bilal.databases.LocationsDBHelper;
+import com.djalel.android.bilal.datamodels.City;
 
 import java.util.Locale;
 

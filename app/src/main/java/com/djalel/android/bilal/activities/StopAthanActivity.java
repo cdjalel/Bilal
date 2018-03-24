@@ -18,7 +18,7 @@
  *
  */
 
-package org.linuxac.bilal.activities;
+package com.djalel.android.bilal.activities;
 
 import android.app.Activity;
 import android.app.NotificationManager;
@@ -27,11 +27,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
-import org.linuxac.bilal.services.AthanService;
+import com.djalel.android.bilal.services.AthanService;
 
 public class StopAthanActivity extends Activity {
 
-    public static final String NOTIFICATION_ID = "org.linuxac.bilal.NOTIFICATION_ID";
+    public static final String NOTIFICATION_ID = "com.djalel.android.bilal.NOTIFICATION_ID";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

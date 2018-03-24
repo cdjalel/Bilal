@@ -1,4 +1,4 @@
-package org.linuxac.bilal.receivers;
+package com.djalel.android.bilal.receivers;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -6,7 +6,7 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.util.Log;
 
-import org.linuxac.bilal.helpers.UserSettings;
+import com.djalel.android.bilal.helpers.UserSettings;
 
 import java.util.Locale;
 

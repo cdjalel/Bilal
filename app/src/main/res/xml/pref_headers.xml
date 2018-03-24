@@ -3,23 +3,23 @@
     <!-- These settings headers are only used on tablets. -->
 
     <header
-        android:fragment="org.linuxac.bilal.activities.SettingsActivity$GeneralPreferenceFragment"
+        android:fragment="com.djalel.android.bilal.activities.SettingsActivity$GeneralPreferenceFragment"
         android:title="@string/pref_header_general"
         android:icon="@drawable/ic_info_black_24dp" />
 
     <header
-        android:fragment="org.linuxac.bilal.activities.SettingsActivity$LocationsPreferenceFragment"
+        android:fragment="com.djalel.android.bilal.activities.SettingsActivity$LocationsPreferenceFragment"
         android:title="@string/pref_header_locations"
         android:icon="@drawable/ic_locations_black_24dp" />
 
     <header
-        android:fragment="org.linuxac.bilal.activities.SettingsActivity$NotificationPreferenceFragment"
+        android:fragment="com.djalel.android.bilal.activities.SettingsActivity$NotificationPreferenceFragment"
         android:title="@string/pref_header_notifications"
         android:icon="@drawable/ic_notifications_black_24dp" />
 
     <!--
     <header
-        android:fragment="org.linuxac.bilal.activities.SettingsActivity$DataSyncPreferenceFragment"
+        android:fragment="com.djalel.android.bilal.activities.SettingsActivity$DataSyncPreferenceFragment"
         android:title="@string/pref_header_data_sync"
         android:icon="@drawable/ic_sync_black_24dp" />
     -->

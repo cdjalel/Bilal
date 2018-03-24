@@ -18,7 +18,7 @@
  *
  */
 
-package org.linuxac.bilal.services;
+package com.djalel.android.bilal.services;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -32,8 +32,8 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
 
-import org.linuxac.bilal.PrayerTimesManager;
-import org.linuxac.bilal.helpers.UserSettings;
+import com.djalel.android.bilal.PrayerTimesManager;
+import com.djalel.android.bilal.helpers.UserSettings;
 
 import java.io.IOException;
 
@@ -44,8 +44,8 @@ public class AthanService extends Service implements
         AudioManager.OnAudioFocusChangeListener
 {
     private static final String TAG = "AthanService";
-    public static final String EXTRA_PRAYER = "org.linuxac.bilal.PRAYER";
-    public static final String EXTRA_MUEZZIN = "org.linuxac.bilal.MUEZZIN";
+    public static final String EXTRA_PRAYER = "com.djalel.android.bilal.PRAYER";
+    public static final String EXTRA_MUEZZIN = "com.djalel.android.bilal.MUEZZIN";
 
     private int mPrayerIndex;
     private String mMuezzin;
