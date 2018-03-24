@@ -24,7 +24,7 @@ import android.content.Context;
 
 import org.arabeyes.prayertime.Prayer;
 import com.djalel.android.bilal.BuildConfig;
-import bilal.linuxac.bilal.R;
+import com.djalel.android.bilal.R;
 
 import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;

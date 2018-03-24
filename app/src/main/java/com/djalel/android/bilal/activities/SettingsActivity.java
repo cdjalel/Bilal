@@ -39,7 +39,7 @@ import android.view.MenuItem;
 
 import com.djalel.android.bilal.PrayerTimesManager;
 import com.djalel.android.bilal.helpers.UserSettings;
-import bilal.linuxac.bilal.R;
+import com.djalel.android.bilal.R;
 
 import java.util.List;
 

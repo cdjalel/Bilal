@@ -32,7 +32,7 @@ import android.support.v4.app.NotificationManagerCompat;
 
 import com.djalel.android.bilal.PrayerTimesManager;
 import com.djalel.android.bilal.services.AthanService;
-import bilal.linuxac.bilal.R;
+import com.djalel.android.bilal.R;
 import com.djalel.android.bilal.activities.MainActivity;
 import com.djalel.android.bilal.activities.StopAthanActivity;
 import com.djalel.android.bilal.helpers.PrayerTimes;

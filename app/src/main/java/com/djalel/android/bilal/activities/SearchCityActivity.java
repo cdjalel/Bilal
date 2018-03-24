@@ -30,7 +30,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import bilal.linuxac.bilal.R;
+import com.djalel.android.bilal.R;
 import com.djalel.android.bilal.adapters.CityListAdapter;
 import com.djalel.android.bilal.databases.LocationsDBHelper;
 import com.djalel.android.bilal.datamodels.City;

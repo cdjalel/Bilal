@@ -53,7 +53,7 @@ import com.google.android.gms.location.LocationServices;
 
 import org.arabeyes.prayertime.*;
 import com.djalel.android.bilal.PrayerTimesManager;
-import bilal.linuxac.bilal.R;
+import com.djalel.android.bilal.R;
 import com.djalel.android.bilal.helpers.UserSettings;
 
 import java.text.DateFormat;
