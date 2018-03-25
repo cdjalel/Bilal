@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.djalel.android.bilal.activities.AboutActivity">
+
+    <TextView
+        android:id="@+id/about_textview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layoutDirection="rtl"
+        android:text="@string/pref_txt_about"
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
+        android:padding="@dimen/about_padding"
+        android:scrollbars="vertical"/>
+
+</android.support.constraint.ConstraintLayout>

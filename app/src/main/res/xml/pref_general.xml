@@ -43,4 +43,14 @@
         android:negativeButtonText="@null"
         android:positiveButtonText="@null" />
 
+    <Preference
+        android:key="general_about"
+        android:persistent="false"
+        android:title="@string/pref_title_about">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.djalel.android.bilal"
+            android:targetClass="com.djalel.android.bilal.activities.AboutActivity" />
+    </Preference>
+
 </PreferenceScreen>

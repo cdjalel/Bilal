@@ -59,6 +59,26 @@
     </string-array>
     <string name="pref_numerals_default_value">CC</string>
 
+    <string name="pref_title_about">About</string>
+    <string name="pref_txt_about">
+Athan Bilal is a free software released under the GNU General Public License version 3.0.
+It uses prayer time calculation code from the Islamic Tools Library released by the Arab Eyes project.
+Its source is available at github.com/cdjalel/Bilal.\n
+\n
+Athan Bilal contains the coordinates of 23784 cities around the world, extracted from the geoname.org
+site under the Creative Commons Attribution 4.0 License.\n
+\n
+The background image was designed by Freepick and licensed via www.freepick.com.\n
+\n
+There might be a slight difference between prayer times displayed here
+and the real times adopted by the mosques in your city. In such case, please try:\n
+- first to configure the right calculation method in the location settings.\n
+- Next, if your town/commune is very close to a big city, try to use its name instead in location settings.\n
+- Otherwise, send the name of your city (both in english and your local language), its exact
+coordinates (latitude, longitude and altitude) and its prayer time calculation method to our address:
+athan.bilal1@gmail.com, so we can fix it.
+    </string>
+
 
     <!-- Example settings for Data & Sync -->
     <string name="pref_header_data_sync">Data &amp; sync</string>
