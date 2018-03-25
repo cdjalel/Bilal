@@ -29,6 +29,7 @@ import android.graphics.BitmapFactory;
 import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
+import android.support.v4.app.NotificationCompat.WearableExtender;
 
 import com.djalel.android.bilal.PrayerTimesManager;
 import com.djalel.android.bilal.services.AthanService;
@@ -78,7 +79,8 @@ public class AlarmReceiver extends BroadcastReceiver
 
     private void showNotification(Context context, int index)
     {
-        int notificationId = 0;
+        int notificationId = 001;
+        String id = "bilal_channel_01";
 
         // Use one intent to show MainActivity and another intent to stop athan (by notification
         // button or swipe left or volume button press)
@@ -100,8 +102,10 @@ public class AlarmReceiver extends BroadcastReceiver
         String contentTxt = String.format(context.getString(R.string.time_in), UserSettings.getCityName(context));
         String actionTxt = context.getString(R.string.stop_athan);
 
+        // Notification channel ID is ignored for Android 7.1.1
+        // (API level 25) and lower.
         NotificationCompat.Builder notificationBuilder =
-                new NotificationCompat.Builder(context)
+                new NotificationCompat.Builder(context, id)
                         .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                         .setSmallIcon(R.drawable.ic_notif)
                         .setContentTitle(contentTitle)
