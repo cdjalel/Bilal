@@ -15,7 +15,7 @@ Screenshots
 
 Testing
 =======
-- Use a recent android studio with an SDK that contains x86 images.
+- For SDK 26 and x86 images emulators.
 
 - Use a phone emulator with Google API support and, if possible, hardware acceleration as described here:
     - http://developer.android.com/tools/devices/emulator.html
@@ -28,15 +28,15 @@ Testing
 
   $ /opt/android-sdk-linux/tools/emulator -avd watch -netspeed full -netdelay none -no-boot-anim -gpu on -qemu -m 512 -enable-kvm
 
-- Google and download Android wearable app and install it on the watch emulator:
+- Google and download the old 'Android Wear' app and install it on the phone emulator:
   $ /opt/android-sdk-linux/platform-tools/adb -s emulator-5556 install ~/Downloads/com.google.android.wearable.app-2.apk 
 
-- Pair the emulators as follows:
+- Pair the emulators as follows  (this is not supported by the new app 'Wear OS by Google', you will need a real phone):
   - find out the port used by the phone emulator (from its window title) or using:
     $ /opt/android-sdk-linux/platform-tools/adb devices
 
   - log into the phone emulator using telnet:
-    $ telnet localhost 5554
+    $ telnet localhost 5556
 
   - in the telnet session add a tcp port redirection like this:
     redir add tcp:5601:5601 
