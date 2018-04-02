@@ -41,6 +41,8 @@ captures/
 .idea/dictionaries
 .idea/libraries
 .idea/markdown-navigator.xml
+.idea/codeStyles/
+.idea/caches/
 
 # Keystore files
 *.jks
