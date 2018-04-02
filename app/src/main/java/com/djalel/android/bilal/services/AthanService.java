@@ -30,7 +30,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.util.Log;
+import timber.log.Timber;
 
 import com.djalel.android.bilal.PrayerTimesManager;
 import com.djalel.android.bilal.helpers.UserSettings;
@@ -43,7 +43,6 @@ public class AthanService extends Service implements
         MediaPlayer.OnErrorListener,
         AudioManager.OnAudioFocusChangeListener
 {
-    private static final String TAG = "AthanService";
     public static final String EXTRA_PRAYER = "com.djalel.android.bilal.PRAYER";
     public static final String EXTRA_MUEZZIN = "com.djalel.android.bilal.MUEZZIN";
 
@@ -52,9 +51,10 @@ public class AthanService extends Service implements
     private MediaPlayer mAudioPlayer = null;
     private BroadcastReceiver mVolumeChangeReceiver = null;
     private boolean mReceiverRegistered = false;
+    private int mPreviousVolume = 0;
 
     public int onStartCommand(Intent intent, int flags, int startId) {
-        //Log.d(TAG, "onStartCommand");
+        Timber.d("onStartCommand");
 
         stopAthan();           // athan can be played by Alarm or from settings in parallel
 
@@ -63,7 +63,7 @@ public class AthanService extends Service implements
             mMuezzin = intent.getStringExtra(EXTRA_MUEZZIN);
         }
         else { // fallback
-            //Log.e(TAG, "onStartCommand: intent == null");
+            Timber.e("onStartCommand: intent == null");
             mPrayerIndex = PrayerTimesManager.getNextPrayerIndex();
             mMuezzin = UserSettings.getMuezzin(this);
         }
@@ -80,12 +80,22 @@ public class AthanService extends Service implements
         mVolumeChangeReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                // TODO: the level checking code doesn't work. It returns -1 for old & new level.
-                final int level = intent.getIntExtra("AudioManager.EXTRA_VOLUME_STREAM_VALUE", -1);
+                // The level checking code below doesn't work. It returns -1 for old & new level.
+                /*final int level = intent.getIntExtra("AudioManager.EXTRA_VOLUME_STREAM_VALUE", -1);
                 final int oldLevel = intent.getIntExtra("AudioManager.EXTRA_PREV_VOLUME_STREAM_VALUE", -1);
-                //Log.i(TAG, "VOLUME_CHANGED_ACTION stream=" + " level=" + level + " oldLevel=" + oldLevel);
+                Timber.i("VOLUME_CHANGED_ACTION stream=" + " level=" + level + " oldLevel=" + oldLevel);
                 if (oldLevel < level) {
                     stopAthan();
+                }*/
+
+                AudioManager audio = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+                final int currentVolume = audio.getStreamVolume(AudioManager.STREAM_MUSIC);
+                Timber.d("Current Volume = " + currentVolume);
+                if (currentVolume < mPreviousVolume) {
+                    stopAthan();
+                }
+                else {
+                    mPreviousVolume = currentVolume;
                 }
             }
         };
@@ -115,10 +125,11 @@ public class AthanService extends Service implements
                 mAudioPlayer.setOnErrorListener(this);
                 mAudioPlayer.setWakeMode(this, PowerManager.PARTIAL_WAKE_LOCK);
                 mAudioPlayer.prepareAsync(); // prepare async to not block main thread
-                //Log.d(TAG, "Audio player prepared asynchronously!");
+                mAudioPlayer.setVolume(1.0f, 1.0f);
+                Timber.d("Audio player prepared asynchronously!");
             } catch (IOException e) {
                 e.printStackTrace();
-                //Log.e(TAG, e.getMessage(), e);
+                Timber.e(e.getMessage(), e);
             }
         }
     }
@@ -126,9 +137,14 @@ public class AthanService extends Service implements
     /** Called when MediaPlayer is ready */
     public void onPrepared(MediaPlayer player) {
         mAudioPlayer.start();
-        //Log.i(TAG, "Audio started playing!");
+        Timber.i("Audio started playing!");
+
+        AudioManager audio = (AudioManager) this.getSystemService(Context.AUDIO_SERVICE);
+        mPreviousVolume = audio.getStreamVolume(AudioManager.STREAM_MUSIC);
+        Timber.d("Initial Volume = " + mPreviousVolume);
+
         if(!mAudioPlayer.isPlaying()) {
-	        //Log.w(TAG, "Problem in playing audio");
+	        Timber.w("Problem in playing audio");
 	    }
     }
 
@@ -136,7 +152,7 @@ public class AthanService extends Service implements
     public boolean onError(MediaPlayer mp, int what, int extra) {
         // TODO ... react appropriately ...
         // The MediaPlayer has moved to the Error state, must be reset!
-        //Log.e(TAG, "what=" + what + " extra=" + extra);
+        Timber.e("what=" + what + " extra=" + extra);
         return false; // TODO change to true if error is handled by here.
     }
 
@@ -146,7 +162,6 @@ public class AthanService extends Service implements
                 // resume playback
                 if (mAudioPlayer == null) initMediaPlayer();
                 else if (!mAudioPlayer.isPlaying()) mAudioPlayer.start();
-                mAudioPlayer.setVolume(1.0f, 1.0f);
                 break;
 
             case AudioManager.AUDIOFOCUS_LOSS:
@@ -173,7 +188,7 @@ public class AthanService extends Service implements
 
 	private void stopAthan() {
 		if (mAudioPlayer != null) {
-            //Log.d(TAG, "Stopping Athan");
+            Timber.d("Stopping Athan");
             if (mAudioPlayer.isPlaying()) { mAudioPlayer.stop(); }
             mAudioPlayer.release();
             mAudioPlayer = null;
@@ -186,7 +201,7 @@ public class AthanService extends Service implements
 	}
 
 	public void onDestroy() {
-        //Log.d(TAG, "onDestroy");
+        Timber.d("onDestroy");
         stopAthan();
     }
 
