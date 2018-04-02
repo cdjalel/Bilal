@@ -39,12 +39,12 @@ public class UserSettings {
 
     public static boolean isAlarmEnabled(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        return sharedPref.getBoolean("notifications_prayer_time", false);
+        return sharedPref.getBoolean("notifications_prayer_time", true);
     }
 
     public static boolean isAthanEnabled(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        return sharedPref.getBoolean("notifications_athan", false);
+        return sharedPref.getBoolean("notifications_athan", true);
     }
 
     public static void setMuezzin(Context context, String newValue) {
@@ -124,12 +124,12 @@ public class UserSettings {
 
     public static boolean isNotificationEnabled(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        return sharedPref.getBoolean("notifications_screen", false);
+        return sharedPref.getBoolean("notifications_screen", true);
     }
 
     public static boolean isVibrateEnabled(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        return sharedPref.getBoolean("notifications_vibrate", false);
+        return sharedPref.getBoolean("notifications_vibrate", true);
     }
 
 /*
