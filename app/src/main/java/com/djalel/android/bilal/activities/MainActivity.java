@@ -45,7 +45,8 @@ import android.widget.TextView;
 //import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.GoogleApiAvailability;
+//import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
@@ -61,13 +62,14 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 
+import timber.log.Timber;
+
 public class MainActivity extends AppCompatActivity implements
         ConnectionCallbacks, OnConnectionFailedListener {
 
     public static final String UPDATE_VIEWS = "com.djalel.android.bilal.UPDATE";
-    private static final String TAG = "MainActivity";
 
-    private static int BLINK_INTERVAL = 5 * 60 * 1000;
+    private static int BLINK_INTERVAL = 7 * 60 * 1000;          // longest audio is 5' 10''
     private static int BLINK_DURATION = 500;
     private static int BLINK_COUNT    = BLINK_INTERVAL/BLINK_DURATION;
 
@@ -88,14 +90,14 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        //Log.d(TAG, "onCreate");
+        Timber.d("onCreate");
         super.onCreate(savedInstanceState);
 
-        // MainActivity launch mode is default, so a its task is :
+        // MainActivity launch mode is default, so its task is :
         // - (re)created when started by the notification manager (from AlarmReceiver) as it uses
         //    Intent.FLAG_ACTIVITY_NEW_TASK
-        // - cleared (i.e. all activities are finished, especially the Settings one) as it hte latter
-        //   starts this one with Intent.FLAG_ACTIVITY_NEW_TASK when Language changes to force UI refresh.
+        // - cleared (i.e. all activities are finished, especially the Settings one) as the latter
+        //   starts this Main one with Intent.FLAG_ACTIVITY_NEW_TASK when Language changes to force UI refresh.
 
         UserSettings.loadLocale(this);
 
@@ -114,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements
         });*/
 
         if (!isGooglePlayServicesAvailable()) {
-            //Log.e(TAG, "Google Play services unavailable.");
+            Timber.e("Google Play services unavailable.");
             finish();
             return;
         }
@@ -168,12 +170,13 @@ public class MainActivity extends AppCompatActivity implements
      * @return true if it is.
      */
     private boolean isGooglePlayServicesAvailable() {
-        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+//        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+        int resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this);
         if (ConnectionResult.SUCCESS == resultCode) {
-            //Log.d(TAG, "Google Play services unavailable.");
+            Timber.d("Google Play services available.");
             return true;
         } else {
-            //Log.e(TAG, "Google Play services is unavailable.");
+            Timber.e("Google Play services is unavailable.");
             return false;
         }
     }
@@ -191,7 +194,7 @@ public class MainActivity extends AppCompatActivity implements
         mUpdateViewsReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                //Log.d(TAG, "Receiver kicked by action: " + intent.getAction());
+                Timber.d("Receiver kicked by action: " + intent.getAction());
                 // prayer times have been update by the Alarm Receiver which is the action sender
                 updatePrayerViews();
             }
@@ -200,7 +203,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     protected void onStart() {
-        //Log.d(TAG, "onStart");
+        Timber.d("onStart");
         super.onStart();
         mGoogleApiClient.connect();
     }
@@ -214,7 +217,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     protected void onResume() {
-        //Log.d(TAG, "OnResume");
+        Timber.d("OnResume");
         super.onResume();
         if (UserSettings.isAlarmEnabled(this) && !mUVReceiverRegistered) {
             registerReceiver(mUpdateViewsReceiver, new IntentFilter(UPDATE_VIEWS));
@@ -238,13 +241,14 @@ public class MainActivity extends AppCompatActivity implements
         // applications that do not require a fine-grained location and that do not need location
         // updates. Gets the best and most recent location currently available, which may be null
         // in rare cases when a location is not available.
+        // TODO checkPermission()
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         if (mLastLocation == null) {
             //Toast.makeText(this, R.string.no_location_detected, Toast.LENGTH_LONG).show();
-            //Log.w(TAG, "onConnected: No location detected");
+            Timber.w("onConnected: No location detected");
         }
         else {
-            //Log.w(TAG, "onConnected: location detected");
+            Timber.w("onConnected: location detected");
         }
     }
 
@@ -252,14 +256,14 @@ public class MainActivity extends AppCompatActivity implements
     public void onConnectionFailed(ConnectionResult result) {
         // Refer to the javadoc for ConnectionResult to see what error codes might be returned in
         // onConnectionFailed.
-        //Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = " + result.getErrorCode());
+        Timber.i("Connection failed: ConnectionResult.getErrorCode() = " + result.getErrorCode());
     }
 
     @Override
     public void onConnectionSuspended(int cause) {
         // The connection to Google Play services was lost for some reason. We call connect() to
         // attempt to re-establish the connection.
-        //Log.i(TAG, "Connection suspended");
+        Timber.i("Connection suspended");
         mGoogleApiClient.connect();
     }
 
@@ -311,7 +315,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        //Log.d(TAG, "onActivityResult");
+        Timber.d("onActivityResult");
         if (requestCode == REQUEST_SEARCH_CITY) {
             if(resultCode == Activity.RESULT_OK){
                 PrayerTimesManager.handleLocationChange(this, -1, -1, -1);
@@ -355,11 +359,15 @@ public class MainActivity extends AppCompatActivity implements
             for (j = 0; j < mTextViewPrayers[0].length; j++) {
                 mTextViewPrayers[mImportant][j].setTypeface(null, Typeface.NORMAL);
                 mTextViewPrayers[mImportant][j].clearAnimation();
+                mTextViewPrayers[mImportant][j].setOnClickListener(null);
             }
         }
 
         // signal the new important prayer, which is the current if its time is recent, next otherwise
         GregorianCalendar current = PrayerTimesManager.getCurrentPrayer();
+        if (current == null) {
+            return;
+        }
         long elapsed = now.getTimeInMillis() - current.getTimeInMillis();
         if (elapsed >= 0 && elapsed <= BLINK_INTERVAL) {
             // blink Current Prayers
@@ -368,12 +376,22 @@ public class MainActivity extends AppCompatActivity implements
             anim.setDuration(BLINK_DURATION);
             anim.setRepeatMode(Animation.REVERSE);
             anim.setRepeatCount(BLINK_COUNT);
+            View.OnClickListener currentPrayerListener = new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Timber.d("currentPrayerListener IN");
+                    Intent intent = new Intent(v.getContext(), StopAthanActivity.class);
+                    startActivity(intent);
+                }
+            };
             for (j = 0; j < mTextViewPrayers[0].length; j++) {
                 mTextViewPrayers[mImportant][j].setTypeface(null, Typeface.BOLD );
                 mTextViewPrayers[mImportant][j].startAnimation(anim);
+                mTextViewPrayers[mImportant][j].setOnClickListener(currentPrayerListener);
             }
 
-            // TODO add touch listener to stop blinking and open map of nearest mosques
+            // TODO add touch listener to open map of nearest mosques
+
         }
         else {
             // Bold Next Prayers
