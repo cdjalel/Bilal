@@ -23,18 +23,15 @@ package com.djalel.android.bilal.receivers;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
+import timber.log.Timber;
 
 import com.djalel.android.bilal.PrayerTimesManager;
 
 public class BootAndTimeChangeReceiver extends BroadcastReceiver {
-
-    protected static final String TAG = "Boot&TimeChangeReceiver";
-
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
-        //Log.i(TAG, action);
+        Timber.i("=============== " + action);
 
         if (action.equals(Intent.ACTION_BOOT_COMPLETED))
         {

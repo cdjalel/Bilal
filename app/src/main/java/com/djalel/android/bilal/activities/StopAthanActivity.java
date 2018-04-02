@@ -43,12 +43,14 @@ public class StopAthanActivity extends Activity {
 
         // cancel notification
         NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        manager.cancel(getIntent().getIntExtra(NOTIFICATION_ID, -1));
+        if (manager != null) {
+            manager.cancel(getIntent().getIntExtra(NOTIFICATION_ID, -1));
+        }
 
         finish(); // since finish() is called in onCreate(), onDestroy() will be called immediately
     }
 
-    public static PendingIntent getIntent(int notificationId, Context context) {
+    public static PendingIntent getStopAudioIntent(int notificationId, Context context) {
         Intent intent = new Intent(context, StopAthanActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.putExtra(NOTIFICATION_ID, notificationId);

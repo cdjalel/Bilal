@@ -46,6 +46,8 @@ import java.util.List;
 import org.arabeyes.prayertime.Method;
 import com.djalel.android.bilal.services.AthanService;
 
+import timber.log.Timber;
+
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
  * handset devices, settings are presented as a single list. On tablets,
@@ -58,8 +60,6 @@ import com.djalel.android.bilal.services.AthanService;
  * API Guide</a> for more information on developing a Settings UI.
  */
 public class SettingsActivity extends AppCompatPreferenceActivity {
-    private static final String TAG = "SettingsActivity";
-
     private static final int REQUEST_SEARCH_CITY = 1;
 
     @Override
@@ -179,7 +179,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
                         // Change locale?
                         if (!stringValue.equals(UserSettings.getPrefLanguage(context))) {
-                            //Log.d(TAG, "New language: " + stringValue);
+                            Timber.d("New language: " + stringValue);
                             UserSettings.setLocale(context, stringValue, null);
 
                             // numerals pref. only ON for arabic.
@@ -201,7 +201,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
                         // Change locale?
                         if (!stringValue.equals(UserSettings.getNumerals(context))) {
-                            //Log.d(TAG, "New numerals: " + stringValue);
+                            Timber.d("New numerals: " + stringValue);
                             UserSettings.setLocale(context, null, stringValue);
                             refreshUI(context);
                         }
@@ -242,7 +242,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                     @Override
                     public boolean onPreferenceClick(Preference preference) {
-                        //Log.d(TAG, "onPrefClick");
+                        Timber.d("onPrefClick");
                         startActivityForResult(preference.getIntent(), REQUEST_SEARCH_CITY);
                         return true;
                     }
@@ -284,11 +284,11 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                         // Set the summary to reflect the new value.
                         int index = setListPrefSummary(preference, stringValue);
 
-                        // Trigger new cacl if value change
+                        // Trigger new calc if value change
                         index += Method.V2_MWL;
                         int oldMethodIdx = UserSettings.getCalculationMethod(context);
                         if (oldMethodIdx != index) {
-                            //Log.d(TAG, "New calc method: " + index);
+                            Timber.d("New calc method: " + index);
 
                             // Mathhab hanafi pref. only for Karachi method.
                             Preference mathhabPref = findPreference("locations_mathhab_hanafi");
@@ -302,7 +302,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                         }
                         break;
                     case "locations_rounding":
-                        // Trigger new cacl if value change
+                        // Trigger new calc if value change
                         int oldRound = UserSettings.getRounding(context);
                         int newRound = stringValue.equals("true") ? 1 : 0;
                         if (oldRound != newRound) {
@@ -310,7 +310,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                         }
                         break;
                     case "locations_mathhab_hanafi":
-                        // Trigger new cacl if value change
+                        // Trigger new calc if value change
                         boolean oldMathhab = UserSettings.isMathhabHanafi(context);
                         boolean newMathhab = stringValue.equals("true");
                         if (oldMathhab != newMathhab) {
@@ -329,7 +329,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
         @Override
         public void onActivityResult(int requestCode, int resultCode, Intent data) {
-            //Log.d(TAG, "onActivityResult");
+            Timber.d("onActivityResult");
             if (requestCode == REQUEST_SEARCH_CITY) {
                 if(resultCode == Activity.RESULT_OK){
                     Preference pref = findPreference("locations_search_city");
@@ -372,7 +372,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
-                //Log.d(TAG, "sNotifPrayerTimeListener: " + newValue.toString());
+                Timber.d("sNotifPrayerTimeListener: " + newValue.toString());
                 if (newValue.toString().equals("true")) {
                     PrayerTimesManager.enableAlarm(preference.getContext());
                 }
@@ -393,7 +393,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 int index = listPref.findIndexOfValue(stringValue);
                 final String name = index >= 0 ? listPref.getEntries()[index].toString() : "";
 
-                //Log.d(TAG, "sMuezzinChangeListener: " + name);
+                Timber.d("sMuezzinChangeListener: " + name);
 
                 // start Athan Audio
                 Intent audioIntent = new Intent(context, AthanService.class);

@@ -29,7 +29,7 @@ import android.graphics.BitmapFactory;
 import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
-import android.support.v4.app.NotificationCompat.WearableExtender;
+//import android.support.v4.app.NotificationCompat.WearableExtender;
 
 import com.djalel.android.bilal.PrayerTimesManager;
 import com.djalel.android.bilal.services.AthanService;
@@ -39,22 +39,24 @@ import com.djalel.android.bilal.activities.StopAthanActivity;
 import com.djalel.android.bilal.helpers.PrayerTimes;
 import com.djalel.android.bilal.helpers.UserSettings;
 
+import timber.log.Timber;
+
 import static android.content.Context.VIBRATOR_SERVICE;
 
 public class AlarmReceiver extends BroadcastReceiver
 {
-    protected static final String TAG = "AlarmReceiver";
-
     @Override
     public void onReceive(Context context, Intent intent)
     {
         int prayer = intent.getIntExtra(AthanService.EXTRA_PRAYER, 2);
-        //Log.i(TAG, "Athan alarm is ON: " + prayer);
+        Timber.i("=============== Athan alarm is ON: " + prayer);
 
         if (UserSettings.isVibrateEnabled(context)) {
             // this is independent of notification setVibrate
-            Vibrator vibrator = (Vibrator)context.getSystemService(VIBRATOR_SERVICE);
-            vibrator.vibrate(new long[] {1000, 1000, 1000, 1000, 1000, 1000, 1000}, -1);
+            Vibrator vibrator = (Vibrator) context.getSystemService(VIBRATOR_SERVICE);
+            if (vibrator != null) {
+                vibrator.vibrate(new long[]{1000, 1000, 1000, 1000, 1000, 1000, 1000}, -1);
+            }
         }
 
         if (UserSettings.isAthanEnabled(context)) {
@@ -86,7 +88,7 @@ public class AlarmReceiver extends BroadcastReceiver
         // button or swipe left or volume button press)
         Intent intent = new Intent(context, MainActivity.class);
         PendingIntent activity = PendingIntent.getActivity(context, 0, intent, 0);
-        PendingIntent stopAudioIntent = StopAthanActivity.getIntent(notificationId, context);
+        PendingIntent stopAudioIntent = StopAthanActivity.getStopAudioIntent(notificationId, context);
 
         Bitmap largeIconBmp = BitmapFactory.decodeResource(context.getResources(),
                 R.drawable.ic_notif_large);
@@ -99,7 +101,8 @@ public class AlarmReceiver extends BroadcastReceiver
 
         String contentTitle = String.format(context.getString(R.string.time_for),
                 PrayerTimes.getName(context, index));
-        String contentTxt = String.format(context.getString(R.string.time_in), UserSettings.getCityName(context));
+        String contentTxt = String.format(context.getString(R.string.time_in),
+                UserSettings.getCityName(context), PrayerTimesManager.formatPrayer(index));
         String actionTxt = context.getString(R.string.stop_athan);
 
         // Notification channel ID is ignored for Android 7.1.1
@@ -112,13 +115,14 @@ public class AlarmReceiver extends BroadcastReceiver
                         .setContentText(contentTxt)
                         .setContentIntent(activity)
                         .setCategory(NotificationCompat.CATEGORY_ALARM)
-                        .setPriority(NotificationCompat.PRIORITY_HIGH)
+                        .setPriority(NotificationCompat.PRIORITY_MAX)
                         .setAutoCancel(true)
                         .setDeleteIntent(stopAudioIntent)
                         .setLargeIcon(largeIconBmp)
+                        .setShowWhen(false)//.setUsesChronometer(true)
                         .addAction(R.drawable.ic_stop_athan, actionTxt, stopAudioIntent);
 
-        // TODO: add a timeout (till Iqama) with android O
+        // TODO: add a timeout (till Iqama) with android O,  .setTimeoutAfter(20 * 60 * 1000)
 
         // Get an instance of the NotificationManager service
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);

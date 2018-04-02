@@ -32,7 +32,6 @@ import java.util.Locale;
 
 
 public class PrayerTimes {
-    private static final String TAG = "PrayerTimes";
     private GregorianCalendar[] all;
     private GregorianCalendar current;
     private GregorianCalendar next;
@@ -121,7 +120,7 @@ public class PrayerTimes {
 
     public String format(int i)
     {
-        if (BuildConfig.DEBUG  && (i < 0 || i >= all.length || null == all)) {
+        if (BuildConfig.DEBUG  && (i < 0 || null == all || i >= all.length)) {
             //Log.w(TAG, "index out of range or prayers array is null");
             return null;
         }
