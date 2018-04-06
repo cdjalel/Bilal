@@ -59,7 +59,7 @@ public class SearchCityActivity extends AppCompatActivity
 
         mLanguage = UserSettings.getLanguage(this).toUpperCase(Locale.ENGLISH);
 
-        SearchView searchView = (SearchView) findViewById(R.id.search_city_box);
+        SearchView searchView = findViewById(R.id.search_city_box);
         searchView.setOnQueryTextListener(this);
         searchView.setIconified(false);
         searchView.setQueryHint(getString(R.string.search_city));      // XML tag has a bug
@@ -133,7 +133,7 @@ public class SearchCityActivity extends AppCompatActivity
 
         if (cityList != null){
             mCityListAdapter = new CityListAdapter(this, cityList);
-            mCityListView = (ListView) findViewById(R.id.list_city);
+            mCityListView = findViewById(R.id.list_city);
             mCityListView.setAdapter(mCityListAdapter);
             mCityListView.setOnItemClickListener(this);
         }

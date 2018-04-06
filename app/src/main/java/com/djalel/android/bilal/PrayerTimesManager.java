@@ -26,19 +26,20 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.support.annotation.NonNull;
+
 import timber.log.Timber;
 
 import org.arabeyes.prayertime.Method;
 import org.arabeyes.prayertime.PTLocation;
 import org.arabeyes.prayertime.Prayer;
 import org.arabeyes.prayertime.PrayerTime;
+
+import com.djalel.android.bilal.activities.StopAthanActivity;
 import com.djalel.android.bilal.helpers.PrayerTimes;
 import com.djalel.android.bilal.helpers.UserSettings;
 import com.djalel.android.bilal.datamodels.City;
 import com.djalel.android.bilal.receivers.AlarmReceiver;
 import com.djalel.android.bilal.receivers.BootAndTimeChangeReceiver;
-import com.djalel.android.bilal.services.AthanService;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -65,7 +66,7 @@ public class PrayerTimesManager {
     public static GregorianCalendar getCurrentPrayer()
     {
         if (null == sPrayerTimes) {
-            Timber.w("sPrayerTimes == null");
+            Timber.e("sPrayerTimes == null");
             return null;
         }
         return sPrayerTimes.getCurrent();
@@ -74,37 +75,46 @@ public class PrayerTimesManager {
     public static int getCurrentPrayerIndex()
     {
         if (null == sPrayerTimes) {
-            Timber.w("sPrayerTimes == null");
-            return -1;
+            Timber.e("sPrayerTimes == null");
+            return 2;
         }
         return sPrayerTimes.getCurrentIndex();
-    }
-
-    public static GregorianCalendar getNextPrayer()
-    {
-        if (null == sPrayerTimes) {
-            Timber.w("sPrayerTimes == null");
-            return null;
-        }
-        return sPrayerTimes.getNext();
     }
 
     public static int getNextPrayerIndex()
     {
         if (null == sPrayerTimes) {
-            Timber.w("sPrayerTimes == null");
+            Timber.e("sPrayerTimes == null");
             return 2;           // fallback to dhuhr
         }
         return sPrayerTimes.getNextIndex();
     }
 
+    public static String  getNextName(Context context)
+    {
+        if (null == sPrayerTimes) {
+            Timber.e("sPrayerTimes == null");
+            return null;
+        }
+        return sPrayerTimes.getNextName(context);
+    }
+
     public static String formatPrayer(int i)
     {
         if (null == sPrayerTimes) {
-            Timber.w("sPrayerTimes == null");
+            Timber.e("sPrayerTimes == null");
             return "";
         }
         return sPrayerTimes.format(i);
+    }
+
+    public static String formatNextPrayer()
+    {
+        if (null == sPrayerTimes) {
+            Timber.e("sPrayerTimes == null");
+            return "";
+        }
+        return sPrayerTimes.format(sPrayerTimes.getNextIndex());
     }
 
     public static void enableAlarm(Context context)
@@ -143,6 +153,12 @@ public class PrayerTimesManager {
     public static void handleTimeChange(Context context)
     {
         sNewCalc = true;
+
+        // stop running Athan if any
+        Intent intent = new Intent(context, StopAthanActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        context.startActivity(intent);
+
         cancelAlarm(context);     // avoid unwanted alarm trigger from AlarmService
         updatePrayerTimes(context, false);
     }
@@ -240,7 +256,6 @@ public class PrayerTimesManager {
         }
     }
 
-    @NonNull
     private static void calcPrayerTimes(Context context, GregorianCalendar nowCal, City city)
     {
         int i;
@@ -277,7 +292,8 @@ public class PrayerTimesManager {
             ptCal[i].set(Calendar.HOUR_OF_DAY, pt[i].hour);
             ptCal[i].set(Calendar.MINUTE, pt[i].minute);
             ptCal[i].set(Calendar.SECOND, pt[i].second);
-            Timber.d(PrayerTimes.getName(context, i) + " " + PrayerTimes.format(ptCal[i], sMethod.round));
+            Timber.d(PrayerTimes.getName(context, i, nowCal) + " " +
+                    PrayerTimes.format(ptCal[i], sMethod.round));
         }
 
         PrayerTime nextPT = prayer.getNextDayFajr(location, sMethod, today);
@@ -295,9 +311,7 @@ public class PrayerTimesManager {
 
     private static PendingIntent createAlarmIntent(Context context)
     {
-        int idx = null == sPrayerTimes? 2 : sPrayerTimes.getNextIndex();
         Intent intent = new Intent(context, AlarmReceiver.class);
-        intent.putExtra(AthanService.EXTRA_PRAYER, idx);
         return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
     }
 
@@ -310,7 +324,9 @@ public class PrayerTimesManager {
             sAlarmIntent = createAlarmIntent(context);
         }
         AlarmManager alarmMgr = (AlarmManager) context.getSystemService(ALARM_SERVICE);
-        alarmMgr.cancel(sAlarmIntent);
+        if (null != alarmMgr) {
+            alarmMgr.cancel(sAlarmIntent);
+        }
         sAlarmIntent = null;
         Timber.i("Old alarm cancelled.");
     }
@@ -319,7 +335,9 @@ public class PrayerTimesManager {
     {
         sAlarmIntent = createAlarmIntent(context);
         AlarmManager alarmMgr = (AlarmManager)context.getSystemService(ALARM_SERVICE);
-        alarmMgr.set(AlarmManager.RTC_WAKEUP, sPrayerTimes.getNext().getTimeInMillis(), sAlarmIntent);
-        Timber.i("New Alarm set for " + sPrayerTimes.format(sPrayerTimes.getNextIndex()));
+        if (null != alarmMgr) {
+            alarmMgr.set(AlarmManager.RTC_WAKEUP, sPrayerTimes.getNext().getTimeInMillis(), sAlarmIntent);
+            Timber.i("New Alarm set for " + sPrayerTimes.format(sPrayerTimes.getNextIndex()));
+        }
     }
 }

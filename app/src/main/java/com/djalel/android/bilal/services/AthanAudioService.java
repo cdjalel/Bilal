@@ -21,109 +21,61 @@
 package com.djalel.android.bilal.services;
 
 import android.app.Service;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.IBinder;
-import android.os.PowerManager;
+//import android.os.PowerManager;
 import timber.log.Timber;
 
 import com.djalel.android.bilal.PrayerTimesManager;
 import com.djalel.android.bilal.helpers.UserSettings;
+import com.djalel.android.bilal.helpers.WakeLocker;
 
 import java.io.IOException;
 
 
-public class AthanService extends Service implements
+public class AthanAudioService extends Service implements
         MediaPlayer.OnPreparedListener,
         MediaPlayer.OnErrorListener,
         AudioManager.OnAudioFocusChangeListener
 {
-    public static final String EXTRA_PRAYER = "com.djalel.android.bilal.PRAYER";
     public static final String EXTRA_MUEZZIN = "com.djalel.android.bilal.MUEZZIN";
+    public static final int ATHAN_DURATION= 6 * 60 * 1000;          // longest audio is 5' 10''
 
-    private int mPrayerIndex;
-    private String mMuezzin;
+    private String mAthanFile;
     private MediaPlayer mAudioPlayer = null;
-    private BroadcastReceiver mVolumeChangeReceiver = null;
-    private boolean mReceiverRegistered = false;
-    private int mPreviousVolume = 0;
 
     public int onStartCommand(Intent intent, int flags, int startId) {
         Timber.d("onStartCommand");
 
-        stopAthan();           // athan can be played by Alarm or from settings in parallel
+        stopAudio();           // in case played by Alarm & settings in parallel
 
+        String muezzin;
+        int prayerIndex = PrayerTimesManager.getCurrentPrayerIndex();
         if (null != intent) {
-            mPrayerIndex = intent.getIntExtra(EXTRA_PRAYER, 2);
-            mMuezzin = intent.getStringExtra(EXTRA_MUEZZIN);
+            muezzin = intent.getStringExtra(EXTRA_MUEZZIN);
         }
         else { // fallback
             Timber.e("onStartCommand: intent == null");
-            mPrayerIndex = PrayerTimesManager.getNextPrayerIndex();
-            mMuezzin = UserSettings.getMuezzin(this);
+            muezzin = UserSettings.getMuezzin(this);
         }
+        mAthanFile = "android.resource://" + getPackageName() + "/" +
+                UserSettings.getMuezzinRes(muezzin, prayerIndex);
 
-        registerVolumeChangeReceiver();
         initMediaPlayer();
-        return Service.START_NOT_STICKY;
-    }
-
-    private void registerVolumeChangeReceiver() {
-        if (mReceiverRegistered) {
-            return;
-        }
-        mVolumeChangeReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                // The level checking code below doesn't work. It returns -1 for old & new level.
-                /*final int level = intent.getIntExtra("AudioManager.EXTRA_VOLUME_STREAM_VALUE", -1);
-                final int oldLevel = intent.getIntExtra("AudioManager.EXTRA_PREV_VOLUME_STREAM_VALUE", -1);
-                Timber.i("VOLUME_CHANGED_ACTION stream=" + " level=" + level + " oldLevel=" + oldLevel);
-                if (oldLevel < level) {
-                    stopAthan();
-                }*/
-
-                AudioManager audio = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-                final int currentVolume = audio.getStreamVolume(AudioManager.STREAM_MUSIC);
-                Timber.d("Current Volume = " + currentVolume);
-                if (currentVolume < mPreviousVolume) {
-                    stopAthan();
-                }
-                else {
-                    mPreviousVolume = currentVolume;
-                }
-            }
-        };
-        // FIXME: VOLUME_CHANGED_ACTION is internal to the framework and is not part of API. It might change!
-        // Here is an alternative with MediaSession & MediaController
-        // https://stackoverflow.com/questions/10154118/listen-to-volume-buttons-in-background-service
-        registerReceiver(mVolumeChangeReceiver, new IntentFilter("android.media.VOLUME_CHANGED_ACTION"));
-        mReceiverRegistered = true;
-    }
-
-    private void unregisterVolumeChangeReceiver() {
-        if (mReceiverRegistered) {
-            unregisterReceiver(mVolumeChangeReceiver);
-            mReceiverRegistered = false;
-        }
+        return Service.START_NOT_STICKY;        // Don't restart if killed by system for low mem.
     }
 
     private void initMediaPlayer() {
         if (null == mAudioPlayer) {
-            mAudioPlayer = new MediaPlayer();
-            String path = "android.resource://" + getPackageName() + "/" +
-                    UserSettings.getMuezzinRes(mMuezzin, mPrayerIndex);
-
             try {
-                mAudioPlayer.setDataSource(this, Uri.parse(path));
+                mAudioPlayer = new MediaPlayer();
+                mAudioPlayer.setDataSource(this, Uri.parse(mAthanFile));
                 mAudioPlayer.setOnPreparedListener(this);
                 mAudioPlayer.setOnErrorListener(this);
-                mAudioPlayer.setWakeMode(this, PowerManager.PARTIAL_WAKE_LOCK);
+//                mAudioPlayer.setWakeMode(this, PowerManager.PARTIAL_WAKE_LOCK);
                 mAudioPlayer.prepareAsync(); // prepare async to not block main thread
                 mAudioPlayer.setVolume(1.0f, 1.0f);
                 Timber.d("Audio player prepared asynchronously!");
@@ -138,11 +90,6 @@ public class AthanService extends Service implements
     public void onPrepared(MediaPlayer player) {
         mAudioPlayer.start();
         Timber.i("Audio started playing!");
-
-        AudioManager audio = (AudioManager) this.getSystemService(Context.AUDIO_SERVICE);
-        mPreviousVolume = audio.getStreamVolume(AudioManager.STREAM_MUSIC);
-        Timber.d("Initial Volume = " + mPreviousVolume);
-
         if(!mAudioPlayer.isPlaying()) {
 	        Timber.w("Problem in playing audio");
 	    }
@@ -186,14 +133,13 @@ public class AthanService extends Service implements
         }
     }
 
-	private void stopAthan() {
+	private void stopAudio() {
 		if (mAudioPlayer != null) {
             Timber.d("Stopping Athan");
             if (mAudioPlayer.isPlaying()) { mAudioPlayer.stop(); }
             mAudioPlayer.release();
             mAudioPlayer = null;
         }
-        unregisterVolumeChangeReceiver();
     }
 
 	public void onPause() {
@@ -202,7 +148,8 @@ public class AthanService extends Service implements
 
 	public void onDestroy() {
         Timber.d("onDestroy");
-        stopAthan();
+        stopAudio();
+        WakeLocker.release();
     }
 
 	@Override

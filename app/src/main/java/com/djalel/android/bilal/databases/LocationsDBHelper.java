@@ -83,7 +83,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
 
 
     private SQLiteDatabase mDatabase;
-    private int mOpenMode = -1;
+    private int mOpenMode;
 
     public LocationsDBHelper(Context context) {
 	    super(context, DATABASE_NAME, null, DATABASE_VERSION);

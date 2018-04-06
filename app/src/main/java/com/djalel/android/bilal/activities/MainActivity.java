@@ -42,8 +42,9 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.View;
 import android.widget.TextView;
-//import android.widget.Toast;
 
+import com.djalel.android.bilal.helpers.PrayerTimes;
+import com.djalel.android.bilal.services.AthanAudioService;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 //import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -58,7 +59,6 @@ import com.djalel.android.bilal.R;
 import com.djalel.android.bilal.helpers.UserSettings;
 
 import java.text.DateFormat;
-import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 
@@ -69,9 +69,8 @@ public class MainActivity extends AppCompatActivity implements
 
     public static final String UPDATE_VIEWS = "com.djalel.android.bilal.UPDATE";
 
-    private static int BLINK_INTERVAL = 7 * 60 * 1000;          // longest audio is 5' 10''
-    private static int BLINK_DURATION = 500;
-    private static int BLINK_COUNT    = BLINK_INTERVAL/BLINK_DURATION;
+    private static final int BLINK_DURATION = 500;
+    private static final int BLINK_COUNT    = AthanAudioService.ATHAN_DURATION/BLINK_DURATION;
 
     private static final int REQUEST_SEARCH_CITY = 2;
 
@@ -81,7 +80,6 @@ public class MainActivity extends AppCompatActivity implements
     private Boolean mUVReceiverRegistered = false;
     private BroadcastReceiver mUpdateViewsReceiver = null;
 
-    private boolean mIsJumu3a = false;
     private int mImportant = -1;
 
     private TextView mTextViewCity;
@@ -102,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements
         UserSettings.loadLocale(this);
 
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         setTitle(R.string.app_name);
 
@@ -242,14 +240,14 @@ public class MainActivity extends AppCompatActivity implements
         // updates. Gets the best and most recent location currently available, which may be null
         // in rare cases when a location is not available.
         // TODO checkPermission()
-        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        if (mLastLocation == null) {
-            //Toast.makeText(this, R.string.no_location_detected, Toast.LENGTH_LONG).show();
-            Timber.w("onConnected: No location detected");
-        }
-        else {
-            Timber.w("onConnected: location detected");
-        }
+//        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+//        if (mLastLocation == null) {
+//            //Toast.makeText(this, R.string.no_location_detected, Toast.LENGTH_LONG).show();
+//            Timber.w("onConnected: No location detected");
+//        }
+//        else {
+//            Timber.w("onConnected: location detected");
+//        }
     }
 
     @Override
@@ -268,36 +266,36 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void loadViews() {
-        mTextViewCity = (TextView) findViewById(R.id.textViewCity);
-        mTextViewDate = (TextView) findViewById(R.id.textViewDate);
+        mTextViewCity = findViewById(R.id.textViewCity);
+        mTextViewDate = findViewById(R.id.textViewDate);
         mTextViewPrayers = new TextView[][] {
             {
-                    (TextView) findViewById(R.id.textViewFajrName),
-                    (TextView) findViewById(R.id.textViewFajrTime)
+                    findViewById(R.id.textViewFajrName),
+                    findViewById(R.id.textViewFajrTime)
             },
             {
-                    (TextView) findViewById(R.id.textViewSunriseName),
-                    (TextView) findViewById(R.id.textViewSunriseTime)
+                    findViewById(R.id.textViewSunriseName),
+                    findViewById(R.id.textViewSunriseTime)
             },
             {
-                    (TextView) findViewById(R.id.textViewDhuhrName),
-                    (TextView) findViewById(R.id.textViewDhuhrTime)
+                    findViewById(R.id.textViewDhuhrName),
+                    findViewById(R.id.textViewDhuhrTime)
             },
             {
-                    (TextView) findViewById(R.id.textViewAsrName),
-                    (TextView) findViewById(R.id.textViewAsrTime)
+                    findViewById(R.id.textViewAsrName),
+                    findViewById(R.id.textViewAsrTime)
             },
             {
-                    (TextView) findViewById(R.id.textViewMaghribName),
-                    (TextView) findViewById(R.id.textViewMaghribTime)
+                    findViewById(R.id.textViewMaghribName),
+                    findViewById(R.id.textViewMaghribTime)
             },
             {
-                    (TextView) findViewById(R.id.textViewIshaName),
-                    (TextView) findViewById(R.id.textViewIshaTime)
+                    findViewById(R.id.textViewIshaName),
+                    findViewById(R.id.textViewIshaTime)
             },
             {
-                    (TextView) findViewById(R.id.textViewNextFajrName),
-                    (TextView) findViewById(R.id.textViewNextFajrTime)
+                    findViewById(R.id.textViewNextFajrName),
+                    findViewById(R.id.textViewNextFajrTime)
             }
         };
 
@@ -345,14 +343,7 @@ public class MainActivity extends AppCompatActivity implements
         }
 
         // change Dhuhr to Jumuaa if needed.
-        if (now.get(Calendar.DAY_OF_WEEK) == Calendar.FRIDAY) {
-            mTextViewPrayers[2][0].setText(getString(R.string.jumu3a));
-            mIsJumu3a = true;
-        }
-        else if (mIsJumu3a) {
-            mTextViewPrayers[2][0].setText(getString(R.string.dhuhr));
-            mIsJumu3a = false;
-        }
+        mTextViewPrayers[2][0].setText(PrayerTimes.getName(this,2,now));
 
         // Reset old important prayer to normal
         if (mImportant != -1) {
@@ -369,7 +360,7 @@ public class MainActivity extends AppCompatActivity implements
             return;
         }
         long elapsed = now.getTimeInMillis() - current.getTimeInMillis();
-        if (elapsed >= 0 && elapsed <= BLINK_INTERVAL) {
+        if (elapsed >= 0 && elapsed <= AthanAudioService.ATHAN_DURATION) {
             // blink Current Prayers
             mImportant = PrayerTimesManager.getCurrentPrayerIndex();
             Animation anim = new AlphaAnimation(0.0f, 1.0f);
@@ -379,7 +370,7 @@ public class MainActivity extends AppCompatActivity implements
             View.OnClickListener currentPrayerListener = new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Timber.d("currentPrayerListener IN");
+                    Timber.d("currentPrayerListener");
                     Intent intent = new Intent(v.getContext(), StopAthanActivity.class);
                     startActivity(intent);
                 }

@@ -32,11 +32,11 @@ import android.support.v4.app.NotificationManagerCompat;
 //import android.support.v4.app.NotificationCompat.WearableExtender;
 
 import com.djalel.android.bilal.PrayerTimesManager;
-import com.djalel.android.bilal.services.AthanService;
+import com.djalel.android.bilal.helpers.WakeLocker;
+import com.djalel.android.bilal.services.AthanAudioService;
 import com.djalel.android.bilal.R;
 import com.djalel.android.bilal.activities.MainActivity;
 import com.djalel.android.bilal.activities.StopAthanActivity;
-import com.djalel.android.bilal.helpers.PrayerTimes;
 import com.djalel.android.bilal.helpers.UserSettings;
 
 import timber.log.Timber;
@@ -45,30 +45,30 @@ import static android.content.Context.VIBRATOR_SERVICE;
 
 public class AlarmReceiver extends BroadcastReceiver
 {
+    public static final int NOTIFICATION_ID = 1;
+
     @Override
     public void onReceive(Context context, Intent intent)
     {
-        int prayer = intent.getIntExtra(AthanService.EXTRA_PRAYER, 2);
-        Timber.i("=============== Athan alarm is ON: " + prayer);
+        Timber.i("=============== Athan alarm is ON");
 
         if (UserSettings.isVibrateEnabled(context)) {
             // this is independent of notification setVibrate
             Vibrator vibrator = (Vibrator) context.getSystemService(VIBRATOR_SERVICE);
             if (vibrator != null) {
-                vibrator.vibrate(new long[]{1000, 1000, 1000, 1000, 1000, 1000, 1000}, -1);
+                vibrator.vibrate(new long[]{1000, 1000, 1000}, -1);
             }
         }
 
         if (UserSettings.isAthanEnabled(context)) {
-            // don't use notification setSound as system can stop and we can't!
-            Intent audioIntent = new Intent(context, AthanService.class);
-            audioIntent.putExtra(AthanService.EXTRA_PRAYER, prayer);
-            audioIntent.putExtra(AthanService.EXTRA_MUEZZIN, UserSettings.getMuezzin(context));
+            WakeLocker.acquire(context);
+            Intent audioIntent = new Intent(context, AthanAudioService.class);
+            audioIntent.putExtra(AthanAudioService.EXTRA_MUEZZIN, UserSettings.getMuezzin(context));
             context.startService(audioIntent);
         }
 
         if (UserSettings.isNotificationEnabled(context)) {
-            showNotification(context, prayer);
+            showNotification(context);
         }
 
         // Broadcast to MainActivity so it updates its screen if on
@@ -79,16 +79,19 @@ public class AlarmReceiver extends BroadcastReceiver
         PrayerTimesManager.updatePrayerTimes(context, false);
     }
 
-    private void showNotification(Context context, int index)
+    private void showNotification(Context context)
     {
-        int notificationId = 001;
-        String id = "bilal_channel_01";
+        // Use one intent to show MainActivity when notification is touched
+        Intent mainIntent = new Intent(context, MainActivity.class);
+        PendingIntent notifContentIntent = PendingIntent.getActivity(context, 0, mainIntent, 0);
 
-        // Use one intent to show MainActivity and another intent to stop athan (by notification
-        // button or swipe left or volume button press)
-        Intent intent = new Intent(context, MainActivity.class);
-        PendingIntent activity = PendingIntent.getActivity(context, 0, intent, 0);
-        PendingIntent stopAudioIntent = StopAthanActivity.getStopAudioIntent(notificationId, context);
+        // Use another cancel/stop intent to stop athan from notification
+        // (cancel by swipe and stop by button)
+        Intent stopIntent = new Intent(context, StopAthanActivity.class);
+        stopIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent notifDeleteIntent = PendingIntent.getActivity(context, 0, stopIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+
 
         Bitmap largeIconBmp = BitmapFactory.decodeResource(context.getResources(),
                 R.drawable.ic_notif_large);
@@ -99,35 +102,36 @@ public class AlarmReceiver extends BroadcastReceiver
         largeIconBmp = Bitmap.createScaledBitmap(largeIconBmp, width, height, false);*/
 
 
-        String contentTitle = String.format(context.getString(R.string.time_for),
-                PrayerTimes.getName(context, index));
-        String contentTxt = String.format(context.getString(R.string.time_in),
-                UserSettings.getCityName(context), PrayerTimesManager.formatPrayer(index));
+        String contentTitle = String.format(context.getString(R.string.time_for), PrayerTimesManager.getNextName(context));
+        String contentTxt = String.format(context.getString(R.string.time_in), UserSettings.getCityName(context),
+                PrayerTimesManager.formatNextPrayer());
         String actionTxt = context.getString(R.string.stop_athan);
 
-        // Notification channel ID is ignored for Android 7.1.1
-        // (API level 25) and lower.
+        // Notification channel ID is ignored for Android 7.1.1 (API level 25) and lower.
+        String channelId = "bilal_channel_01";
         NotificationCompat.Builder notificationBuilder =
-                new NotificationCompat.Builder(context, id)
+                new NotificationCompat.Builder(context, channelId)
                         .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                        .setSmallIcon(R.drawable.ic_notif)
+                        .setSmallIcon(R.drawable.ic_stat_notif)
+                        .setTicker(contentTitle)
                         .setContentTitle(contentTitle)
                         .setContentText(contentTxt)
-                        .setContentIntent(activity)
+                        .setContentIntent(notifContentIntent)
                         .setCategory(NotificationCompat.CATEGORY_ALARM)
                         .setPriority(NotificationCompat.PRIORITY_MAX)
                         .setAutoCancel(true)
-                        .setDeleteIntent(stopAudioIntent)
+                        .setDeleteIntent(notifDeleteIntent)
                         .setLargeIcon(largeIconBmp)
                         .setShowWhen(false)//.setUsesChronometer(true)
-                        .addAction(R.drawable.ic_stop_athan, actionTxt, stopAudioIntent);
+                        .setTimeoutAfter(AthanAudioService.ATHAN_DURATION)
+                        .addAction(R.drawable.ic_stop_athan, actionTxt, notifDeleteIntent);
+        // don't use notification setSound as system stops athan prematurely!
 
-        // TODO: add a timeout (till Iqama) with android O,  .setTimeoutAfter(20 * 60 * 1000)
 
         // Get an instance of the NotificationManager service
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
 
         // Build the notification and issue it
-        notificationManager.notify(notificationId, notificationBuilder.build());
+        notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
     }
 }

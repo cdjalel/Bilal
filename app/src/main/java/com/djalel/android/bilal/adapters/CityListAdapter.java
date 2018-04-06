@@ -13,8 +13,12 @@ import java.util.List;
 
 
 public class CityListAdapter extends BaseAdapter {
-    private List<City> mCities;
-    private Context mContext;
+    private final List<City> mCities;
+    private final Context mContext;
+
+    static class ViewHolder {
+        public TextView text;
+    }
 
     public CityListAdapter(Context context , List<City> cityList) {
         mContext = context;
@@ -36,13 +40,17 @@ public class CityListAdapter extends BaseAdapter {
 
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
-        View v = view.inflate(mContext, R.layout.item_list_city, null);
+        if (view == null) {
+            view = View.inflate(mContext, R.layout.item_list_city, null);
+            // configure view holder
+            ViewHolder viewHolder = new ViewHolder();
+            viewHolder.text = (TextView) view.findViewById(R.id.tv_city);
+            view.setTag(viewHolder);
+        }
 
-        City city = mCities.get(i);
+        ViewHolder holder = (ViewHolder) view.getTag();
+        holder.text.setText(mCities.get(i).toLongString());
 
-        TextView tv = (TextView) v.findViewById(R.id.tv_city);
-        tv.setText(city.toLongString());
-
-        return v;
+        return view;
     }
 }

@@ -27,17 +27,20 @@ import com.djalel.android.bilal.BuildConfig;
 import com.djalel.android.bilal.R;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 
+import timber.log.Timber;
+
 
 public class PrayerTimes {
-    private GregorianCalendar[] all;
+    private final GregorianCalendar[] all;
     private GregorianCalendar current;
     private GregorianCalendar next;
     private int c;                          // current prayer index
     private int n;                          // next prayer index
-    private boolean rounded;
+    private final boolean rounded;
 
     public PrayerTimes(GregorianCalendar now, GregorianCalendar[] all, boolean rounded) {
         this.all = all;
@@ -66,11 +69,11 @@ public class PrayerTimes {
         return next;
     }
 
-    public String getCurrentName(Context context) {return getName(context, c); }
+    public String getCurrentName(Context context) {return getName(context, c, current); }
 
-    public String getNextName(Context context) {return getName(context, n); }
+    public String getNextName(Context context) {return getName(context, n, next); }
 
-    public static String getName(Context context, int prayer)
+    public static String getName(Context context, int prayer, GregorianCalendar cal)
     {
         int prayerNameResId = 0;
         switch (prayer) {
@@ -84,7 +87,12 @@ public class PrayerTimes {
                 prayerNameResId = R.string.shuruk;
                 break;
             case 2:
-                prayerNameResId = R.string.dhuhr;
+                if (cal.get(Calendar.DAY_OF_WEEK) == Calendar.FRIDAY) {
+                    prayerNameResId = R.string.jumu3a;
+                }
+                else {
+                    prayerNameResId = R.string.dhuhr;
+                }
                 break;
             case 3:
                 prayerNameResId = R.string.asr;
@@ -120,8 +128,8 @@ public class PrayerTimes {
 
     public String format(int i)
     {
-        if (BuildConfig.DEBUG  && (i < 0 || null == all || i >= all.length)) {
-            //Log.w(TAG, "index out of range or prayers array is null");
+        if (i < 0 || null == all || i >= all.length) {
+            Timber.e("index out of range or prayers array is null");
             return null;
         }
         return format(all[i], rounded? 1:0);

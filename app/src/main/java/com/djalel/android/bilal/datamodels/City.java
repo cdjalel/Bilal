@@ -34,13 +34,13 @@ public class City implements Serializable {
 
     private int id;
     private String name;
-    private String country;
-    private String timezoneEN;
-    private String timezone;
-    private float latitude;
-    private float longitude;
-    private float altitude;
-    private String countryCode;
+    private final String country;
+    private final String timezoneEN;
+    private final String timezone;
+    private final float latitude;
+    private final float longitude;
+    private final float altitude;
+    private final String countryCode;
 
     public City(int i, String n, String c, String tzE, String tz, float lat, float lon, float alt, String cc) {
         id = i;
