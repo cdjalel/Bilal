@@ -33,13 +33,15 @@ public class BootAndTimeChangeReceiver extends BroadcastReceiver {
         String action = intent.getAction();
         Timber.i("=============== " + action);
 
-        if (action.equals(Intent.ACTION_BOOT_COMPLETED))
-        {
-            PrayerTimesManager.handleBootComplete(context);
-        }
-        else // TIME_SET
-        {
-            PrayerTimesManager.handleTimeChange(context);
+        if (null != action) {
+            if (action.equals(Intent.ACTION_BOOT_COMPLETED))
+            {
+                PrayerTimesManager.handleBootComplete(context);
+            }
+            else // TIME_SET
+            {
+                PrayerTimesManager.handleTimeChange(context);
+            }
         }
     }
 }

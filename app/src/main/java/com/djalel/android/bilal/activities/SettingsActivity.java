@@ -39,12 +39,13 @@ import android.view.MenuItem;
 
 import com.djalel.android.bilal.PrayerTimesManager;
 import com.djalel.android.bilal.helpers.UserSettings;
+import com.djalel.android.bilal.helpers.WakeLocker;
+import com.djalel.android.bilal.services.AthanService;
 import com.djalel.android.bilal.R;
 
 import java.util.List;
 
 import org.arabeyes.prayertime.Method;
-import com.djalel.android.bilal.services.AthanService;
 
 import timber.log.Timber;
 
@@ -165,7 +166,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             }
         }
 
-        private /*static*/ Preference.OnPreferenceChangeListener sGeneralPrefsListener = new Preference.OnPreferenceChangeListener() {
+        private final /*static*/ Preference.OnPreferenceChangeListener sGeneralPrefsListener =
+                new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object value) {
                 String stringValue = value.toString();
@@ -273,7 +275,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             }
         }
 
-        private /*static*/ Preference.OnPreferenceChangeListener sMethodChangeListener = new Preference.OnPreferenceChangeListener() {
+        private final /*static*/ Preference.OnPreferenceChangeListener sMethodChangeListener =
+                new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object value) {
                 String stringValue = value.toString();
@@ -368,7 +371,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             setListPrefSummary(pref, UserSettings.getMuezzin(pref.getContext()));
         }
 
-        private static Preference.OnPreferenceChangeListener sNotifPrayerTimeListener =
+        private static final Preference.OnPreferenceChangeListener sNotifPrayerTimeListener =
         new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
@@ -383,7 +386,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             }
         };
 
-        private static Preference.OnPreferenceChangeListener sMuezzinChangeListener =
+        private static final Preference.OnPreferenceChangeListener sMuezzinChangeListener =
         new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
@@ -426,8 +429,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
             private void playAthan(Context context, String stringValue) {
                 // start Athan Audio
+                WakeLocker.acquire(context);
                 Intent playIntent = new Intent(context, AthanService.class);
                 playIntent.setAction(AthanService.ACTION_PLAY_ATHAN);
+                playIntent.putExtra(AthanService.EXTRA_PRAYER, 2);
                 playIntent.putExtra(AthanService.EXTRA_MUEZZIN, stringValue);
                 context.startService(playIntent);
             }
@@ -438,11 +443,11 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         };
     }
 
+/*
     /**
      * This fragment shows data and sync preferences only. It is used when the
      * activity is showing a two-pane settings UI.
-     */
-/*
+     *
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static class DataSyncPreferenceFragment extends PreferenceFragment {
         @Override

@@ -27,8 +27,8 @@ import android.content.Intent;
 import com.djalel.android.bilal.PrayerTimesManager;
 import com.djalel.android.bilal.services.AthanService;
 import com.djalel.android.bilal.activities.MainActivity;
-import com.djalel.android.bilal.helpers.UserSettings;
 import com.djalel.android.bilal.helpers.WakeLocker;
+import com.djalel.android.bilal.helpers.UserSettings;
 
 import timber.log.Timber;
 
@@ -36,16 +36,24 @@ import timber.log.Timber;
 // which doesn't stop Athan on power button press
 public class AlarmReceiver extends BroadcastReceiver
 {
+    public static final int NOTIFICATION_ID = 1;
+
     @Override
     public void onReceive(Context context, Intent intent)
     {
-        Timber.i("=============== Athan alarm is ON");
+        int prayer = intent.getIntExtra(AthanService.EXTRA_PRAYER, 2);
+        Timber.i("=============== Athan alarm is ON: " + prayer);
 
         if (UserSettings.isNotificationEnabled(context)) {
             WakeLocker.acquire(context);
             Intent athanIntent = new Intent(context, AthanService.class);
             athanIntent.setAction(AthanService.ACTION_NOTIFY_ATHAN);
+            athanIntent.putExtra(AthanService.EXTRA_PRAYER, prayer);
+            athanIntent.putExtra(AthanService.EXTRA_MUEZZIN, UserSettings.getMuezzin(context));
             context.startService(athanIntent);
+        }
+        else {
+            Timber.e("Alarm received when set off by user!");
         }
 
         // Broadcast to MainActivity so it updates its screen if on
@@ -55,6 +63,4 @@ public class AlarmReceiver extends BroadcastReceiver
         // Re-arm alarm.
         PrayerTimesManager.updatePrayerTimes(context, false);
     }
-
-
 }

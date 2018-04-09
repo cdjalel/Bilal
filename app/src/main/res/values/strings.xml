@@ -5,6 +5,7 @@
     <string name="time_for">Time for %s prayer</string>
     <string name="time_in">In %s at %s</string>
     <string name="stop_athan">Stop Athan</string>
+    <string name="close_notification">Close</string>
     <string name="set_location">Tap here to set location</string>
     <string name="zero_hour">00:00</string>
 
@@ -22,6 +23,14 @@
     <!-- Example General settings -->
     <string name="pref_header_general">General</string>
 
+    <!--<string name="pref_title_social_recommendations">Enable social recommendations</string>-->
+    <!--<string name="pref_description_social_recommendations">Recommendations for people to contact-->
+        <!--based on your message history-->
+    <!--</string>-->
+
+    <!--<string name="pref_title_display_name">Display name</string>-->
+    <!--<string name="pref_default_display_name">John Smith</string>-->
+
     <string name="pref_title_language">Language</string>
     <string-array name="pref_language_list_titles">
         <item>Follow device settings</item>
@@ -35,8 +44,8 @@
     </string-array>
     <string name="pref_language_default_value">--</string>
 
-    <string name="pref_title_hindu_nbrs">Eastern Arabic numerals</string>
-    <string name="pref_description_hindu_nbrs">٠ ١ ٢ ٣ ٤ ٥ ٦ ٧ ٨ ٩</string>
+    <!--<string name="pref_title_hindu_nbrs">Eastern Arabic numerals</string>-->
+    <!--<string name="pref_description_hindu_nbrs">٠ ١ ٢ ٣ ٤ ٥ ٦ ٧ ٨ ٩</string>-->
 
     <string name="pref_title_numerals">Numerals</string>
     <string-array name="pref_numerals_list_titles">
@@ -73,41 +82,41 @@ athan.bilal1@gmail.com, so we can fix it.
 
 
     <!-- Example settings for Data & Sync -->
-    <string name="pref_header_data_sync">Data &amp; sync</string>
+    <!--<string name="pref_header_data_sync">Data &amp; sync</string>-->
 
-    <string name="pref_title_sync_frequency">Sync frequency</string>
-    <string-array name="pref_sync_frequency_titles">
-        <item>15 minutes</item>
-        <item>30 minutes</item>
-        <item>1 hour</item>
-        <item>3 hours</item>
-        <item>6 hours</item>
-        <item>Never</item>
-    </string-array>
-    <string-array name="pref_sync_frequency_values">
-        <item>15</item>
-        <item>30</item>
-        <item>60</item>
-        <item>180</item>
-        <item>360</item>
-        <item>-1</item>
-    </string-array>
+    <!--<string name="pref_title_sync_frequency">Sync frequency</string>-->
+    <!--<string-array name="pref_sync_frequency_titles">-->
+        <!--<item>15 minutes</item>-->
+        <!--<item>30 minutes</item>-->
+        <!--<item>1 hour</item>-->
+        <!--<item>3 hours</item>-->
+        <!--<item>6 hours</item>-->
+        <!--<item>Never</item>-->
+    <!--</string-array>-->
+    <!--<string-array name="pref_sync_frequency_values">-->
+        <!--<item>15</item>-->
+        <!--<item>30</item>-->
+        <!--<item>60</item>-->
+        <!--<item>180</item>-->
+        <!--<item>360</item>-->
+        <!--<item>-1</item>-->
+    <!--</string-array>-->
 
-    <string-array name="list_preference_entries">
-        <item>Entry 1</item>
-        <item>Entry 2</item>
-        <item>Entry 3</item>
-    </string-array>
+    <!--<string-array name="list_preference_entries">-->
+        <!--<item>Entry 1</item>-->
+        <!--<item>Entry 2</item>-->
+        <!--<item>Entry 3</item>-->
+    <!--</string-array>-->
 
-    <string-array name="list_preference_entry_values">
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-    </string-array>
+    <!--<string-array name="list_preference_entry_values">-->
+        <!--<item>1</item>-->
+        <!--<item>2</item>-->
+        <!--<item>3</item>-->
+    <!--</string-array>-->
 
-    <string-array name="multi_select_list_preference_default_value" />
+    <!--<string-array name="multi_select_list_preference_default_value" />-->
 
-    <string name="pref_title_system_sync_settings">System sync settings</string>
+    <!--<string name="pref_title_system_sync_settings">System sync settings</string>-->
 
     <!-- Notifications -->
     <string name="pref_header_notifications">Notifications</string>
@@ -140,7 +149,7 @@ athan.bilal1@gmail.com, so we can fix it.
     <string name="pref_title_vibrate">Vibrate</string>
 
     <!--Location settings-->
-    <string name="btn_search_city">Search</string>
+    <!--<string name="btn_search_city">Search</string>-->
     <string name="search_city">Search city</string>
 
     <string name="pref_header_locations">Location</string>

@@ -5,7 +5,8 @@ import timber.log.Timber;
 import static timber.log.Timber.DebugTree;
 
 public class PrayerTimesApp extends Application {
-    @Override public void onCreate() {
+    @Override
+    public void onCreate() {
         super.onCreate();
 
         if (BuildConfig.DEBUG) {
