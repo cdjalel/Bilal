@@ -32,12 +32,15 @@ import android.support.v4.app.NotificationManagerCompat;
 //import android.support.v4.app.NotificationCompat.WearableExtender;
 
 import com.djalel.android.bilal.PrayerTimesManager;
+import com.djalel.android.bilal.helpers.PrayerTimes;
 import com.djalel.android.bilal.helpers.WakeLocker;
 import com.djalel.android.bilal.services.AthanAudioService;
 import com.djalel.android.bilal.R;
 import com.djalel.android.bilal.activities.MainActivity;
 import com.djalel.android.bilal.activities.StopAthanActivity;
 import com.djalel.android.bilal.helpers.UserSettings;
+
+import java.util.GregorianCalendar;
 
 import timber.log.Timber;
 
@@ -50,7 +53,8 @@ public class AlarmReceiver extends BroadcastReceiver
     @Override
     public void onReceive(Context context, Intent intent)
     {
-        Timber.i("=============== Athan alarm is ON");
+        int prayer = intent.getIntExtra(AthanAudioService.EXTRA_PRAYER, 2);
+        Timber.i("=============== Athan alarm is ON: " + prayer);
 
         if (UserSettings.isVibrateEnabled(context)) {
             // this is independent of notification setVibrate
@@ -63,12 +67,13 @@ public class AlarmReceiver extends BroadcastReceiver
         if (UserSettings.isAthanEnabled(context)) {
             WakeLocker.acquire(context);
             Intent audioIntent = new Intent(context, AthanAudioService.class);
+            audioIntent.putExtra(AthanAudioService.EXTRA_PRAYER, prayer);
             audioIntent.putExtra(AthanAudioService.EXTRA_MUEZZIN, UserSettings.getMuezzin(context));
             context.startService(audioIntent);
         }
 
         if (UserSettings.isNotificationEnabled(context)) {
-            showNotification(context);
+            showNotification(context, prayer);
         }
 
         // Broadcast to MainActivity so it updates its screen if on
@@ -79,7 +84,7 @@ public class AlarmReceiver extends BroadcastReceiver
         PrayerTimesManager.updatePrayerTimes(context, false);
     }
 
-    private void showNotification(Context context)
+    private void showNotification(Context context, int index)
     {
         // Use one intent to show MainActivity when notification is touched
         Intent mainIntent = new Intent(context, MainActivity.class);
@@ -102,9 +107,10 @@ public class AlarmReceiver extends BroadcastReceiver
         largeIconBmp = Bitmap.createScaledBitmap(largeIconBmp, width, height, false);*/
 
 
-        String contentTitle = String.format(context.getString(R.string.time_for), PrayerTimesManager.getNextName(context));
-        String contentTxt = String.format(context.getString(R.string.time_in), UserSettings.getCityName(context),
-                PrayerTimesManager.formatNextPrayer());
+        String contentTitle = String.format(context.getString(R.string.time_for),
+                PrayerTimes.getName(context, index, new GregorianCalendar()));
+        String contentTxt = String.format(context.getString(R.string.time_in),
+                UserSettings.getCityName(context), PrayerTimesManager.formatPrayer(index));
         String actionTxt = context.getString(R.string.stop_athan);
 
         // Notification channel ID is ignored for Android 7.1.1 (API level 25) and lower.

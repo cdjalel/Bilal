@@ -41,6 +41,7 @@ public class AthanAudioService extends Service implements
         MediaPlayer.OnErrorListener,
         AudioManager.OnAudioFocusChangeListener
 {
+    public static final String EXTRA_PRAYER = "com.djalel.android.bilal.PRAYER";
     public static final String EXTRA_MUEZZIN = "com.djalel.android.bilal.MUEZZIN";
     public static final int ATHAN_DURATION= 6 * 60 * 1000;          // longest audio is 5' 10''
 
@@ -52,13 +53,15 @@ public class AthanAudioService extends Service implements
 
         stopAudio();           // in case played by Alarm & settings in parallel
 
+        int prayerIndex;
         String muezzin;
-        int prayerIndex = PrayerTimesManager.getCurrentPrayerIndex();
         if (null != intent) {
+            prayerIndex = intent.getIntExtra(EXTRA_PRAYER, 2);
             muezzin = intent.getStringExtra(EXTRA_MUEZZIN);
         }
         else { // fallback
             Timber.e("onStartCommand: intent == null");
+            prayerIndex = PrayerTimesManager.getCurrentPrayerIndex();
             muezzin = UserSettings.getMuezzin(this);
         }
         mAthanFile = "android.resource://" + getPackageName() + "/" +

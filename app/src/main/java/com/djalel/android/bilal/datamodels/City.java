@@ -113,8 +113,7 @@ public class City implements Serializable {
     public static City deserialize(String str) {
         try {
             byte [] data = Base64.decode(str, Base64.DEFAULT);
-            ObjectInputStream ois = new ObjectInputStream(
-                    new ByteArrayInputStream(data));
+            ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
             City city = (City) ois.readObject();
             ois.close();
             return city;

@@ -431,6 +431,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 // start Athan Audio
                 WakeLocker.acquire(context);
                 Intent audioIntent = new Intent(context, AthanAudioService.class);
+                audioIntent.putExtra(AthanAudioService.EXTRA_PRAYER, 2);
                 audioIntent.putExtra(AthanAudioService.EXTRA_MUEZZIN, stringValue);
                 context.startService(audioIntent);
             }
@@ -442,7 +443,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             }
         };
     }
-
 
 /*
     /**
