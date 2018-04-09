@@ -20,20 +20,31 @@
 
 package com.djalel.android.bilal.services;
 
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.support.v4.app.NotificationCompat;
+
 import timber.log.Timber;
 
 import com.djalel.android.bilal.PrayerTimesManager;
+import com.djalel.android.bilal.R;
+import com.djalel.android.bilal.activities.MainActivity;
+import com.djalel.android.bilal.activities.StopAthanActivity;
+import com.djalel.android.bilal.helpers.PrayerTimes;
 import com.djalel.android.bilal.helpers.UserSettings;
+import com.djalel.android.bilal.helpers.WakeLocker;
 
 import java.io.IOException;
 
@@ -43,88 +54,147 @@ public class AthanService extends Service implements
         MediaPlayer.OnErrorListener,
         AudioManager.OnAudioFocusChangeListener
 {
-    public static final String EXTRA_PRAYER = "com.djalel.android.bilal.PRAYER";
     public static final String EXTRA_MUEZZIN = "com.djalel.android.bilal.MUEZZIN";
 
+    public static final String ACTION_NOTIFY_ATHAN = "com.djalel.android.bilal.action.NOTIFY_ATHAN";
+    public static final String ACTION_PLAY_ATHAN = "com.djalel.android.bilal.action.PLAY_ATHAN";
+    public static final String ACTION_STOP_ATHAN = "com.djalel.android.bilal.action.STOP_ATHAN";
+
     private int mPrayerIndex;
-    private String mMuezzin;
+    private String mAthanFile;
     private MediaPlayer mAudioPlayer = null;
-    private BroadcastReceiver mVolumeChangeReceiver = null;
-    private boolean mReceiverRegistered = false;
-    private int mPreviousVolume = 0;
+    private boolean mAudioIsOn;
+    private boolean isForeground;
+    private boolean isStopped;
 
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Timber.d("onStartCommand");
+        String action = intent.getAction();
+        Timber.d("onStartCommand action = " + action);
 
-        stopAthan();           // athan can be played by Alarm or from settings in parallel
+        isStopped = false;
+        if (action.equals(ACTION_NOTIFY_ATHAN)) { // sound + notif
+            stopAudio();        // in case of || starts Alarm + Settings
 
-        if (null != intent) {
-            mPrayerIndex = intent.getIntExtra(EXTRA_PRAYER, 2);
-            mMuezzin = intent.getStringExtra(EXTRA_MUEZZIN);
-        }
-        else { // fallback
-            Timber.e("onStartCommand: intent == null");
-            mPrayerIndex = PrayerTimesManager.getNextPrayerIndex();
-            mMuezzin = UserSettings.getMuezzin(this);
-        }
-
-        registerVolumeChangeReceiver();
-        initMediaPlayer();
-        return Service.START_NOT_STICKY;
-    }
-
-    private void registerVolumeChangeReceiver() {
-        if (mReceiverRegistered) {
-            return;
-        }
-        mVolumeChangeReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                // The level checking code below doesn't work. It returns -1 for old & new level.
-                /*final int level = intent.getIntExtra("AudioManager.EXTRA_VOLUME_STREAM_VALUE", -1);
-                final int oldLevel = intent.getIntExtra("AudioManager.EXTRA_PREV_VOLUME_STREAM_VALUE", -1);
-                Timber.i("VOLUME_CHANGED_ACTION stream=" + " level=" + level + " oldLevel=" + oldLevel);
-                if (oldLevel < level) {
-                    stopAthan();
-                }*/
-
-                AudioManager audio = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-                final int currentVolume = audio.getStreamVolume(AudioManager.STREAM_MUSIC);
-                Timber.d("Current Volume = " + currentVolume);
-                if (currentVolume < mPreviousVolume) {
-                    stopAthan();
-                }
-                else {
-                    mPreviousVolume = currentVolume;
-                }
+            mPrayerIndex = PrayerTimesManager.getCurrentPrayerIndex();
+            mAudioIsOn = UserSettings.isAthanEnabled(this);
+            if (mAudioIsOn) {
+                mAthanFile = "android.resource://" + getPackageName() + "/" +
+                        UserSettings.getMuezzinRes(UserSettings.getMuezzin(this), mPrayerIndex);
+                initMediaPlayer();
             }
-        };
-        // FIXME: VOLUME_CHANGED_ACTION is internal to the framework and is not part of API. It might change!
-        // Here is an alternative with MediaSession & MediaController
-        // https://stackoverflow.com/questions/10154118/listen-to-volume-buttons-in-background-service
-        registerReceiver(mVolumeChangeReceiver, new IntentFilter("android.media.VOLUME_CHANGED_ACTION"));
-        mReceiverRegistered = true;
+
+            int notificationId = 005;
+            startForeground(notificationId, buildNotification());
+            isForeground = true;
+        }
+        else if (action.equals(ACTION_PLAY_ATHAN)) { // sound only
+            stopAudio();        // in case of || starts Alarm + Settings
+
+            mPrayerIndex = 2;
+            mAudioIsOn = true;
+            mAthanFile = "android.resource://" + getPackageName() + "/" +
+                    UserSettings.getMuezzinRes(intent.getStringExtra(EXTRA_MUEZZIN), mPrayerIndex);
+            initMediaPlayer();
+            isForeground = false;
+        }
+        else if (action.equals(ACTION_STOP_ATHAN)) {
+            isStopped = true;
+            stopAthan();
+            stopSelf(startId);
+        }
+
+        return Service.START_NOT_STICKY;    // Don't restart if killed
     }
 
-    private void unregisterVolumeChangeReceiver() {
-        if (mReceiverRegistered) {
-            unregisterReceiver(mVolumeChangeReceiver);
-            mReceiverRegistered = false;
+    private void stopAthan() {
+        Timber.d("stopAthan");
+        if (mAudioIsOn) {
+            stopAudio();
+            mAudioIsOn = false;
         }
+        if (isForeground) {
+            stopForeground(true);
+            isForeground = false;
+        }
+        WakeLocker.release();
+    }
+
+    public static void stopAthanAction(Context context) {
+        Intent stopIntent = new Intent(context, AthanService.class);
+        context.stopService(stopIntent); // should call onDestroy but with no guarantee
+        //stopIntent.setAction(AthanService.ACTION_STOP_ATHAN);
+        //context.startService(stopIntent);
+    }
+
+    private Notification buildNotification() {
+        // Use one intent to show MainActivity when notification is touched
+        Intent mainIntent = new Intent(this, MainActivity.class);
+        PendingIntent notifContentIntent = PendingIntent.getActivity(this, 0, mainIntent, 0);
+
+        Bitmap largeIconBmp = BitmapFactory.decodeResource(this.getResources(),
+                R.drawable.ic_notif_large);
+        /*Keep this in case we need it
+        Resources res = this.getResources();
+        int height = (int) res.getDimension(android.R.dimen.notification_large_icon_height);
+        int width = (int) res.getDimension(android.R.dimen.notification_large_icon_width);
+        largeIconBmp = Bitmap.createScaledBitmap(largeIconBmp, width, height, false);*/
+
+
+        String contentTitle = String.format(this.getString(R.string.time_for),
+                PrayerTimes.getName(this, mPrayerIndex));
+        String contentTxt = String.format(this.getString(R.string.time_in),
+                UserSettings.getCityName(this), PrayerTimesManager.formatPrayer(mPrayerIndex));
+        String stopActionTxt = this.getString(R.string.stop_athan);
+
+        // Notification channel ID is ignored for Android 7.1.1 (API level 25) and lower.
+        String channelId = "bilal_channel_01";
+        NotificationCompat.Builder notificationBuilder =
+                new NotificationCompat.Builder(this, channelId)
+                        .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                        .setSmallIcon(R.drawable.ic_notif)
+                        .setContentTitle(contentTitle)
+                        .setContentText(contentTxt)
+                        .setContentIntent(notifContentIntent)
+                        .setCategory(NotificationCompat.CATEGORY_ALARM)
+                        .setPriority(NotificationCompat.PRIORITY_HIGH)
+//                        .setAutoCancel(true)
+//                        .setLargeIcon(largeIconBmp)
+                        //.setOngoing(true);
+                        .setShowWhen(false);//.setUsesChronometer(true);
+                        // TODO: add a timeout (till Iqama) with android O,  .setTimeoutAfter(20 * 60 * 1000)
+
+        if (mAudioIsOn) {
+            // Use another cancel/stop intent to stop athan from notification
+            // (cancel by swipe and stop by button)
+            Intent stopIntent = new Intent(this, StopAthanActivity.class);
+            stopIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            PendingIntent notifDeleteIntent = PendingIntent.getActivity(this, 0,
+                    stopIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+            Timber.d("setDeleteIntent");
+
+            notificationBuilder
+                    .setDeleteIntent(notifDeleteIntent);
+//                    .addAction(R.drawable.ic_stop_athan, stopActionTxt, notifDeleteIntent);
+        }
+
+        if (UserSettings.isVibrateEnabled(this)) {
+            notificationBuilder.setVibrate(new long[]{1000, 1000, 1000, 1000, 1000, 1000, 1000});
+        }
+
+        return notificationBuilder.build();
     }
 
     private void initMediaPlayer() {
         if (null == mAudioPlayer) {
-            mAudioPlayer = new MediaPlayer();
-            String path = "android.resource://" + getPackageName() + "/" +
-                    UserSettings.getMuezzinRes(mMuezzin, mPrayerIndex);
-
             try {
-                mAudioPlayer.setDataSource(this, Uri.parse(path));
+                mAudioPlayer = new MediaPlayer();
+                mAudioPlayer.setDataSource(this, Uri.parse(mAthanFile));
                 mAudioPlayer.setOnPreparedListener(this);
                 mAudioPlayer.setOnErrorListener(this);
                 mAudioPlayer.setWakeMode(this, PowerManager.PARTIAL_WAKE_LOCK);
                 mAudioPlayer.prepareAsync(); // prepare async to not block main thread
+                mAudioPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
                 mAudioPlayer.setVolume(1.0f, 1.0f);
                 Timber.d("Audio player prepared asynchronously!");
             } catch (IOException e) {
@@ -138,11 +208,6 @@ public class AthanService extends Service implements
     public void onPrepared(MediaPlayer player) {
         mAudioPlayer.start();
         Timber.i("Audio started playing!");
-
-        AudioManager audio = (AudioManager) this.getSystemService(Context.AUDIO_SERVICE);
-        mPreviousVolume = audio.getStreamVolume(AudioManager.STREAM_MUSIC);
-        Timber.d("Initial Volume = " + mPreviousVolume);
-
         if(!mAudioPlayer.isPlaying()) {
 	        Timber.w("Problem in playing audio");
 	    }
@@ -153,7 +218,7 @@ public class AthanService extends Service implements
         // TODO ... react appropriately ...
         // The MediaPlayer has moved to the Error state, must be reset!
         Timber.e("what=" + what + " extra=" + extra);
-        return false; // TODO change to true if error is handled by here.
+        return false; // TODO change to true if error is handled here.
     }
 
     public void onAudioFocusChange(int focusChange) {
@@ -186,14 +251,13 @@ public class AthanService extends Service implements
         }
     }
 
-	private void stopAthan() {
+	private void stopAudio() {
 		if (mAudioPlayer != null) {
             Timber.d("Stopping Athan");
             if (mAudioPlayer.isPlaying()) { mAudioPlayer.stop(); }
             mAudioPlayer.release();
             mAudioPlayer = null;
         }
-        unregisterVolumeChangeReceiver();
     }
 
 	public void onPause() {
@@ -202,7 +266,10 @@ public class AthanService extends Service implements
 
 	public void onDestroy() {
         Timber.d("onDestroy");
-        stopAthan();
+        if (!isStopped) {               // in case android call this if it forces a kill
+            isStopped = true;
+            stopAthan();
+        }
     }
 
 	@Override

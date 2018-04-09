@@ -37,7 +37,7 @@ import java.util.Locale;
 
 public class UserSettings {
 
-    public static boolean isAlarmEnabled(Context context) {
+    public static boolean isNotificationEnabled(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         return sharedPref.getBoolean("notifications_prayer_time", true);
     }
@@ -120,11 +120,6 @@ public class UserSettings {
         }
 
         return resId;
-    }
-
-    public static boolean isNotificationEnabled(Context context) {
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        return sharedPref.getBoolean("notifications_screen", true);
     }
 
     public static boolean isVibrateEnabled(Context context) {

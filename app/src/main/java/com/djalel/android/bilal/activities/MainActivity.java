@@ -44,6 +44,7 @@ import android.view.View;
 import android.widget.TextView;
 //import android.widget.Toast;
 
+import com.djalel.android.bilal.services.AthanService;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 //import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -219,7 +220,7 @@ public class MainActivity extends AppCompatActivity implements
     protected void onResume() {
         Timber.d("OnResume");
         super.onResume();
-        if (UserSettings.isAlarmEnabled(this) && !mUVReceiverRegistered) {
+        if (UserSettings.isNotificationEnabled(this) && !mUVReceiverRegistered) {
             registerReceiver(mUpdateViewsReceiver, new IntentFilter(UPDATE_VIEWS));
             mUVReceiverRegistered = true;
         }
@@ -380,8 +381,10 @@ public class MainActivity extends AppCompatActivity implements
                 @Override
                 public void onClick(View v) {
                     Timber.d("currentPrayerListener IN");
-                    Intent intent = new Intent(v.getContext(), StopAthanActivity.class);
-                    startActivity(intent);
+//                    Intent intent = new Intent(v.getContext(), StopAthanActivity.class);
+//                    startActivity(intent);
+                    Intent stopIntent = new Intent(v.getContext(), AthanService.class);
+                    stopService(stopIntent);
                 }
             };
             for (j = 0; j < mTextViewPrayers[0].length; j++) {

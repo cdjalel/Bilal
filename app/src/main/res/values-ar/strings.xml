@@ -22,14 +22,6 @@
     <!-- Example General settings -->
     <string name="pref_header_general">عام</string>
 
-    <string name="pref_title_social_recommendations">Enable social recommendations</string>
-    <string name="pref_description_social_recommendations">Recommendations for people to contact
-        based on your message history
-    </string>
-
-    <string name="pref_title_display_name">Display name</string>
-    <string name="pref_default_display_name">محمد علي</string>
-
     <string name="pref_title_language">اللغة</string>
     <string-array name="pref_language_list_titles">
         <item>تبع لإعدادات الجهاز</item>
@@ -138,8 +130,6 @@
         <item>RIAD</item>
     </string-array>
     <string name="select_muezzin">اختيار المؤذن %1$s؟</string>
-
-    <string name="pref_title_notification">رسالة على الشاشة والساعة الذكية</string>
 
     <string name="pref_title_vibrate">اهتزاز</string>
 

@@ -394,12 +394,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 final String name = index >= 0 ? listPref.getEntries()[index].toString() : "";
 
                 Timber.d("sMuezzinChangeListener: " + name);
-
-                // start Athan Audio
-                Intent audioIntent = new Intent(context, AthanService.class);
-                audioIntent.putExtra(AthanService.EXTRA_PRAYER, 2);
-                audioIntent.putExtra(AthanService.EXTRA_MUEZZIN, stringValue);
-                context.startService(audioIntent);
+                playAthan(context, stringValue);
 
                 // Use the Builder class for convenient dialog construction
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -429,10 +424,16 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 return false;
             }
 
+            private void playAthan(Context context, String stringValue) {
+                // start Athan Audio
+                Intent playIntent = new Intent(context, AthanService.class);
+                playIntent.setAction(AthanService.ACTION_PLAY_ATHAN);
+                playIntent.putExtra(AthanService.EXTRA_MUEZZIN, stringValue);
+                context.startService(playIntent);
+            }
+
             private void stopAthan(Context context) {
-                // stop athan audio
-                Intent stopIntent = new Intent(context, AthanService.class);
-                context.stopService(stopIntent);
+                AthanService.stopAthanAction(context);
             }
         };
     }

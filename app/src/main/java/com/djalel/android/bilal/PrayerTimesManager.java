@@ -38,7 +38,6 @@ import com.djalel.android.bilal.helpers.UserSettings;
 import com.djalel.android.bilal.datamodels.City;
 import com.djalel.android.bilal.receivers.AlarmReceiver;
 import com.djalel.android.bilal.receivers.BootAndTimeChangeReceiver;
-import com.djalel.android.bilal.services.AthanService;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -75,7 +74,7 @@ public class PrayerTimesManager {
     {
         if (null == sPrayerTimes) {
             Timber.w("sPrayerTimes == null");
-            return -1;
+            return 2;
         }
         return sPrayerTimes.getCurrentIndex();
     }
@@ -231,11 +230,11 @@ public class PrayerTimesManager {
         Timber.d("Current prayer: " + sPrayerTimes.getCurrentName(context));
         Timber.i("Next prayer: " + sPrayerTimes.getNextName(context));
 
-        Timber.d("UserSettings.isAlarmEnabled = " + UserSettings.isAlarmEnabled(context));
+        Timber.d("UserSettings.isNotificationEnabled = " + UserSettings.isNotificationEnabled(context));
 
         // SettingsActivity listener calls before setting is committed to shared prefs, so it uses
         // enableAlarm boolean.
-        if (enableAlarm || UserSettings.isAlarmEnabled(context)) {
+        if (enableAlarm || UserSettings.isNotificationEnabled(context)) {
             scheduleAlarm(context);
         }
     }
@@ -295,9 +294,7 @@ public class PrayerTimesManager {
 
     private static PendingIntent createAlarmIntent(Context context)
     {
-        int idx = null == sPrayerTimes? 2 : sPrayerTimes.getNextIndex();
         Intent intent = new Intent(context, AlarmReceiver.class);
-        intent.putExtra(AthanService.EXTRA_PRAYER, idx);
         return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
     }
 
