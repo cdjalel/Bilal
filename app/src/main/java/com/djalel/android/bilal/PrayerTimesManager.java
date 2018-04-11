@@ -45,7 +45,9 @@ import com.djalel.android.bilal.services.AthanService;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Locale;
 import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 import static android.content.Context.ALARM_SERVICE;
 
@@ -109,13 +111,20 @@ public class PrayerTimesManager {
         return sPrayerTimes.format(i);
     }
 
-    public static String formatNextPrayer()
+    public static String formatToNextPrayer(Context context, GregorianCalendar from)
     {
         if (null == sPrayerTimes) {
             Timber.e("sPrayerTimes == null");
             return "";
         }
-        return sPrayerTimes.format(sPrayerTimes.getNextIndex());
+        final long millis = sPrayerTimes.getNext().getTimeInMillis() - from.getTimeInMillis();
+        Timber.d(PrayerTimes.format(sPrayerTimes.getNext(), 0) + " " +
+                PrayerTimes.format(from, 0) + " " +
+                "Delta ms: " + millis);
+        return String.format(Locale.getDefault(), context.getString(R.string.to_next),
+                TimeUnit.MILLISECONDS.toHours(millis),
+                TimeUnit.MILLISECONDS.toMinutes(millis) -
+                TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis)));
     }
 
     public static void enableAlarm(Context context)

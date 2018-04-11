@@ -17,6 +17,7 @@
     <string name="maghrib">المغرب</string>
     <string name="isha">العشاء</string>
     <string name="nextfajr">فجر الغد</string>
+    <string name="to_next">الصلاة القادمة بعد %2dسا و%2d</string>
 
     <!-- Strings related to Settings -->
 

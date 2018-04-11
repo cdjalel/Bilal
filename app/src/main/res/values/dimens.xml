@@ -2,4 +2,5 @@
     <!--<dimen name="fab_margin">16dp</dimen>-->
     <dimen name="prayer_text_size">20sp</dimen>
     <dimen name="about_padding">10sp</dimen>
+    <dimen name="stop_btn_size">18sp</dimen>
 </resources>

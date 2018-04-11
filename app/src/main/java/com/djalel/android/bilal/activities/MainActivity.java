@@ -83,6 +83,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private TextView mTextViewCity;
     private TextView mTextViewDate;
+    private TextView mTextViewToNext;
     private TextView[][] mTextViewPrayers;
 
     @Override
@@ -267,33 +268,41 @@ public class MainActivity extends AppCompatActivity implements
     private void loadViews() {
         mTextViewCity = findViewById(R.id.textViewCity);
         mTextViewDate = findViewById(R.id.textViewDate);
+        mTextViewToNext = findViewById(R.id.textViewToNext);
         mTextViewPrayers = new TextView[][] {
             {
                     findViewById(R.id.textViewFajrName),
+                    findViewById(R.id.btnStopFajr),
                     findViewById(R.id.textViewFajrTime)
             },
             {
                     findViewById(R.id.textViewSunriseName),
+                    findViewById(R.id.btnStopSunrise),
                     findViewById(R.id.textViewSunriseTime)
             },
             {
                     findViewById(R.id.textViewDhuhrName),
+                    findViewById(R.id.btnStopDhuhr),
                     findViewById(R.id.textViewDhuhrTime)
             },
             {
                     findViewById(R.id.textViewAsrName),
+                    findViewById(R.id.btnStopAsr),
                     findViewById(R.id.textViewAsrTime)
             },
             {
                     findViewById(R.id.textViewMaghribName),
+                    findViewById(R.id.btnStopMaghrib),
                     findViewById(R.id.textViewMaghribTime)
             },
             {
                     findViewById(R.id.textViewIshaName),
+                    findViewById(R.id.btnStopIsha),
                     findViewById(R.id.textViewIshaTime)
             },
             {
                     findViewById(R.id.textViewNextFajrName),
+                    findViewById(R.id.btnStopNextFajr),
                     findViewById(R.id.textViewNextFajrTime)
             }
         };
@@ -326,6 +335,7 @@ public class MainActivity extends AppCompatActivity implements
     private void updatePrayerViews()
     {
         if (PrayerTimesManager.prayerTimesNotAvailable()) {
+            Timber.w("prayerTimesNotAvailable");
             return;
         }
 
@@ -337,8 +347,11 @@ public class MainActivity extends AppCompatActivity implements
         mTextViewDate.setText(DateFormat.getDateInstance(DateFormat.SHORT, Locale.getDefault())
                 .format(now.getTime()));
 
+        mTextViewToNext.setText(PrayerTimesManager.formatToNextPrayer(this, now));
+
         for (i = 0; i < Prayer.NB_PRAYERS + 1; i++) {
-            mTextViewPrayers[i][1].setText(PrayerTimesManager.formatPrayer(i));
+            mTextViewPrayers[i][1].setVisibility(View.INVISIBLE);
+            mTextViewPrayers[i][2].setText(PrayerTimesManager.formatPrayer(i));
         }
 
         // change Dhuhr to Jumuaa if needed.
@@ -366,21 +379,30 @@ public class MainActivity extends AppCompatActivity implements
             anim.setDuration(BLINK_DURATION);
             anim.setRepeatMode(Animation.REVERSE);
             anim.setRepeatCount(BLINK_COUNT);
-            View.OnClickListener currentPrayerListener = new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Timber.d("currentPrayerListener");
-                    AthanService.stopAthanAction(v.getContext());
-                }
-            };
             for (j = 0; j < mTextViewPrayers[0].length; j++) {
                 mTextViewPrayers[mImportant][j].setTypeface(null, Typeface.BOLD );
                 mTextViewPrayers[mImportant][j].startAnimation(anim);
-                mTextViewPrayers[mImportant][j].setOnClickListener(currentPrayerListener);
             }
 
-            // TODO add stop button with blinking
-
+            // add stop button if Athan is ON
+            if (UserSettings.isAthanEnabled(this)) {
+                View.OnClickListener currentPrayerListener = new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Timber.d("currentPrayerListener");
+                        for (int j = 0; j < mTextViewPrayers[0].length; j++) {
+                            mTextViewPrayers[mImportant][j].clearAnimation();
+                            mTextViewPrayers[mImportant][j].setOnClickListener(null);
+                        }
+                        mTextViewPrayers[mImportant][1].setVisibility(View.INVISIBLE);
+                        AthanService.stopAthanAction(v.getContext());
+                    }
+                };
+                mTextViewPrayers[mImportant][1].setVisibility(View.VISIBLE);
+                for (j = 0; j < mTextViewPrayers[0].length; j++) {
+                    mTextViewPrayers[mImportant][j].setOnClickListener(currentPrayerListener);
+                }
+            }
         }
         else {
             // Bold Next Prayers

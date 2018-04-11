@@ -17,6 +17,7 @@
     <string name="maghrib">Maghrib</string>
     <string name="isha">Isha</string>
     <string name="nextfajr">Next fajr</string>
+    <string name="to_next">Next prayer in %2dh, %2dm</string>
 
     <!-- Strings related to Settings -->
 
