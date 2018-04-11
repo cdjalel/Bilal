@@ -26,6 +26,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 
 import timber.log.Timber;
 
@@ -336,7 +337,15 @@ public class PrayerTimesManager {
         sAlarmIntent = createAlarmIntent(context);
         AlarmManager alarmMgr = (AlarmManager)context.getSystemService(ALARM_SERVICE);
         if (null != alarmMgr) {
-            alarmMgr.set(AlarmManager.RTC_WAKEUP, sPrayerTimes.getNext().getTimeInMillis(), sAlarmIntent);
+            if (Build.VERSION.SDK_INT >= 23) {
+                alarmMgr.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, sPrayerTimes.getNext().getTimeInMillis(), sAlarmIntent);
+            }
+            else if (Build.VERSION.SDK_INT >= 19) {
+                alarmMgr.setExact(AlarmManager.RTC_WAKEUP, sPrayerTimes.getNext().getTimeInMillis(), sAlarmIntent);
+            }
+            else {
+                alarmMgr.set(AlarmManager.RTC_WAKEUP, sPrayerTimes.getNext().getTimeInMillis(), sAlarmIntent);
+            }
             Timber.i("New Alarm set for " + sPrayerTimes.format(sPrayerTimes.getNextIndex()));
         }
     }

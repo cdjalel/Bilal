@@ -23,6 +23,7 @@ package com.djalel.android.bilal.receivers;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 
 import com.djalel.android.bilal.PrayerTimesManager;
 import com.djalel.android.bilal.services.AthanService;
@@ -34,10 +35,9 @@ import timber.log.Timber;
 
 // Can't use WakefulBroadcastReceiver as it relies on PARTIAL_WAKE_LOCK
 // which doesn't stop Athan on power button press
+// It's deprecated anyway
 public class AlarmReceiver extends BroadcastReceiver
 {
-    public static final int NOTIFICATION_ID = 1;
-
     @Override
     public void onReceive(Context context, Intent intent)
     {
@@ -50,7 +50,12 @@ public class AlarmReceiver extends BroadcastReceiver
             athanIntent.setAction(AthanService.ACTION_NOTIFY_ATHAN);
             athanIntent.putExtra(AthanService.EXTRA_PRAYER, prayer);
             athanIntent.putExtra(AthanService.EXTRA_MUEZZIN, UserSettings.getMuezzin(context));
-            context.startService(athanIntent);
+            if (Build.VERSION.SDK_INT >= 26) {
+                context.startForegroundService(athanIntent);
+                }
+            else {
+                context.startService(athanIntent);
+            }
         }
         else {
             Timber.e("Alarm received when set off by user!");
