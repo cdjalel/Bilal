@@ -25,8 +25,10 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
@@ -69,7 +71,7 @@ public class AthanService extends Service implements
     private boolean mAudioIsOn;
     private boolean isForeground;
     private boolean isStopped = true;
-
+    private BroadcastReceiver mScreenOffReceiver = null;
     private NotificationCompat.Builder mNotificationBuilder;
     private final int mNotificationId = 005;
 
@@ -86,6 +88,7 @@ public class AthanService extends Service implements
                 mAthanFile = "android.resource://" + getPackageName() + "/" +
                         UserSettings.getMuezzinRes(intent.getStringExtra(EXTRA_MUEZZIN), mPrayerIndex);
                 initMediaPlayer();
+                registerScreenOffReceiver();
             }
 
             startForeground(mNotificationId, buildNotification());
@@ -265,7 +268,6 @@ public class AthanService extends Service implements
         }
     }
 
-
     public void onPause() {
         if (mAudioPlayer.isPlaying()) { mAudioPlayer.stop(); }
     }
@@ -282,6 +284,11 @@ public class AthanService extends Service implements
             if (mAudioPlayer.isPlaying()) { mAudioPlayer.stop(); }
             mAudioPlayer.release();
             mAudioPlayer = null;
+        }
+        if (mScreenOffReceiver != null) {
+            Timber.d("Unregister Screen OFF Receiver");
+            unregisterReceiver(mScreenOffReceiver);
+            mScreenOffReceiver = null;
         }
         if (unlock) {
             WakeLocker.release();
@@ -311,6 +318,23 @@ public class AthanService extends Service implements
         if (!isStopped) {               // in case android call this when it forces a kill
             isStopped = true;
             stopAthan();
+        }
+    }
+
+    private void registerScreenOffReceiver() {
+        if (mScreenOffReceiver == null) {
+            mScreenOffReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    Timber.i("Screen OFF, stopping Athan");
+                    stopAthanAction(context);
+                }
+            };
+            Timber.d("Register Screen OFF Receiver");
+            registerReceiver(mScreenOffReceiver, new IntentFilter(Intent.ACTION_SCREEN_OFF));
+        }
+        else {
+            Timber.e("Screen OFF Receiver already registered!");
         }
     }
 
