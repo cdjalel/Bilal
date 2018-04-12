@@ -45,9 +45,7 @@ import com.djalel.android.bilal.services.AthanService;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.Locale;
 import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
 
 import static android.content.Context.ALARM_SERVICE;
 
@@ -102,29 +100,34 @@ public class PrayerTimesManager {
         return sPrayerTimes.getNextName(context);
     }
 
-    public static String formatPrayer(int i)
+    public static String formatPrayerTime(int i)
     {
         if (null == sPrayerTimes) {
             Timber.e("sPrayerTimes == null");
             return "";
         }
-        return sPrayerTimes.format(i);
+        return sPrayerTimes.formatPrayerTime(i);
     }
 
-    public static String formatToNextPrayer(Context context, GregorianCalendar from)
+    public static String formatTimeToNextPrayer(Context context, GregorianCalendar from)
     {
         if (null == sPrayerTimes) {
             Timber.e("sPrayerTimes == null");
             return "";
         }
-        final long millis = sPrayerTimes.getNext().getTimeInMillis() - from.getTimeInMillis();
-        Timber.d(PrayerTimes.format(sPrayerTimes.getNext(), 0) + " " +
-                PrayerTimes.format(from, 0) + " " +
-                "Delta ms: " + millis);
-        return String.format(Locale.getDefault(), context.getString(R.string.to_next),
-                TimeUnit.MILLISECONDS.toHours(millis),
-                TimeUnit.MILLISECONDS.toMinutes(millis) -
-                TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis)));
+        return context.getString(R.string.time_to_next) +
+                sPrayerTimes.formatTimeToNextPrayer(context, from);
+    }
+
+    public static String formatTimeFromCurrentPrayer(Context context, GregorianCalendar to)
+    {
+        if (null == sPrayerTimes) {
+            Timber.e("sPrayerTimes == null");
+            return "";
+        }
+        return String.format(context.getString(R.string.time_up),
+                sPrayerTimes.getCurrentName(context)) +
+                sPrayerTimes.formatTimeFromCurrentPrayer(context, to);
     }
 
     public static void enableAlarm(Context context)
@@ -251,7 +254,7 @@ public class PrayerTimesManager {
             calcPrayerTimes(context, nowCal, city);
         }
 
-        Timber.d("Current time: " + sPrayerTimes.format(nowCal));
+        Timber.d("Current time: " + sPrayerTimes.formatPrayerTime(nowCal));
         Timber.d("Current prayer: " + sPrayerTimes.getCurrentName(context));
         Timber.i("Next prayer: " + sPrayerTimes.getNextName(context));
 
@@ -290,7 +293,7 @@ public class PrayerTimesManager {
             }
         }
 
-        Timber.d("Last time: " + PrayerTimes.format(sLastTime, sMethod.round));
+        Timber.d("Last time: " + PrayerTimes.formatPrayerTime(sLastTime, sMethod.round));
         sLastTime = nowCal;
 
         /* Call the main library function to fill the Prayer times */
@@ -301,7 +304,7 @@ public class PrayerTimesManager {
             ptCal[i].set(Calendar.MINUTE, pt[i].minute);
             ptCal[i].set(Calendar.SECOND, pt[i].second);
             Timber.d(PrayerTimes.getName(context, i, nowCal) + " " +
-                    PrayerTimes.format(ptCal[i], sMethod.round));
+                    PrayerTimes.formatPrayerTime(ptCal[i], sMethod.round));
         }
 
         PrayerTime nextPT = prayer.getNextDayFajr(location, sMethod, today);
@@ -310,7 +313,7 @@ public class PrayerTimesManager {
         ptCal[i].set(Calendar.HOUR_OF_DAY, nextPT.hour);
         ptCal[i].set(Calendar.MINUTE, nextPT.minute);
         ptCal[i].set(Calendar.SECOND, nextPT.second);
-        Timber.d(context.getString(R.string.nextfajr) + " " + PrayerTimes.format(ptCal[i], sMethod.round));
+        Timber.d(context.getString(R.string.nextfajr) + " " + PrayerTimes.formatPrayerTime(ptCal[i], sMethod.round));
 
         sPrayerTimes = new PrayerTimes(nowCal, ptCal, sMethod.round == 1);
         sMethod = null;
@@ -355,7 +358,7 @@ public class PrayerTimesManager {
             else {
                 alarmMgr.set(AlarmManager.RTC_WAKEUP, sPrayerTimes.getNext().getTimeInMillis(), sAlarmIntent);
             }
-            Timber.i("New Alarm set for " + sPrayerTimes.format(sPrayerTimes.getNextIndex()));
+            Timber.i("New Alarm set for " + sPrayerTimes.formatPrayerTime(sPrayerTimes.getNextIndex()));
         }
     }
 }

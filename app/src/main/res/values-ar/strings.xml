@@ -4,6 +4,10 @@
     <string name="action_settings">الإعدادات</string>
     <string name="time_for">حان وقت صلاة %s</string>
     <string name="time_in">في %s على الساعة %s</string>
+    <string name="time_up">دخل وقت %s منذ </string>
+    <string name="time_to_next">الصلاة التالية بعد </string>
+    <string name="time_interval">%2dسا و%2dد و%2dثا</string>
+    <string name="time_interval_rounded">%2dسا و%2dد</string>
     <string name="stop_athan">وقف الآذان</string>
     <string name="close_notification">غلق</string>
     <string name="set_location">اِلمس  هنا لتحديد الموقع</string>
@@ -17,7 +21,6 @@
     <string name="maghrib">المغرب</string>
     <string name="isha">العشاء</string>
     <string name="nextfajr">فجر الغد</string>
-    <string name="to_next">الصلاة القادمة بعد %2dسا و%2d</string>
 
     <!-- Strings related to Settings -->
 

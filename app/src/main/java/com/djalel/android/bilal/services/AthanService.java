@@ -140,7 +140,7 @@ public class AthanService extends Service implements
         String contentTitle = String.format(this.getString(R.string.time_for),
                 PrayerTimes.getName(this, mPrayerIndex, new GregorianCalendar()));
         String contentTxt = String.format(this.getString(R.string.time_in),
-                UserSettings.getCityName(this), PrayerTimesManager.formatPrayer(mPrayerIndex));
+                UserSettings.getCityName(this), PrayerTimesManager.formatPrayerTime(mPrayerIndex));
 
         // Notification channel ID is ignored for Android 7.1.1 (API level 25) and lower.
         String channelId = "bilal_channel_01";

@@ -31,6 +31,7 @@ import android.os.Bundle;
 //import android.support.design.widget.FloatingActionButton;
 //import android.support.design.widget.Snackbar;
 
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -85,6 +86,12 @@ public class MainActivity extends AppCompatActivity implements
     private TextView mTextViewDate;
     private TextView mTextViewToNext;
     private TextView[][] mTextViewPrayers;
+
+    // The time (in ms) interval to update the countdown mTextViewToNex.
+    private static final int COUNT_INTERVAL_SECOND = 1000;
+    private static final int COUNT_INTERVAL_MINUTE = 60 * 1000;
+    private Handler mCountHandler;
+    private Runnable mUpdateCount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -193,7 +200,7 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onReceive(Context context, Intent intent) {
                 Timber.d("Receiver kicked by action: " + intent.getAction());
-                // prayer times have been update by the Alarm Receiver which is the action sender
+                // prayer times have been update by the Alarm Receiver or TimeChange Receiver
                 updatePrayerViews();
             }
         };
@@ -208,6 +215,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     protected void onStop() {
+        Timber.d("OnStop");
         super.onStop();
         if (mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
@@ -226,11 +234,13 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     protected void onPause() {
+        Timber.d("OnPause");
         super.onPause();
         if (mUVReceiverRegistered) {
             unregisterReceiver(mUpdateViewsReceiver);
             mUVReceiverRegistered = false;
         }
+        stopCount();
     }
 
     @Override
@@ -347,11 +357,9 @@ public class MainActivity extends AppCompatActivity implements
         mTextViewDate.setText(DateFormat.getDateInstance(DateFormat.SHORT, Locale.getDefault())
                 .format(now.getTime()));
 
-        mTextViewToNext.setText(PrayerTimesManager.formatToNextPrayer(this, now));
-
         for (i = 0; i < Prayer.NB_PRAYERS + 1; i++) {
             mTextViewPrayers[i][1].setVisibility(View.INVISIBLE);
-            mTextViewPrayers[i][2].setText(PrayerTimesManager.formatPrayer(i));
+            mTextViewPrayers[i][2].setText(PrayerTimesManager.formatPrayerTime(i));
         }
 
         // change Dhuhr to Jumuaa if needed.
@@ -373,6 +381,9 @@ public class MainActivity extends AppCompatActivity implements
         }
         long elapsed = now.getTimeInMillis() - current.getTimeInMillis();
         if (elapsed >= 0 && elapsed <= AthanService.ATHAN_DURATION) {
+            mTextViewToNext.setText(PrayerTimesManager.formatTimeFromCurrentPrayer(MainActivity.this, now));
+            startCount(false);
+
             // blink Current Prayers
             mImportant = PrayerTimesManager.getCurrentPrayerIndex();
             Animation anim = new AlphaAnimation(0.0f, 1.0f);
@@ -405,6 +416,9 @@ public class MainActivity extends AppCompatActivity implements
             }
         }
         else {
+            mTextViewToNext.setText(PrayerTimesManager.formatTimeToNextPrayer(this, now));
+            startCount(true);
+
             // Bold Next Prayers
             mImportant = PrayerTimesManager.getNextPrayerIndex();
             for (i = 0; i < Prayer.NB_PRAYERS + 1; i++) {
@@ -413,5 +427,38 @@ public class MainActivity extends AppCompatActivity implements
                 }
             }
         }
+    }
+
+    private void stopCount() {
+        if (mCountHandler != null) {
+            mCountHandler.removeCallbacks(mUpdateCount);
+            mCountHandler = null;
+        }
+
+        if (mUpdateCount != null) {
+            mUpdateCount = null;
+        }
+    }
+
+    private void startCount(final boolean down) {
+        stopCount();
+
+        mCountHandler = new Handler();
+        mUpdateCount = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    GregorianCalendar now = new GregorianCalendar();
+                    mTextViewToNext.setText(down ?
+                            PrayerTimesManager.formatTimeToNextPrayer(MainActivity.this, now) :
+                            PrayerTimesManager.formatTimeFromCurrentPrayer(MainActivity.this, now));
+                } finally {
+                    mCountHandler.postDelayed(mUpdateCount,
+                            UserSettings.getRounding(MainActivity.this) == 1 ?
+                                    COUNT_INTERVAL_MINUTE : COUNT_INTERVAL_SECOND);
+                }
+            }
+        };
+        mUpdateCount.run();
     }
 }
