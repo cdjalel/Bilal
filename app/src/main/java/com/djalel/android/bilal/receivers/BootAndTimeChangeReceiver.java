@@ -26,6 +26,7 @@ import android.content.Intent;
 import timber.log.Timber;
 
 import com.djalel.android.bilal.PrayerTimesManager;
+import com.djalel.android.bilal.activities.MainActivity;
 
 public class BootAndTimeChangeReceiver extends BroadcastReceiver {
     @Override
@@ -41,6 +42,10 @@ public class BootAndTimeChangeReceiver extends BroadcastReceiver {
             else // TIME_SET
             {
                 PrayerTimesManager.handleTimeChange(context);
+
+                // Broadcast to MainActivity so it updates its screen if on
+                Intent updateIntent = new Intent(MainActivity.UPDATE_VIEWS);
+                context.sendBroadcast(updateIntent);
             }
         }
     }

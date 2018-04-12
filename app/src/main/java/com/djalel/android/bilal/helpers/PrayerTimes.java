@@ -30,6 +30,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import timber.log.Timber;
 
@@ -114,25 +115,53 @@ public class PrayerTimes {
         return context.getString(prayerNameResId) ;
     }
 
-    public static String format(GregorianCalendar cal, int round)
+    public static String formatPrayerTime(GregorianCalendar cal, int round)
     {
         SimpleDateFormat sdf = new SimpleDateFormat(
             round != 0 ? "HH:mm" : "HH:mm:ss", Locale.getDefault());
         return sdf.format(cal.getTime());
     }
 
-    public String format(GregorianCalendar cal)
+    public String formatPrayerTime(GregorianCalendar cal)
     {
-        return format(cal, rounded? 1:0);
+        return formatPrayerTime(cal, rounded? 1:0);
     }
 
-    public String format(int i)
+    public String formatPrayerTime(int i)
     {
         if (i < 0 || null == all || i >= all.length) {
             Timber.e("index out of range or prayers array is null");
             return null;
         }
-        return format(all[i], rounded? 1:0);
+        return formatPrayerTime(all[i], rounded? 1:0);
+    }
+
+    public String formatTimeToNextPrayer(Context context, GregorianCalendar from)
+    {
+        return formatTimeInterval(context, from, next);
+    }
+
+    public String formatTimeFromCurrentPrayer(Context context, GregorianCalendar to)
+    {
+        return formatTimeInterval(context, current, to);
+    }
+
+    private String formatTimeInterval(Context context, GregorianCalendar from, GregorianCalendar to)
+    {
+        // assert to.compareTo(from) > 1
+        long millis = to.getTimeInMillis() - from.getTimeInMillis();
+        final long hours = TimeUnit.MILLISECONDS.toHours(millis);
+        millis -= TimeUnit.HOURS.toMillis(hours);
+        final long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
+        millis -= TimeUnit.MINUTES.toMillis(minutes);
+        final long seconds = TimeUnit.MILLISECONDS.toSeconds(millis);
+
+        Timber.d(formatPrayerTime(to) + "-" + formatPrayerTime(from) + "=" +
+                hours + ":" + minutes + (rounded? "" : ":" + seconds));
+
+        return rounded ?
+                String.format(Locale.getDefault(), context.getString(R.string.time_interval_rounded), hours, minutes):
+                String.format(Locale.getDefault(), context.getString(R.string.time_interval), hours, minutes, seconds);
     }
 
     private void findCurrent(GregorianCalendar now)
