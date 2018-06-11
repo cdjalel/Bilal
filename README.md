@@ -49,7 +49,3 @@ $ /opt/android-sdk-linux/tools/emulator -avd watch -netspeed full -netdelay none
   d. run the wearable app on the phone, accept the licence and choose 'Pair with a new device'. Upon success the message 'connected' will appear in the action bar.
 
 5. Start Bilal then play with the time settings to trigger a notification.
- 
-
-Djalel Chefrour
-cdjalel@gmail.com
