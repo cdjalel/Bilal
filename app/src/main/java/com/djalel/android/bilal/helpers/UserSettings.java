@@ -285,6 +285,6 @@ public class UserSettings {
             }
         }
 
-        PrayerTimesApp.getApplication().setLocale(null != newCountryCode ? new Locale(newLang, newCountryCode) : new Locale(newLang));
+        PrayerTimesApp.setLocale(null != newCountryCode ? new Locale(newLang, newCountryCode) : new Locale(newLang));
     }
 }

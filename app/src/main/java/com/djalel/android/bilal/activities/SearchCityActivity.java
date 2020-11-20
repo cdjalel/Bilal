@@ -177,17 +177,6 @@ public class SearchCityActivity extends AppCompatActivity
     @Override
     protected void attachBaseContext(Context newBase)
     {
-        super.attachBaseContext(updateResources(newBase));
-    }
-
-    private static Context updateResources(Context context)
-    {
-        Locale locale = PrayerTimesApp.getApplication().getLocale();
-        Locale.setDefault(locale);
-
-        Configuration configuration = context.getResources().getConfiguration();
-        configuration.setLocale(locale);
-
-        return context.createConfigurationContext(configuration);
+        super.attachBaseContext(PrayerTimesApp.updateLocale(newBase));
     }
 }
