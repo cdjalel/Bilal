@@ -159,9 +159,13 @@ public class PrayerTimes {
         Timber.d(formatPrayerTime(to) + "-" + formatPrayerTime(from) + "=" +
                 hours + ":" + minutes + (rounded? "" : ":" + seconds));
 
-        return rounded ?
-                String.format(Locale.getDefault(), context.getString(R.string.time_interval_rounded), hours, minutes):
-                String.format(Locale.getDefault(), context.getString(R.string.time_interval), hours, minutes, seconds);
+        return hours != 0 ?
+                rounded ?
+                        String.format(Locale.getDefault(), context.getString(R.string.time_interval_rounded), hours, minutes):
+                        String.format(Locale.getDefault(), context.getString(R.string.time_interval), hours, minutes, seconds):
+                rounded ?
+                    String.format(Locale.getDefault(), context.getString(R.string.time_interval_0h_rounded), minutes):
+                    String.format(Locale.getDefault(), context.getString(R.string.time_interval_0h), minutes, seconds);
     }
 
     private void findCurrent(GregorianCalendar now)

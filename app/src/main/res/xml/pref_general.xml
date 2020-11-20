@@ -43,6 +43,11 @@
         android:negativeButtonText="@null"
         android:positiveButtonText="@null" />
 
+    <SwitchPreference
+        android:key="general_rounding"
+        android:title="@string/pref_title_round"
+        android:defaultValue="true" />
+
     <Preference
         android:key="general_about"
         android:persistent="false"

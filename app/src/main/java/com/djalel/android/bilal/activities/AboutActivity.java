@@ -21,12 +21,17 @@
 package com.djalel.android.bilal.activities;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.res.Configuration;
 import android.os.Bundle;
-import android.support.annotation.Keep;
+import androidx.annotation.Keep;
 import android.text.method.ScrollingMovementMethod;
 import android.widget.TextView;
 
+import com.djalel.android.bilal.PrayerTimesApp;
 import com.djalel.android.bilal.R;
+
+import java.util.Locale;
 
 @Keep
 public class AboutActivity extends Activity {
@@ -38,5 +43,22 @@ public class AboutActivity extends Activity {
 
         TextView tv = findViewById(R.id.about_textview);
         tv.setMovementMethod(new ScrollingMovementMethod());
+    }
+
+    @Override
+    protected void attachBaseContext(Context newBase)
+    {
+        super.attachBaseContext(updateResources(newBase));
+    }
+
+    private static Context updateResources(Context context)
+    {
+        Locale locale = PrayerTimesApp.getApplication().getLocale();
+        Locale.setDefault(locale);
+
+        Configuration configuration = context.getResources().getConfiguration();
+        configuration.setLocale(locale);
+
+        return context.createConfigurationContext(configuration);
     }
 }

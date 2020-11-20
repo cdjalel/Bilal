@@ -25,6 +25,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Configuration;
 import android.graphics.Typeface;
 
 import android.os.Bundle;
@@ -33,8 +34,9 @@ import android.os.Bundle;
 
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import android.view.Menu;
 import android.view.MenuItem;
@@ -43,15 +45,9 @@ import android.view.animation.Animation;
 import android.view.View;
 import android.widget.TextView;
 
+import com.djalel.android.bilal.PrayerTimesApp;
 import com.djalel.android.bilal.helpers.PrayerTimes;
 import com.djalel.android.bilal.services.AthanService;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
-//import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
-import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
-import com.google.android.gms.location.LocationServices;
 
 import org.arabeyes.prayertime.*;
 import com.djalel.android.bilal.PrayerTimesManager;
@@ -64,8 +60,7 @@ import java.util.Locale;
 
 import timber.log.Timber;
 
-public class MainActivity extends AppCompatActivity implements
-        ConnectionCallbacks, OnConnectionFailedListener {
+public class MainActivity extends AppCompatActivity {
 
     public static final String UPDATE_VIEWS = "com.djalel.android.bilal.UPDATE";
 
@@ -73,9 +68,6 @@ public class MainActivity extends AppCompatActivity implements
     private static final int BLINK_COUNT    = AthanService.ATHAN_DURATION/BLINK_DURATION;
 
     private static final int REQUEST_SEARCH_CITY = 2;
-
-    private GoogleApiClient mGoogleApiClient;
-//    private Location mLastLocation;
 
     private Boolean mUVReceiverRegistered = false;
     private BroadcastReceiver mUpdateViewsReceiver = null;
@@ -104,8 +96,6 @@ public class MainActivity extends AppCompatActivity implements
         // - cleared (i.e. all activities are finished, especially the Settings one) as the latter
         //   starts this Main one with Intent.FLAG_ACTIVITY_NEW_TASK when Language changes to force UI refresh.
 
-        UserSettings.loadLocale(this);
-
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -120,12 +110,6 @@ public class MainActivity extends AppCompatActivity implements
             }
         });*/
 
-        if (!isGooglePlayServicesAvailable()) {
-            Timber.e("Google Play services unavailable.");
-            finish();
-            return;
-        }
-        buildGoogleApiClient();     // needed for Location
 
         // The other two entry points of the app, which run when MainActivity usually does not, are:
         //      - the alarm receiver called at prayer time
@@ -152,6 +136,7 @@ public class MainActivity extends AppCompatActivity implements
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
+
     // TODO 'find mosque in map' button in action bar
 
     @Override
@@ -170,30 +155,6 @@ public class MainActivity extends AppCompatActivity implements
         return super.onOptionsItemSelected(item);
     }
 
-    /**
-     * Checks if Google Play services is available.
-     * @return true if it is.
-     */
-    private boolean isGooglePlayServicesAvailable() {
-//        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
-        int resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this);
-        if (ConnectionResult.SUCCESS == resultCode) {
-            Timber.d("Google Play services available.");
-            return true;
-        } else {
-            Timber.e("Google Play services is unavailable.");
-            return false;
-        }
-    }
-
-    private synchronized void buildGoogleApiClient() {
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
-    }
-
     private void initReceiver() {
         mUVReceiverRegistered = false;
         mUpdateViewsReceiver = new BroadcastReceiver() {
@@ -204,22 +165,6 @@ public class MainActivity extends AppCompatActivity implements
                 updatePrayerViews();
             }
         };
-    }
-
-    @Override
-    protected void onStart() {
-        Timber.d("onStart");
-        super.onStart();
-        mGoogleApiClient.connect();
-    }
-
-    @Override
-    protected void onStop() {
-        Timber.d("OnStop");
-        super.onStop();
-        if (mGoogleApiClient.isConnected()) {
-            mGoogleApiClient.disconnect();
-        }
     }
 
     protected void onResume() {
@@ -241,38 +186,6 @@ public class MainActivity extends AppCompatActivity implements
             mUVReceiverRegistered = false;
         }
         stopCount();
-    }
-
-    @Override
-    public void onConnected(Bundle connectionHint) {
-        // Provides a simple way of getting a device's location and is well suited for
-        // applications that do not require a fine-grained location and that do not need location
-        // updates. Gets the best and most recent location currently available, which may be null
-        // in rare cases when a location is not available.
-        // TODO checkPermission()
-//        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-//        if (mLastLocation == null) {
-//            //Toast.makeText(this, R.string.no_location_detected, Toast.LENGTH_LONG).show();
-//            Timber.w("onConnected: No location detected");
-//        }
-//        else {
-//            Timber.w("onConnected: location detected");
-//        }
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult result) {
-        // Refer to the javadoc for ConnectionResult to see what error codes might be returned in
-        // onConnectionFailed.
-        Timber.i("Connection failed: ConnectionResult.getErrorCode() = " + result.getErrorCode());
-    }
-
-    @Override
-    public void onConnectionSuspended(int cause) {
-        // The connection to Google Play services was lost for some reason. We call connect() to
-        // attempt to re-establish the connection.
-        Timber.i("Connection suspended");
-        mGoogleApiClient.connect();
     }
 
     private void loadViews() {
@@ -317,7 +230,6 @@ public class MainActivity extends AppCompatActivity implements
             }
         };
 
-
         View.OnClickListener cityListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -331,13 +243,14 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         Timber.d("onActivityResult");
         if (requestCode == REQUEST_SEARCH_CITY) {
-            if(resultCode == Activity.RESULT_OK){
-                PrayerTimesManager.handleLocationChange(this, -1, -1, -1);
-                //updatePrayerViews(); // This is called by OnResume anyway.
+            if (resultCode == Activity.RESULT_OK) {
+                PrayerTimesManager.handleSettingsChange(this, -1, -1, -1);
+                //updatePrayerViews() is called by OnResume anyway.
                 // It will also retrieve new city name from settings, so no need to read it
-                // from the intent here
+                // here from the intent
             }
         }
     }
@@ -460,5 +373,22 @@ public class MainActivity extends AppCompatActivity implements
             }
         };
         mUpdateCount.run();
+    }
+
+    @Override
+    protected void attachBaseContext(Context newBase)
+    {
+        super.attachBaseContext(updateResources(newBase));
+    }
+
+    private static Context updateResources(Context context)
+    {
+        Locale locale = PrayerTimesApp.getApplication().getLocale();
+        Locale.setDefault(locale);
+
+        Configuration configuration = context.getResources().getConfiguration();
+        configuration.setLocale(locale);
+
+        return context.createConfigurationContext(configuration);
     }
 }

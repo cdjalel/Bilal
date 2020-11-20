@@ -22,14 +22,18 @@ package com.djalel.android.bilal.activities;
 
 import android.app.Activity;
 import android.app.SearchManager;
+import android.content.Context;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.res.Configuration;
 import android.os.Bundle;
-import android.support.v7.widget.SearchView;
+import androidx.appcompat.widget.SearchView;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.djalel.android.bilal.PrayerTimesApp;
 import com.djalel.android.bilal.R;
 import com.djalel.android.bilal.adapters.CityListAdapter;
 import com.djalel.android.bilal.databases.LocationsDBHelper;
@@ -72,6 +76,7 @@ public class SearchCityActivity extends AppCompatActivity
 
     @Override
     public void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
         Timber.i("onNewIntent: intent.action = " + intent.getAction());
         setIntent(intent);
         handleIntent(intent);
@@ -167,5 +172,22 @@ public class SearchCityActivity extends AppCompatActivity
             mDBHelper = null;
         }
         super.onDestroy();
+    }
+
+    @Override
+    protected void attachBaseContext(Context newBase)
+    {
+        super.attachBaseContext(updateResources(newBase));
+    }
+
+    private static Context updateResources(Context context)
+    {
+        Locale locale = PrayerTimesApp.getApplication().getLocale();
+        Locale.setDefault(locale);
+
+        Configuration configuration = context.getResources().getConfiguration();
+        configuration.setLocale(locale);
+
+        return context.createConfigurationContext(configuration);
     }
 }

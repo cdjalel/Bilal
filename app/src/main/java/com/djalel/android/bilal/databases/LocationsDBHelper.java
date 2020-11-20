@@ -41,7 +41,7 @@ import com.djalel.android.bilal.datamodels.City;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import timber.log.Timber;
 
 import com.readystatesoftware.sqliteasset.SQLiteAssetHelper;

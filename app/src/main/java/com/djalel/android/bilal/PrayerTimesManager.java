@@ -115,7 +115,7 @@ public class PrayerTimesManager {
             Timber.e("sPrayerTimes == null");
             return "";
         }
-        return context.getString(R.string.time_to_next) +
+        return context.getString(R.string.time_to_next) + " " +
                 sPrayerTimes.formatTimeToNextPrayer(context, from);
     }
 
@@ -144,14 +144,14 @@ public class PrayerTimesManager {
         disableBootAndTimeChangeReceiver(context);
     }
 
-    public static void handleLocationChange(Context context, int m, int r, int h)
+    public static void handleSettingsChange(Context context, int calcMethod, int round, int mathhab)
     {
-        if (!(-1 == m && -1 == r && -1 == h)) {
+        if (!(-1 == calcMethod && -1 == round && -1 == mathhab)) {
             sMethod = new Method();
-            sMethod.setMethod(m > -1 ? m : (m = UserSettings.getCalculationMethod(context)));
-            sMethod.round = r > -1 ? r : UserSettings.getRounding(context);
-            if (m == Method.V2_KARACHI) {
-                sMethod.mathhab = h > -1 ? h : (UserSettings.isMathhabHanafi(context) ? 2 : 1);
+            sMethod.setMethod(calcMethod > -1 ? calcMethod : (calcMethod = UserSettings.getCalculationMethod(context)));
+            sMethod.round = round > -1 ? round : UserSettings.getRounding(context);
+            if (calcMethod == Method.V2_KARACHI) {
+                sMethod.mathhab = mathhab > -1 ? mathhab : (UserSettings.isMathhabHanafi(context) ? 2 : 1);
             }
         }
         sNewCalc = true;

@@ -22,13 +22,13 @@ package com.djalel.android.bilal.helpers;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.os.Build;
 import android.preference.PreferenceManager;
 
 import org.arabeyes.prayertime.Method;
 import org.arabeyes.prayertime.Prayer;
+
+import com.djalel.android.bilal.PrayerTimesApp;
 import com.djalel.android.bilal.R;
 import com.djalel.android.bilal.databases.LocationsDBHelper;
 import com.djalel.android.bilal.datamodels.City;
@@ -200,7 +200,7 @@ public class UserSettings {
 
     public static int getRounding(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        return sharedPref.getBoolean("locations_rounding", true) ? 1 : 0;
+        return sharedPref.getBoolean("general_rounding", true) ? 1 : 0;
     }
 
     public static boolean languageUsesDeviceSettings(Context context, String language) {
@@ -236,42 +236,25 @@ public class UserSettings {
         return sharedPref.getString("general_numerals", context.getString(R.string.pref_numerals_default_value));
     }
 
-    private static Locale getLocale(Context context) {
+    public static Locale getLocale(Context context) {
         String lang = getPrefLanguage(context);
         if (languageUsesDeviceSettings(context, lang)) {
             lang = getDeviceLanguage();
         }
 
         String numerals = getNumerals(context);
-        String cc;
+        String countryCode;
         if (numeralsUseCountryCode(context, numerals)) {
             City city = getCity(context);
-            cc = null != city ? city.getCountryCode() : null;
+            countryCode = null != city ? city.getCountryCode() : null;
         }
         else {
-            cc = numerals;
+            countryCode = numerals;
         }
-        return null != cc? new Locale(lang, cc) : new Locale(lang);
+        return null != countryCode? new Locale(lang, countryCode) : new Locale(lang);
     }
 
-    private static void setLocale(Context context, Locale locale) {
-        // Update sys. config
-        Resources res = context.getApplicationContext().getResources();
-        Configuration config = res.getConfiguration();
-        if (Build.VERSION.SDK_INT >= 17) {
-            config.setLocale(locale);
-            config.setLayoutDirection(locale);
-        }
-        else {
-            config.locale = locale;
-        }
-        res.updateConfiguration(config, res.getDisplayMetrics());
-        Locale.setDefault(locale);
-
-        // TODO set inputmethod language for SearchCity
-    }
-
-    public static void setLocale(Context context, String newLang, String newCC) {
+    public static void setLocale(Context context, String newLang, String newCountryCode) {
         // saving in shared prefs. is handled by the framework after the caller
         City city = null;
 
@@ -286,26 +269,22 @@ public class UserSettings {
             newLang = getLanguage(context);
         }
 
-        if (null == newCC) {
-            newCC = getNumerals(context);
+        if (null == newCountryCode) {
+            newCountryCode = getNumerals(context);
         }
 
-        if (numeralsUseCountryCode(context, newCC)) {
+        if (numeralsUseCountryCode(context, newCountryCode)) {
             if (null == city) {
                 city = getCity(context);
             }
             if (null != city) {
-                newCC = city.getCountryCode();
+                newCountryCode = city.getCountryCode();
             }
             else {
-                newCC = null;
+                newCountryCode = null;
             }
         }
 
-        setLocale(context, null != newCC ? new Locale(newLang, newCC) : new Locale(newLang));
-    }
-
-    public static void loadLocale(Context context) {
-        setLocale(context, getLocale(context));
+        PrayerTimesApp.getApplication().setLocale(null != newCountryCode ? new Locale(newLang, newCountryCode) : new Locale(newLang));
     }
 }

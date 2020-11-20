@@ -34,9 +34,10 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
-import android.support.v7.app.ActionBar;
+import androidx.appcompat.app.ActionBar;
 import android.view.MenuItem;
 
+import com.djalel.android.bilal.PrayerTimesApp;
 import com.djalel.android.bilal.PrayerTimesManager;
 import com.djalel.android.bilal.helpers.UserSettings;
 import com.djalel.android.bilal.helpers.WakeLocker;
@@ -44,6 +45,7 @@ import com.djalel.android.bilal.services.AthanService;
 import com.djalel.android.bilal.R;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.arabeyes.prayertime.Method;
 
@@ -164,6 +166,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             } else {
                 pref.setEnabled(false);
             }
+
+            // Bind to change listener
+            pref = findPreference("general_rounding");
+            pref.setOnPreferenceChangeListener(sGeneralPrefsListener);
         }
 
         private final /*static*/ Preference.OnPreferenceChangeListener sGeneralPrefsListener =
@@ -209,11 +215,20 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                         }
                     break;
 
-                default:
-                    // For other preferences, set the summary to the value's
-                    // simple string representation.
-                    //preference.setSummary(stringValue);
-                    break;
+                    case "general_rounding":
+                        // Trigger new calc if value change
+                        int oldRound = UserSettings.getRounding(context);
+                        int newRound = stringValue.equals("true") ? 1 : 0;
+                        if (oldRound != newRound) {
+                            PrayerTimesManager.handleSettingsChange(context, -1, newRound, -1);
+                        }
+                        break;
+
+                    default:
+                        // For other preferences, set the summary to the value's
+                        // simple string representation.
+                        //preference.setSummary(stringValue);
+                        break;
                 }
 
                 return true;
@@ -258,12 +273,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // Bind to onchange listener
             pref.setOnPreferenceChangeListener(sMethodChangeListener);
 
-
-            // Bind to change listener
-            pref = findPreference("locations_rounding");
-            pref.setOnPreferenceChangeListener(sMethodChangeListener);
-
-
             // Bind mathhab pref to its change listener
             pref = findPreference("locations_mathhab_hanafi");
             pref.setOnPreferenceChangeListener(sMethodChangeListener);
@@ -301,15 +310,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                                 mathhabPref.setEnabled(false);
                             }
 
-                            PrayerTimesManager.handleLocationChange(context, index, -1, -1);
-                        }
-                        break;
-                    case "locations_rounding":
-                        // Trigger new calc if value change
-                        int oldRound = UserSettings.getRounding(context);
-                        int newRound = stringValue.equals("true") ? 1 : 0;
-                        if (oldRound != newRound) {
-                            PrayerTimesManager.handleLocationChange(context, -1, newRound, -1);
+                            PrayerTimesManager.handleSettingsChange(context, index, -1, -1);
                         }
                         break;
                     case "locations_mathhab_hanafi":
@@ -317,7 +318,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                         boolean oldMathhab = UserSettings.isMathhabHanafi(context);
                         boolean newMathhab = stringValue.equals("true");
                         if (oldMathhab != newMathhab) {
-                            PrayerTimesManager.handleLocationChange(context, -1, -1, newMathhab ? 2 : 1);
+                            PrayerTimesManager.handleSettingsChange(context, -1, -1, newMathhab ? 2 : 1);
                         }
                         break;
                     default:
@@ -340,7 +341,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
                     // Main UI will be refreshed automatically by it's OnResume
 
-                    PrayerTimesManager.handleLocationChange(getActivity(), -1, -1, -1);
+                    PrayerTimesManager.handleSettingsChange(getActivity(), -1, -1, -1);
                 }
                 //else if (resultCode == Activity.RESULT_CANCELED) {
                 //}
@@ -464,4 +465,21 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
     }
 */
+
+    @Override
+    protected void attachBaseContext(Context newBase)
+    {
+        super.attachBaseContext(updateResources(newBase));
+    }
+
+    private static Context updateResources(Context context)
+    {
+        Locale locale = PrayerTimesApp.getApplication().getLocale();
+        Locale.setDefault(locale);
+
+        Configuration configuration = context.getResources().getConfiguration();
+        configuration.setLocale(locale);
+
+        return context.createConfigurationContext(configuration);
+    }
 }

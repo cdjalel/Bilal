@@ -27,9 +27,4 @@
         android:summary="@string/pref_description_mathhab_hanafi"
         android:defaultValue="false" />
 
-    <SwitchPreference
-        android:key="locations_rounding"
-        android:title="@string/pref_title_round"
-        android:defaultValue="true" />
-
 </PreferenceScreen>
