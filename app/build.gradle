@@ -17,14 +17,14 @@ android {
             storePassword keystoreProperties['storePassword']
         }
     }
-    compileSdkVersion 29
-    buildToolsVersion '29.0.3'
+    compileSdk 33
     defaultConfig {
         applicationId "com.djalel.android.bilal"
         minSdkVersion 17
-        targetSdkVersion 29
-        versionCode 8
-        versionName "1.6"
+        targetSdkVersion 33
+        versionCode 9
+        versionName "2.0"
+        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -42,14 +42,31 @@ android {
             enableSplit = false
         }
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    namespace 'com.djalel.android.bilal'
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
-    implementation 'com.google.android.material:material:1.2.1'
-    implementation 'com.google.android.gms:play-services-location:17.1.0'
+    implementation "androidx.core:core:1.10.1"
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.preference:preference:1.2.1'
+    implementation 'androidx.fragment:fragment:1.6.1'
+    implementation "androidx.multidex:multidex:2.0.1"
+    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'com.google.android.gms:play-services-location:21.0.1'
     implementation 'com.readystatesoftware.sqliteasset:sqliteassethelper:2.0.1'
-    implementation 'com.jakewharton.timber:timber:3.1.0'
+    implementation 'com.jakewharton.timber:timber:4.7.1'
+    constraints {
+        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.0") {
+            because("kotlin-stdlib-jdk7 is now a part of kotlin-stdlib")
+        }
+        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.0") {
+            because("kotlin-stdlib-jdk8 is now a part of kotlin-stdlib")
+        }
+    }
 }

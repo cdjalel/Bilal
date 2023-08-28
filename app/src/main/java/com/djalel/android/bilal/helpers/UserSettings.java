@@ -20,10 +20,13 @@
 
 package com.djalel.android.bilal.helpers;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
-import android.preference.PreferenceManager;
+import android.os.Build;
+
+import androidx.preference.PreferenceManager;
 
 import org.arabeyes.prayertime.Method;
 import org.arabeyes.prayertime.Prayer;
@@ -209,7 +212,12 @@ public class UserSettings {
 
     private static String getDeviceLanguage()
     {
-        return Resources.getSystem().getConfiguration().locale.getLanguage();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            return Resources.getSystem().getConfiguration().getLocales().get(0).getLanguage();
+        }
+        else {
+            return Resources.getSystem().getConfiguration().locale.getLanguage();
+        }
     }
 
     public static String getLanguage(Context context) {

@@ -3,12 +3,12 @@
     <string name="app_name">آذان بلال</string>
     <string name="action_settings">الإعدادات</string>
     <string name="time_for">حان وقت صلاة %s</string>
-    <string name="time_in">في %s على الساعة %s</string>
+    <string name="time_in">في %1$s على الساعة %2$s</string>
     <string name="time_up">دخل وقت %s منذ </string>
     <string name="time_to_next">الصلاة التالية بعد </string>
-    <string name="time_interval">%2d سا و%2d د و%2d ثا</string>
-    <string name="time_interval_rounded">%2d سا و%2d د</string>
-    <string name="time_interval_0h">%2d د و%2d ثا</string>
+    <string name="time_interval">%1$2d سا و%2$2d د و%3$2d ثا</string>
+    <string name="time_interval_rounded">%1$2d سا و%2$2d د</string>
+    <string name="time_interval_0h">%1$2d د و%2$2d ثا</string>
     <string name="time_interval_0h_rounded">%2d د</string>
     <string name="stop_athan">وقف الآذان</string>
     <string name="close_notification">غلق</string>
@@ -185,5 +185,8 @@
     <!--<string name="pref_title_hindu_nbrs">أرقام هندية</string>-->
     <!--<string name="pref_description_hindu_nbrs">٠ ١ ٢ ٣ ٤ ٥ ٦ ٧ ٨ ٩</string>-->
 
+    <string name="title_activity_settings">إعدادات الآذان</string>
 
+    <string name="channel_name">قناة آذان بلال</string>
+    <string name="channel_description">قناة لعرض إشعارات آذان بلال على الأندرويد</string>
 </resources>

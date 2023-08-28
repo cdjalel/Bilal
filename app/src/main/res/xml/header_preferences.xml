@@ -1,0 +1,20 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <Preference
+        app:fragment="com.djalel.android.bilal.activities.SettingsActivity$GeneralFragment"
+        app:title="@string/pref_header_general"
+        app:key="general_header"
+        app:icon="@drawable/ic_info_black_24dp" />
+
+    <Preference
+        app:fragment="com.djalel.android.bilal.activities.SettingsActivity$LocationFragment"
+        app:title="@string/pref_header_locations"
+        app:key="locations_header"
+        app:icon="@drawable/ic_locations_black_24dp" />
+
+    <Preference
+        app:fragment="com.djalel.android.bilal.activities.SettingsActivity$NotificationsFragment"
+        app:title="@string/pref_header_notifications"
+        app:key="notification_header"
+        app:icon="@drawable/ic_notifications_black_24dp" />
+</PreferenceScreen>

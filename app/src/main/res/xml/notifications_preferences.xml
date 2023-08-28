@@ -1,0 +1,32 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <SwitchPreference
+        app:key="notifications_prayer_time"
+        app:title="@string/pref_title_prayer_time"
+        app:defaultValue="true" />
+
+    <SwitchPreference
+        app:dependency="notifications_prayer_time"
+        app:key="notifications_athan"
+        app:title="@string/pref_title_athan"
+        app:defaultValue="true" />
+
+
+    <ListPreference
+        app:dependency="notifications_athan"
+        app:key="notifications_muezzin"
+        app:title="@string/pref_title_muezzin"
+        app:defaultValue="ABDELBASET"
+        app:entries="@array/pref_muezzin_list_titles"
+        app:entryValues="@array/pref_muezzin_list_values"
+        app:negativeButtonText="@null"
+        app:positiveButtonText="@null"
+        app:useSimpleSummaryProvider="true" />
+
+    <SwitchPreference
+        app:dependency="notifications_prayer_time"
+        app:key="notifications_vibrate"
+        app:title="@string/pref_title_vibrate"
+        app:defaultValue="true" />
+
+</PreferenceScreen>

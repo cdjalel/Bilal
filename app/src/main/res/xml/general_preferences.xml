@@ -1,0 +1,39 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <ListPreference
+        app:key="general_language"
+        app:title="@string/pref_title_language"
+        app:defaultValue="@string/pref_language_default_value"
+        app:entries="@array/pref_language_list_titles"
+        app:entryValues="@array/pref_language_list_values"
+        app:negativeButtonText="@null"
+        app:positiveButtonText="@null"
+        app:useSimpleSummaryProvider="true" />
+
+    <ListPreference
+        app:key="general_numerals"
+        app:title="@string/pref_title_numerals"
+        app:defaultValue="@string/pref_numerals_default_value"
+        app:entries="@array/pref_numerals_list_titles"
+        app:entryValues="@array/pref_numerals_list_values"
+        app:negativeButtonText="@null"
+        app:positiveButtonText="@null"
+        app:useSimpleSummaryProvider="true" />
+
+    <SwitchPreference
+        app:key="general_rounding"
+        app:title="@string/pref_title_round"
+        app:defaultValue="true" />
+
+    <Preference
+        app:key="general_about"
+        app:persistent="false"
+        app:title="@string/pref_title_about">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.djalel.android.bilal"
+            android:targetClass="com.djalel.android.bilal.activities.AboutActivity" />
+    </Preference>
+
+</PreferenceScreen>

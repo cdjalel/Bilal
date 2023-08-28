@@ -27,6 +27,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.provider.Settings;
 
 import timber.log.Timber;
 
@@ -89,15 +90,6 @@ public class PrayerTimesManager {
             return 2;           // fallback to dhuhr
         }
         return sPrayerTimes.getNextIndex();
-    }
-
-    public static String  getNextName(Context context)
-    {
-        if (null == sPrayerTimes) {
-            Timber.e("sPrayerTimes == null");
-            return null;
-        }
-        return sPrayerTimes.getNextName(context);
     }
 
     public static String formatPrayerTime(int i)
@@ -197,7 +189,7 @@ public class PrayerTimesManager {
                 state = "DEFAULT (Enabled in Manifest)";
                 break;
         }
-        Timber.d("BootAndTimeChangeReceiver Setting = " + state);
+        Timber.d("BootAndTimeChangeReceiver Setting = %s", state);
     }
 
     private static void enableBootAndTimeChangeReceiver(Context context)
@@ -254,11 +246,11 @@ public class PrayerTimesManager {
             calcPrayerTimes(context, nowCal, city);
         }
 
-        Timber.d("Current time: " + sPrayerTimes.formatPrayerTime(nowCal));
-        Timber.d("Current prayer: " + sPrayerTimes.getCurrentName(context));
-        Timber.i("Next prayer: " + sPrayerTimes.getNextName(context));
+        Timber.d("Current time: %s", sPrayerTimes.formatPrayerTime(nowCal));
+        Timber.d("Current prayer: %s", sPrayerTimes.getCurrentName(context));
+        Timber.i("Next prayer: %s", sPrayerTimes.getNextName(context));
 
-        Timber.d("UserSettings.isNotificationEnabled = " + UserSettings.isNotificationEnabled(context));
+        Timber.d("UserSettings.isNotificationEnabled = %s", UserSettings.isNotificationEnabled(context));
 
         // SettingsActivity listener calls before setting is committed to shared prefs, so it uses
         // enableAlarm boolean.
@@ -276,7 +268,7 @@ public class PrayerTimesManager {
 
         TimeZone tz = TimeZone.getTimeZone(city.getTimezoneEN());
 
-        double gmtDiffHrs = tz.getOffset(nowCal.getTimeInMillis()) / (1000 * 3600);   // TODO nowCal TZ?
+        double gmtDiffHrs = tz.getOffset(nowCal.getTimeInMillis()) / (1000.0 * 3600);   // TODO nowCal TZ?
         int dst = tz.inDaylightTime(nowCal.getTime()) ? 1 : 0;
         Timber.w("TZ: gmtDiff = " + gmtDiffHrs + ", DST = " + dst);
 
@@ -293,7 +285,7 @@ public class PrayerTimesManager {
             }
         }
 
-        Timber.d("Last time: " + PrayerTimes.formatPrayerTime(sLastTime, sMethod.round));
+        Timber.d("Last time: %s", PrayerTimes.formatPrayerTime(sLastTime, sMethod.round));
         sLastTime = nowCal;
 
         /* Call the main library function to fill the Prayer times */
@@ -325,7 +317,7 @@ public class PrayerTimesManager {
         int index = null == sPrayerTimes? 2 : sPrayerTimes.getNextIndex();
         Intent intent = new Intent(context, AlarmReceiver.class);
         intent.putExtra(AthanService.EXTRA_PRAYER, index);
-        return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
     private static void cancelAlarm(Context context)
@@ -349,7 +341,15 @@ public class PrayerTimesManager {
         sAlarmIntent = createAlarmIntent(context);
         AlarmManager alarmMgr = (AlarmManager)context.getSystemService(ALARM_SERVICE);
         if (null != alarmMgr) {
-            if (Build.VERSION.SDK_INT >= 23) {
+            if (Build.VERSION.SDK_INT >= 31) {
+                if (alarmMgr.canScheduleExactAlarms()) {
+                    alarmMgr.setExact(AlarmManager.RTC_WAKEUP, sPrayerTimes.getNext().getTimeInMillis(), sAlarmIntent);
+                }
+                else {
+                    context.startActivity(new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM));
+                }
+            }
+            else if (Build.VERSION.SDK_INT >= 23) {
                 alarmMgr.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, sPrayerTimes.getNext().getTimeInMillis(), sAlarmIntent);
             }
             else if (Build.VERSION.SDK_INT >= 19) {
@@ -358,7 +358,7 @@ public class PrayerTimesManager {
             else {
                 alarmMgr.set(AlarmManager.RTC_WAKEUP, sPrayerTimes.getNext().getTimeInMillis(), sAlarmIntent);
             }
-            Timber.i("New Alarm set for " + sPrayerTimes.formatPrayerTime(sPrayerTimes.getNextIndex()));
+            Timber.i("New Alarm set for %s", sPrayerTimes.formatPrayerTime(sPrayerTimes.getNextIndex()));
         }
     }
 }

@@ -18,33 +18,29 @@
  *
  */
 
-package com.djalel.android.bilal.activities;
+package com.djalel.android.bilal.receivers;
 
-import android.app.Activity;
+import android.app.AlarmManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.os.Bundle;
-import androidx.annotation.Keep;
-import android.text.method.ScrollingMovementMethod;
-import android.widget.TextView;
+import android.content.Intent;
 
-import com.djalel.android.bilal.PrayerTimesApp;
-import com.djalel.android.bilal.R;
+import com.djalel.android.bilal.PrayerTimesManager;
+import com.djalel.android.bilal.activities.MainActivity;
 
-@Keep
-public class AboutActivity extends Activity {
+import timber.log.Timber;
 
+public class ExactAlarmPermissionChangeReceiver extends BroadcastReceiver {
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_about);
+    public void onReceive(Context context, Intent intent) {
+        String action = intent.getAction();
+        Timber.i("=============== %s", action);
 
-        TextView tv = findViewById(R.id.about_textview);
-        tv.setMovementMethod(new ScrollingMovementMethod());
-    }
-
-    @Override
-    protected void attachBaseContext(Context newBase)
-    {
-        super.attachBaseContext(PrayerTimesApp.updateLocale(newBase));
+        if (null != action) {
+            if (action.equals(AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED))
+            {
+                PrayerTimesManager.updatePrayerTimes(context, true);
+            }
+        }
     }
 }

@@ -29,11 +29,14 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ServiceInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import androidx.core.app.NotificationCompat;
@@ -65,6 +68,8 @@ public class AthanService extends Service implements
     public static final String ACTION_PLAY_ATHAN = "com.djalel.android.bilal.action.PLAY_ATHAN";
     public static final String ACTION_STOP_ATHAN = "com.djalel.android.bilal.action.STOP_ATHAN";
 
+    public static final String CHANNEL_ID = "bilal_channel_01";
+
     private int mPrayerIndex;
     private String mAthanFile;
     private MediaPlayer mAudioPlayer = null;
@@ -73,61 +78,71 @@ public class AthanService extends Service implements
     private boolean isStopped = true;
     private BroadcastReceiver mScreenOffReceiver = null;
     private NotificationCompat.Builder mNotificationBuilder;
-    private final int mNotificationId = 005;
+    private final int mNotificationId = 5;
 
     public int onStartCommand(Intent intent, int flags, int startId) {
         String action = intent.getAction();
-        Timber.d("onStartCommand action = " + action);
+        Timber.d("onStartCommand action = %s", action);
 
-        if (action.equals(ACTION_NOTIFY_ATHAN)) { // sound + notif
-            stopAudio(false);        // in case of || starts Alarm + Settings
+        if (action != null) {
+            switch (action) {
+                case ACTION_NOTIFY_ATHAN:  // sound + notif
+                    stopAudio(false);        // in case of || starts Alarm + Settings
 
-            mPrayerIndex = intent.getIntExtra(EXTRA_PRAYER, 2);
-            mAudioIsOn = UserSettings.isAthanEnabled(this);
-            if (mAudioIsOn) {
-                mAthanFile = "android.resource://" + getPackageName() + "/" +
-                        UserSettings.getMuezzinRes(intent.getStringExtra(EXTRA_MUEZZIN), mPrayerIndex);
-                initMediaPlayer();
-                registerScreenOffReceiver();
+
+                    mPrayerIndex = intent.getIntExtra(EXTRA_PRAYER, 2);
+                    mAudioIsOn = UserSettings.isAthanEnabled(this);
+                    if (mAudioIsOn) {
+                        mAthanFile = "android.resource://" + getPackageName() + "/" +
+                                UserSettings.getMuezzinRes(intent.getStringExtra(EXTRA_MUEZZIN), mPrayerIndex);
+                        initMediaPlayer();
+                        registerScreenOffReceiver();
+                    }
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        startForeground(mNotificationId, buildNotification(), ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
+                    }
+                    else {
+                        startForeground(mNotificationId, buildNotification());
+                    }
+                    isForeground = true;
+                    isStopped = false;
+                    break;
+                case ACTION_PLAY_ATHAN:  // sound only
+                    stopAudio(false);        // in case of || starts Alarm + Settings
+
+
+                    mPrayerIndex = intent.getIntExtra(EXTRA_PRAYER, 2);
+                    mAudioIsOn = true;
+                    mAthanFile = "android.resource://" + getPackageName() + "/" +
+                            UserSettings.getMuezzinRes(intent.getStringExtra(EXTRA_MUEZZIN), mPrayerIndex);
+                    initMediaPlayer();
+                    isForeground = false;
+                    isStopped = false;
+                    break;
+                case ACTION_STOP_ATHAN:
+                    if (!isStopped) {
+                        isStopped = true;
+                        stopAthan();
+                        stopSelf(startId);
+                    }
+                    break;
             }
-
-            startForeground(mNotificationId, buildNotification());
-            isForeground = true;
-            isStopped = false;
         }
-        else if (action.equals(ACTION_PLAY_ATHAN)) { // sound only
-            stopAudio(false);        // in case of || starts Alarm + Settings
-
-            mPrayerIndex = intent.getIntExtra(EXTRA_PRAYER, 2);
-            mAudioIsOn = true;
-            mAthanFile = "android.resource://" + getPackageName() + "/" +
-                    UserSettings.getMuezzinRes(intent.getStringExtra(EXTRA_MUEZZIN), mPrayerIndex);
-            initMediaPlayer();
-            isForeground = false;
-            isStopped = false;
-        }
-        else if (action.equals(ACTION_STOP_ATHAN)) {
-            if (!isStopped) {
-                isStopped = true;
-                stopAthan();
-                stopSelf(startId);
-            }
-        }
-
         return Service.START_NOT_STICKY;    // Don't restart if killed
     }
 
     private Notification buildNotification() {
         // Use one intent to show MainActivity when notification is touched
         Intent mainIntent = new Intent(this, MainActivity.class);
-        PendingIntent notifContentIntent = PendingIntent.getActivity(this, 0, mainIntent, 0);
+        PendingIntent notifContentIntent = PendingIntent.getActivity(this, 0, mainIntent, PendingIntent.FLAG_IMMUTABLE);
 
         // Use another intent to stop Athan/close notification via button
         // (swipe left/right doesn't work on service notification)
         Intent stopIntent = new Intent(this, StopAthanActivity.class); // TODO inner class
         stopIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         PendingIntent notifDeleteIntent = PendingIntent.getActivity(this, 0,
-                stopIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                stopIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         Bitmap largeIconBmp = BitmapFactory.decodeResource(this.getResources(),
                 R.drawable.ic_notif_large);
@@ -143,8 +158,7 @@ public class AthanService extends Service implements
                 UserSettings.getCityName(this), PrayerTimesManager.formatPrayerTime(mPrayerIndex));
 
         // Notification channel ID is ignored for Android 7.1.1 (API level 25) and lower.
-        String channelId = "bilal_channel_01";
-        mNotificationBuilder = new NotificationCompat.Builder(this, channelId)
+        mNotificationBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setSmallIcon(R.drawable.ic_stat_notif)
                 .setLargeIcon(largeIconBmp)
@@ -186,12 +200,20 @@ public class AthanService extends Service implements
                 mAudioPlayer.setOnErrorListener(this);
 //                mAudioPlayer.setWakeMode(this, PowerManager.PARTIAL_WAKE_LOCK);
                 mAudioPlayer.prepareAsync(); // prepare async to not block main thread
-                mAudioPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    mAudioPlayer.setAudioAttributes(
+                            new AudioAttributes
+                                    .Builder()
+                                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                                    .build());
+                }
+                else {
+                    mAudioPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
+                }
                 mAudioPlayer.setVolume(1.0f, 1.0f);
                 Timber.d("Audio player prepared asynchronously");
             } catch (IOException e) {
                 e.printStackTrace();
-                Timber.e(e.getMessage(), e);
             }
         }
     }
@@ -200,7 +222,7 @@ public class AthanService extends Service implements
     public void onPrepared(MediaPlayer player) {
         mAudioPlayer.start();
         mAudioPlayer.setOnCompletionListener(this);
-        Timber.i("Audio started playing. Duration = " + mAudioPlayer.getDuration());
+        Timber.i("Audio started playing. Duration = %s", mAudioPlayer.getDuration());
         if(!mAudioPlayer.isPlaying()) {
 	        Timber.w("Problem in playing audio");
 	    }
@@ -221,7 +243,7 @@ public class AthanService extends Service implements
             stopAudio(true);
             mAudioIsOn = false;
 
-            mNotificationBuilder.mActions.clear();
+            mNotificationBuilder.clearActions();
             if (UserSettings.isVibrateEnabled(this)) {
                 mNotificationBuilder.setVibrate(null);
             }
@@ -229,7 +251,7 @@ public class AthanService extends Service implements
             Intent stopIntent = new Intent(this, StopAthanActivity.class);
             stopIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             PendingIntent notifDeleteIntent = PendingIntent.getActivity(this, 0,
-                    stopIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                    stopIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
             mNotificationBuilder.addAction(R.drawable.ic_close_notification,
                     this.getString(R.string.close_notification), notifDeleteIntent);
 
@@ -268,10 +290,6 @@ public class AthanService extends Service implements
         }
     }
 
-    public void onPause() {
-        if (mAudioPlayer.isPlaying()) { mAudioPlayer.stop(); }
-    }
-
 	@Override
 	public IBinder onBind(Intent intent) {
 	    return null;
@@ -302,7 +320,12 @@ public class AthanService extends Service implements
             mAudioIsOn = false;
         }
         if (isForeground) {
-            stopForeground(true);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                stopForeground(STOP_FOREGROUND_DETACH);
+            }
+            else {
+                stopForeground(true);
+            }
             isForeground = false;
         }
     }
@@ -327,7 +350,8 @@ public class AthanService extends Service implements
                 @Override
                 public void onReceive(Context context, Intent intent) {
                     Timber.i("Screen OFF, stopping Athan");
-                    stopAthanAction(context);
+                    //stopAthanAction(context);
+                    // we do not stop athan anymore as new wakelock does not allow lock with screen dimming
                 }
             };
             Timber.d("Register Screen OFF Receiver");

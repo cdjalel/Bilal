@@ -23,6 +23,8 @@ package com.djalel.android.bilal.datamodels;
 
 import android.util.Base64;
 
+import androidx.annotation.NonNull;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -84,6 +86,7 @@ public class City implements Serializable {
         return altitude;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return toLongString();

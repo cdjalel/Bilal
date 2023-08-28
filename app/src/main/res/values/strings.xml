@@ -3,12 +3,12 @@
     <string name="app_name">Athan Bilal</string>
     <string name="action_settings">Settings</string>
     <string name="time_for">Time for %s prayer</string>
-    <string name="time_in">In %s at %s</string>
+    <string name="time_in">In %1$s at %2$s</string>
     <string name="time_up">It is %s time since </string>
     <string name="time_to_next">Next prayer in </string>
-    <string name="time_interval">%2d h, %2d m and %2d s</string>
-    <string name="time_interval_rounded">%2d h and %2d m</string>
-    <string name="time_interval_0h">%2d m and %2d s</string>
+    <string name="time_interval">%1$2d h, %2$2d m and %3$2d s</string>
+    <string name="time_interval_rounded">%1$2d h and %2$2d m</string>
+    <string name="time_interval_0h">%1$2d m and %2$2d s</string>
     <string name="time_interval_0h_rounded">%2d m</string>
     <string name="stop_athan">Stop Athan</string>
     <string name="close_notification">Close</string>
@@ -33,7 +33,7 @@
 
     <!--<string name="pref_title_social_recommendations">Enable social recommendations</string>-->
     <!--<string name="pref_description_social_recommendations">Recommendations for people to contact-->
-        <!--based on your message history-->
+    <!--based on your message history-->
     <!--</string>-->
 
     <!--<string name="pref_title_display_name">Display name</string>-->
@@ -41,7 +41,7 @@
 
     <string name="pref_title_language">Language</string>
     <string-array name="pref_language_list_titles">
-        <item>Follow device settings</item>
+        <item>Use device settings</item>
         <item>Arabic</item>
         <item>English</item>
     </string-array>
@@ -94,32 +94,32 @@ athan.bilal1@gmail.com, so we can fix it.
 
     <!--<string name="pref_title_sync_frequency">Sync frequency</string>-->
     <!--<string-array name="pref_sync_frequency_titles">-->
-        <!--<item>15 minutes</item>-->
-        <!--<item>30 minutes</item>-->
-        <!--<item>1 hour</item>-->
-        <!--<item>3 hours</item>-->
-        <!--<item>6 hours</item>-->
-        <!--<item>Never</item>-->
+    <!--<item>15 minutes</item>-->
+    <!--<item>30 minutes</item>-->
+    <!--<item>1 hour</item>-->
+    <!--<item>3 hours</item>-->
+    <!--<item>6 hours</item>-->
+    <!--<item>Never</item>-->
     <!--</string-array>-->
     <!--<string-array name="pref_sync_frequency_values">-->
-        <!--<item>15</item>-->
-        <!--<item>30</item>-->
-        <!--<item>60</item>-->
-        <!--<item>180</item>-->
-        <!--<item>360</item>-->
-        <!--<item>-1</item>-->
+    <!--<item>15</item>-->
+    <!--<item>30</item>-->
+    <!--<item>60</item>-->
+    <!--<item>180</item>-->
+    <!--<item>360</item>-->
+    <!--<item>-1</item>-->
     <!--</string-array>-->
 
     <!--<string-array name="list_preference_entries">-->
-        <!--<item>Entry 1</item>-->
-        <!--<item>Entry 2</item>-->
-        <!--<item>Entry 3</item>-->
+    <!--<item>Entry 1</item>-->
+    <!--<item>Entry 2</item>-->
+    <!--<item>Entry 3</item>-->
     <!--</string-array>-->
 
     <!--<string-array name="list_preference_entry_values">-->
-        <!--<item>1</item>-->
-        <!--<item>2</item>-->
-        <!--<item>3</item>-->
+    <!--<item>1</item>-->
+    <!--<item>2</item>-->
+    <!--<item>3</item>-->
     <!--</string-array>-->
 
     <!--<string-array name="multi_select_list_preference_default_value" />-->
@@ -185,8 +185,14 @@ athan.bilal1@gmail.com, so we can fix it.
     </string-array>
     <string name="pref_title_mathhab_hanafi">Mathhab Hanafi</string>
     <string name="pref_description_mathhab_hanafi">Follow Mathhab Hanafi for Asr time</string>
-
+getString(R.string.app_name)
     <string name="pref_title_round">Rounding seconds</string>
+    <string name="title_activity_settings">Athan Settings</string>
+
+    <string name="channel_name">Athan Bilal channel</string>
+    <string name="channel_description">Channel to show Athan Bilal Android notifications</string>
+
+    <!-- Preference Titles -->
 
     <!-- TODO: add other config. from Method.java -->
 </resources>

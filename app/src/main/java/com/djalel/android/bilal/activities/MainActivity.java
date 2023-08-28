@@ -20,24 +20,33 @@
 
 package com.djalel.android.bilal.activities;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.Configuration;
+//import android.content.res.Configuration;
 import android.graphics.Typeface;
 
+import android.os.Build;
 import android.os.Bundle;
 //import android.support.design.widget.FloatingActionButton;
 //import android.support.design.widget.Snackbar;
 
 import android.os.Handler;
-import android.preference.PreferenceManager;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.preference.PreferenceManager;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.os.Looper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.animation.AlphaAnimation;
@@ -57,6 +66,7 @@ import com.djalel.android.bilal.helpers.UserSettings;
 import java.text.DateFormat;
 import java.util.GregorianCalendar;
 import java.util.Locale;
+import java.util.Objects;
 
 import timber.log.Timber;
 
@@ -66,8 +76,6 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int BLINK_DURATION = 500;
     private static final int BLINK_COUNT    = AthanService.ATHAN_DURATION/BLINK_DURATION;
-
-    private static final int REQUEST_SEARCH_CITY = 2;
 
     private Boolean mUVReceiverRegistered = false;
     private BroadcastReceiver mUpdateViewsReceiver = null;
@@ -85,6 +93,8 @@ public class MainActivity extends AppCompatActivity {
     private Handler mCountHandler;
     private Runnable mUpdateCount;
 
+    ActivityResultLauncher<Intent> mSearchCityActivityResultLauncher;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Timber.d("onCreate");
@@ -101,16 +111,6 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         setTitle(R.string.app_name);
 
-        /*FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });*/
-
-
         // The other two entry points of the app, which run when MainActivity usually does not, are:
         //      - the alarm receiver called at prayer time
         //      - the boot complete and time change receiver
@@ -119,17 +119,33 @@ public class MainActivity extends AppCompatActivity {
         // load its default a priori. This is done only here, as it is a mandatory execution path
         // before enabling both receivers by enabling Athan notification in the Settings activity.
 
-        PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
-        PreferenceManager.setDefaultValues(this, R.xml.pref_locations, false);
-        PreferenceManager.setDefaultValues(this, R.xml.pref_notifications, false);
+        PreferenceManager.setDefaultValues(this, R.xml.general_preferences, false);
+        PreferenceManager.setDefaultValues(this, R.xml.location_preferences, false);
+        PreferenceManager.setDefaultValues(this, R.xml.notifications_preferences, false);
         //PreferenceManager.setDefaultValues(this, R.xml.pref_data_sync, false);
 
         // TODO force SearchCityActivity on 1st run with an intermediate explanatory dialogue
 
+        mSearchCityActivityResultLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    Timber.d("onActivityResult");
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        // There are no request codes
+                        // Intent data = result.getData();
+                        PrayerTimesManager.handleSettingsChange(this, -1, -1, -1);
+                        //updatePrayerViews() is called by OnResume anyway.
+                        // It will also retrieve new city name from settings, so no need to read it
+                        // here from the intent
+                    }
+                });
+        
+        createNotificationChannel();
+
         initReceiver();
         loadViews();
     }
-
+    
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -160,21 +176,33 @@ public class MainActivity extends AppCompatActivity {
         mUpdateViewsReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                Timber.d("Receiver kicked by action: " + intent.getAction());
+                Timber.d("Receiver kicked by action: %s", intent.getAction());
                 // prayer times have been update by the Alarm Receiver or TimeChange Receiver
                 updatePrayerViews();
             }
         };
     }
 
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     protected void onResume() {
         Timber.d("OnResume");
         super.onResume();
         if (UserSettings.isNotificationEnabled(this) && !mUVReceiverRegistered) {
-            registerReceiver(mUpdateViewsReceiver, new IntentFilter(UPDATE_VIEWS));
+            if (Build.VERSION.SDK_INT >= 33) {
+                registerReceiver(mUpdateViewsReceiver, new IntentFilter(UPDATE_VIEWS), RECEIVER_EXPORTED);
+            }
+            else {
+                registerReceiver(mUpdateViewsReceiver, new IntentFilter(UPDATE_VIEWS));
+            }
             mUVReceiverRegistered = true;
         }
-        PrayerTimesManager.updatePrayerTimes(this, false);
+        AlarmManager alarmMgr = (AlarmManager)getSystemService(ALARM_SERVICE);
+        if (null != alarmMgr && Build.VERSION.SDK_INT >= 31 && alarmMgr.canScheduleExactAlarms()) {
+            PrayerTimesManager.updatePrayerTimes(this, true);
+        }
+        else {
+            PrayerTimesManager.updatePrayerTimes(this, false);
+        }
         updatePrayerViews();
     }
 
@@ -230,29 +258,13 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        View.OnClickListener cityListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(v.getContext(), SearchCityActivity.class);
-                startActivityForResult(intent, REQUEST_SEARCH_CITY);
-            }
+        View.OnClickListener cityListener = v -> {
+            Intent intent = new Intent(v.getContext(), SearchCityActivity.class);
+            //startActivityForResult(intent, REQUEST_SEARCH_CITY);
+            mSearchCityActivityResultLauncher.launch(intent);
         };
         mTextViewCity.setOnClickListener(cityListener);
         mTextViewDate.setOnClickListener(cityListener);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        Timber.d("onActivityResult");
-        if (requestCode == REQUEST_SEARCH_CITY) {
-            if (resultCode == Activity.RESULT_OK) {
-                PrayerTimesManager.handleSettingsChange(this, -1, -1, -1);
-                //updatePrayerViews() is called by OnResume anyway.
-                // It will also retrieve new city name from settings, so no need to read it
-                // here from the intent
-            }
-        }
     }
 
     private void updatePrayerViews()
@@ -310,17 +322,14 @@ public class MainActivity extends AppCompatActivity {
 
             // add stop button if Athan is ON
             if (UserSettings.isAthanEnabled(this)) {
-                View.OnClickListener currentPrayerListener = new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Timber.d("currentPrayerListener");
-                        for (int j = 0; j < mTextViewPrayers[0].length; j++) {
-                            mTextViewPrayers[mImportant][j].clearAnimation();
-                            mTextViewPrayers[mImportant][j].setOnClickListener(null);
-                        }
-                        mTextViewPrayers[mImportant][1].setVisibility(View.INVISIBLE);
-                        AthanService.stopAthanAction(v.getContext());
+                View.OnClickListener currentPrayerListener = v -> {
+                    Timber.d("currentPrayerListener");
+                    for (int j1 = 0; j1 < mTextViewPrayers[0].length; j1++) {
+                        mTextViewPrayers[mImportant][j1].clearAnimation();
+                        mTextViewPrayers[mImportant][j1].setOnClickListener(null);
                     }
+                    mTextViewPrayers[mImportant][1].setVisibility(View.INVISIBLE);
+                    AthanService.stopAthanAction(v.getContext());
                 };
                 mTextViewPrayers[mImportant][1].setVisibility(View.VISIBLE);
                 for (j = 0; j < mTextViewPrayers[0].length; j++) {
@@ -356,20 +365,17 @@ public class MainActivity extends AppCompatActivity {
     private void startCount(final boolean down) {
         stopCount();
 
-        mCountHandler = new Handler();
-        mUpdateCount = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    GregorianCalendar now = new GregorianCalendar();
-                    mTextViewToNext.setText(down ?
-                            PrayerTimesManager.formatTimeToNextPrayer(MainActivity.this, now) :
-                            PrayerTimesManager.formatTimeFromCurrentPrayer(MainActivity.this, now));
-                } finally {
-                    mCountHandler.postDelayed(mUpdateCount,
-                            UserSettings.getRounding(MainActivity.this) == 1 ?
-                                    COUNT_INTERVAL_MINUTE : COUNT_INTERVAL_SECOND);
-                }
+        mCountHandler = new Handler(Objects.requireNonNull(Looper.myLooper()));
+        mUpdateCount = () -> {
+            try {
+                GregorianCalendar now = new GregorianCalendar();
+                mTextViewToNext.setText(down ?
+                        PrayerTimesManager.formatTimeToNextPrayer(MainActivity.this, now) :
+                        PrayerTimesManager.formatTimeFromCurrentPrayer(MainActivity.this, now));
+            } finally {
+                mCountHandler.postDelayed(mUpdateCount,
+                        UserSettings.getRounding(MainActivity.this) == 1 ?
+                                COUNT_INTERVAL_MINUTE : COUNT_INTERVAL_SECOND);
             }
         };
         mUpdateCount.run();
@@ -379,5 +385,21 @@ public class MainActivity extends AppCompatActivity {
     protected void attachBaseContext(Context newBase)
     {
         super.attachBaseContext(PrayerTimesApp.updateLocale(newBase));
+    }
+
+    private void createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = getString(R.string.channel_name);
+            String description = getString(R.string.channel_description);
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+            NotificationChannel channel = new NotificationChannel(AthanService.CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
     }
 }

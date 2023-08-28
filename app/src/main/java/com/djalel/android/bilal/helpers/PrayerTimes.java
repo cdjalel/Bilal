@@ -23,7 +23,6 @@ package com.djalel.android.bilal.helpers;
 import android.content.Context;
 
 import org.arabeyes.prayertime.Prayer;
-import com.djalel.android.bilal.BuildConfig;
 import com.djalel.android.bilal.R;
 
 import java.text.SimpleDateFormat;
@@ -105,10 +104,6 @@ public class PrayerTimes {
                 prayerNameResId = R.string.isha;
                 break;
             default:
-                if (BuildConfig.DEBUG) {
-                    //Log.e(TAG, "Invalid prayer index: " + prayer);
-                    return "";
-                }
                 break;
         }
 
