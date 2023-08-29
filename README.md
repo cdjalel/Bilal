@@ -1,18 +1,30 @@
+نبذة عامة
+=======
+بلال هو برنامج حر ومفتوح المصدر يحسب أوقات الصلاة وفق المدينة المختارة ويصدر الآذان بصوت كوكبة من أجمل المؤذنين في العالم الإسلامي كما تشير إليه مقتطفات الشاشة أسفله. بلال لا يقرأ الموقع الحالي للمستخدم و لايجمع أي معلومات شخصية. وبالتالي فهو لا يشارك أي معلومات مع أي جهة. عكس ما تقوم به بعض برامج الآذان التي كُشف أنّها تتجسس على المسلمين. بلال يحمي خصوصية المستخدم كليا. 
+
+بلال يستعمل نسخة مطورة في لغة جافا من مكتبة أوقات الصلاة التابعة لمشروع "عيون العرب". تم تطويره بادئ الأمر في إطار آكاديمي لتجربة مزايا منصة الأندرويد مثل التنبيهات والإشعارات ودعم الساعات الذكية. مصدره متوفر تحت رخصة غنو العمومية الإصدار الثالث كي يتمكن كل من يرغب في تطويره وزيادة ميزات جديدة عليه.
+
+
 Overview
 ========
-Bilal is a free software that displays Muslim Prayer times on Android phones and tablets. It uses a Java version of the PrayerTime package that is part of Islamic Tools Library from the Arab Eyes project. This library provides also the calculation methods shown in the screenshots below.
+Bilal is a free and open source software that displays Muslim Prayer times and plays Athan on Android phones and tablets. It does not read the user location nor does it collect any personal data. It does not share anything with any party. Unlike other Athan apps which were found to spy on Muslims. Bilal protects user privacy.
 
-Bilal was initially developed for academic purposes to demonstrate some Android features (Alarm, Notification, Wear support etc.). It was open sourced under __GPLv3__ in the hope that volunteers can contribute changes to improve it. See the TODO file for that.
+Bilal uses a Java version of the PrayerTime package that is part of Islamic Tools Library from the Arab Eyes project. This library provides also the calculation methods shown in the screenshots below. It was initially developed for academic purposes to demonstrate some Android features (Alarm, Notification, Wear support etc.). It was open sourced under __GPLv3__ in the hope that volunteers can contribute changes to improve it. See the TODO file for that.
 
 Currently it contains the coordinates of __23784__ cities in 250 countries around the world, extracted from the geoname.org project. Adding a new city or adjusting the coordinates of an existing one can de done in the sqlite ___locations.db3___ database in [app/src/main/asset/databases](https://github.com/cdjalel/Bilal/blob/master/app/src/main/assets/databases/locations.db3).
 
 It is possible to add/replace a Muezzin by adding/modifying its mp3 files in [app/src/main/res/raw](https://github.com/cdjalel/Bilal/blob/master/app/src/main/res/raw) and the corresponding XML resources.
 
-Bilal is deployed in Google Play Store as "Athan Bilal": 
-<a href='https://play.google.com/store/apps/details?id=com.djalel.android.bilal&pcampaignid=MKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png'/></a>
+<table> <tr> 
+<td>Bilal is deployed in Google Play Store as "Athan Bilal":</td>
+<td><a href='https://play.google.com/store/apps/details?id=com.djalel.android.bilal&pcampaignid=MKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png' width="400"/></a>
+ </td>
+<td dir="rtl">هناك نسخة متوفرة من بلال في متجر جوجل للتطبيقات تحت اسم "آذان بلال":</td>
+</tr> </table>
 
-Screenshots
-===========
+
+Screenshots مقتطفات الشاشة
+======================
 ![screenshots](https://user-images.githubusercontent.com/5300525/40922034-fa169194-6808-11e8-8213-d02041eb3cec.png)
 
 Testing
