@@ -171,7 +171,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
     public City getCity(int id, String language)
     {
         if (-1 >= id) {
-            Timber.e("Bad city id: " + id);
+            Timber.e("Bad city id: %s", id);
             return null;
         }
 
@@ -194,7 +194,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
                 );
         }
         cursor.close();
-        Timber.d("city:\n" + city);
+        Timber.d("city: %s", city);
 
         return city;
     }
@@ -210,7 +210,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
 
         language = sanitizeLanguage(language);
 
-        city = "%"+city+"%";
+        city = "%" + city.replace("'","_") + "%";
 
         // search local name column first, then fall back to english name if none
         String query = prepareCityQuery(FORMAT_CITY_QUERY_1NAME, language, language, "WHERE nameL LIKE ?");
@@ -235,7 +235,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
             ));
         }
         cursor.close();
-        Timber.d("cityList:\n" + cityList);
+        Timber.d("cityList: %s", cityList);
 
         return cityList;
     }
@@ -271,7 +271,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
             ));
         }
         cursor.close();
-        Timber.d("cityList:\n" + cityList);
+        Timber.d("cityList: %s", cityList);
 
         return cityList;
     }
@@ -294,7 +294,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
             timezones.add(cursor.getString(0));
         }
         cursor.close();
-        Timber.d("timezones:\n" + timezones);
+        Timber.d("timezones: %s", timezones);
 
         return timezones;
     }
@@ -317,7 +317,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
             countries.add(cursor.getString(0));
         }
         cursor.close();
-        Timber.d("countries:\n" + countries);
+        Timber.d("countries: %s", countries);
 
         return countries;
     }
@@ -351,7 +351,7 @@ public class LocationsDBHelper extends SQLiteAssetHelper {
             ));
         }
         cursor.close();
-        Timber.d("cities:\n" + cities);
+        Timber.d("cities: %s", cities);
 
         return cities;
     }
