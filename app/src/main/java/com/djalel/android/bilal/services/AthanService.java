@@ -108,9 +108,8 @@ public class AthanService extends Service implements
                     isForeground = true;
                     isStopped = false;
                     break;
-                case ACTION_PLAY_ATHAN:  // sound only
+                case ACTION_PLAY_ATHAN:  // sound only from settings activity when user selects muezzin
                     stopAudio(false);        // in case of || starts Alarm + Settings
-
 
                     mPrayerIndex = intent.getIntExtra(EXTRA_PRAYER, 2);
                     mAudioIsOn = true;
@@ -174,6 +173,7 @@ public class AthanService extends Service implements
                 .setShowWhen(false) //.setUsesChronometer(true)
                 //.setSound starts Athan which is stopped by system prematurely!
                 ;
+
         if (mAudioIsOn) {
             mNotificationBuilder.addAction(R.drawable.ic_stop_athan,
                     this.getString(R.string.stop_athan), notifDeleteIntent);
@@ -251,7 +251,7 @@ public class AthanService extends Service implements
             Intent stopIntent = new Intent(this, StopAthanActivity.class);
             stopIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             PendingIntent notifDeleteIntent = PendingIntent.getActivity(this, 0,
-                    stopIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+                    stopIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
             mNotificationBuilder.addAction(R.drawable.ic_close_notification,
                     this.getString(R.string.close_notification), notifDeleteIntent);
 
@@ -337,6 +337,9 @@ public class AthanService extends Service implements
     }
 
     public void onDestroy() {
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.cancel(mNotificationId);
+
         Timber.d("onDestroy");
         if (!isStopped) {               // in case android call this when it forces a kill
             isStopped = true;
