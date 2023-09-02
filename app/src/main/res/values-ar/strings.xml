@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">آذان بلال</string>
+    <string name="app_name">أذان بلال</string>
     <string name="action_settings">الإعدادات</string>
     <string name="time_for">حان وقت صلاة %s</string>
     <string name="time_in">في %1$s على الساعة %2$s</string>
@@ -10,7 +10,7 @@
     <string name="time_interval_rounded">%1$2d سا و%2$2d د</string>
     <string name="time_interval_0h">%1$2d د و%2$2d ثا</string>
     <string name="time_interval_0h_rounded">%2d د</string>
-    <string name="stop_athan">وقف الآذان</string>
+    <string name="stop_athan">وقف الأذان</string>
     <string name="close_notification">غلق</string>
     <string name="set_location">اِلمس  هنا لتحديد الموقع</string>
     <string name="zero_hour">00:00</string>
@@ -67,10 +67,10 @@
 
     <string name="pref_title_about">حول</string>
     <string name="pref_txt_about">
-        آذان بلال هو برنامج حر، مُوّزع تحت رخصة عنو العمومية إصدار GPL v3.0،
+        أذان بلال هو برنامج حر، مُوّزع تحت رخصة عنو العمومية إصدار GPL v3.0،
  يستخدم لحساب أوقات الصلاة جزء من مكتبة الأدوات الإسلامية التابعة لمشروع "عيون عربية"، ومصدره مُتوفر على github.com/cdjalel/Bilal.\n
                 \n
-آذان بلال يحتوي على إحداثيات 23784 مدينة حول العالم، مستخلصة من موقع geoname.org تحت رخصة الإبداع العمومي مع شرط النسبة CC By 4.0 .\n
+أذان بلال يحتوي على إحداثيات 23784 مدينة حول العالم، مستخلصة من موقع geoname.org تحت رخصة الإبداع العمومي مع شرط النسبة CC By 4.0 .\n
                 \n
 تم تصميم صورة الخلفية من طرف Freepick وترخيصها عبر www.freepick.com.\n
         \n
@@ -80,7 +80,7 @@
 - ثانياً، إذا كانت بلديتكم تقع قرب مدينة كبيرة، فجربوا استعمال اسم هذه الأخيرة بدل الأولى في إعدادات الموقع.\n
 - أخيراً، إذا لم تنفع التغييرات السابقة، نرجو أن ترسلوا لنا اسم مدينتكم (بالإنجليزية وباللغة المحليّة)،
         مع إحداثياتها الدقيقة (خطي الطول والعرض والارتفاع عن سطح البحر) وطريقة حساب أوقات الصلاة المُعتمدة
-        إلى العنوان athan.bilal1@gmail.com كي نقوم بتصحيحها.
+        إلى العنوان cdjalel@gmail.com كي نقوم بتصحيحها.
     </string>
 
     <!-- Example settings for Data & Sync -->
@@ -125,7 +125,7 @@
 
     <string name="pref_title_prayer_time">دخول وقت الصلاة</string>
 
-    <string name="pref_title_athan">الآذان</string>
+    <string name="pref_title_athan">الأذان</string>
 
     <string name="pref_title_muezzin">المؤذن</string>
     <string-array name="pref_muezzin_list_titles">
@@ -185,8 +185,8 @@
     <!--<string name="pref_title_hindu_nbrs">أرقام هندية</string>-->
     <!--<string name="pref_description_hindu_nbrs">٠ ١ ٢ ٣ ٤ ٥ ٦ ٧ ٨ ٩</string>-->
 
-    <string name="title_activity_settings">إعدادات الآذان</string>
+    <string name="title_activity_settings">إعدادات الأذان</string>
 
-    <string name="channel_name">قناة آذان بلال</string>
-    <string name="channel_description">قناة لعرض إشعارات آذان بلال على الأندرويد</string>
+    <string name="channel_name">قناة أذان بلال</string>
+    <string name="channel_description">قناة لعرض إشعارات أذان بلال على الأندرويد</string>
 </resources>
