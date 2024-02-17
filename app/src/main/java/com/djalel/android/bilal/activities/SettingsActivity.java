@@ -24,6 +24,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -73,6 +74,15 @@ public class SettingsActivity extends AppCompatActivity implements
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle back arrow click
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed(); // Navigate back to main activity
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
