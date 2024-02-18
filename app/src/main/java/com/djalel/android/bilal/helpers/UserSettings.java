@@ -20,7 +20,6 @@
 
 package com.djalel.android.bilal.helpers;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
@@ -39,6 +38,19 @@ import com.djalel.android.bilal.datamodels.City;
 import java.util.Locale;
 
 public class UserSettings {
+    public static final String PREF_PERMISSIONS_ASKED = "user_permissions_asked";
+
+    public static boolean userPermissionsAsked(Context context) {
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+        return sharedPref.getBoolean(PREF_PERMISSIONS_ASKED, false);
+    }
+
+    public static void setUserPermissionsAsked(Context context, boolean asked) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(PREF_PERMISSIONS_ASKED, asked);
+        editor.apply();
+    }
 
     public static boolean isNotificationEnabled(Context context) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);

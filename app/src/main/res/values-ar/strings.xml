@@ -150,6 +150,9 @@
 
     <string name="pref_title_vibrate">اهتزاز</string>
 
+    <string name="pref_title_permissions">طلب الأذونات</string>
+    <string name="pref_summary_permissions">طلب الأذونات كي يتمكن هذا التطبيق من تعيين التنبيهات الدقيقة وتجهال تحسينات البطارية</string>
+
     <!--Location settings-->
     <!--<string name="btn_search_city">بحث</string>-->
     <string name="search_city">ابحث عن مدينة</string>
@@ -189,4 +192,21 @@
 
     <string name="channel_name">قناة أذان بلال</string>
     <string name="channel_description">قناة لعرض إشعارات أذان بلال على الأندرويد</string>
+
+    <string name="permission_title">تنبيه حول الأذونات الضرورية </string>
+
+    <string name="permission_message">
+لضمان استلام إشعارات مواقيت الصلاة في موعدها مع سماع الأذان،
+يُرجى منكم منح هذا التطبيق الإذن لتعيين التنبيهات الدقيقة (استعمل الزر أسفله).
+بالإضافة إلى ذلك، من الضروري عدم تحسين البطارية لهذا التطبيق في الشاشة الموالية، علما أنّه لا يستهلك الكثير من الطاقة.\n
+إذا قمتم برفض هذه الأذونات، قد تأتي إشعارات دخول وقت الصلاة متأخرة، وقد لا يتم تشغيل الأذان في موعده عند دخول جهازكم في وضع النوم العميق.\n
+يمكنكم دوما تسيير هذه الأذونات من إعدادات التطبيق (الإعدادات -> التنبيهات -> طلب الأذونات).
+    </string>
+
+    <string name="permission_grant">منح الأذونات</string>
+
+    <string name="permission_skip">مواصلة دون الأذونات</string>
+
+    <string name="permission_warning">قد لا تعمل إشعارات دخول وقت الصلاة والأذان بشكل صحيح!</string>
+
 </resources>

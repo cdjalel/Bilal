@@ -27,7 +27,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.provider.Settings;
 
 import timber.log.Timber;
 
@@ -134,6 +133,8 @@ public class PrayerTimesManager {
         Timber.d("Disabling Alarm.");
         cancelAlarm(context);
         disableBootAndTimeChangeReceiver(context);
+        // following line triggers a permissions request the next time main activity is displayed
+        UserSettings.setUserPermissionsAsked(context, false);
     }
 
     public static void handleSettingsChange(Context context, int calcMethod, int round, int mathhab)
@@ -346,7 +347,7 @@ public class PrayerTimesManager {
                     alarmMgr.setExact(AlarmManager.RTC_WAKEUP, sPrayerTimes.getNext().getTimeInMillis(), sAlarmIntent);
                 }
                 else {
-                    context.startActivity(new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM));
+                    alarmMgr.set(AlarmManager.RTC_WAKEUP, sPrayerTimes.getNext().getTimeInMillis(), sAlarmIntent);
                 }
             }
             else if (Build.VERSION.SDK_INT >= 23) {

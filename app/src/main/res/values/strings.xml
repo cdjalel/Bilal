@@ -156,6 +156,9 @@ cdjalel@gmail.com, so we can fix it.
 
     <string name="pref_title_vibrate">Vibrate</string>
 
+    <string name="pref_title_permissions">Request permissions</string>
+    <string name="pref_summary_permissions">Request permissions for this app to schedule exact alarms and ignore battery optimization</string>
+
     <!--Location settings-->
     <!--<string name="btn_search_city">Search</string>-->
     <string name="search_city">Search city</string>
@@ -195,4 +198,22 @@ getString(R.string.app_name)
     <!-- Preference Titles -->
 
     <!-- TODO: add other config. from Method.java -->
+
+    <string name="permission_title">Required User Permissions Warning</string>
+
+    <string name="permission_message">
+To ensure you receive timely notifications for prayers and Athan,
+please grant this app permission to set precise alarms.
+Additionally, it is  necessary to not optimize battery for this app in the subsequent screen.
+This app does not consume lot of energy.\n
+Denying these permissions may result in delayed notifications for prayer times and Athan
+when your device enters deep sleep mode.\n
+You can always manage these permissions in the app Settings -> Notifications -> Request permissions.
+    </string>
+
+    <string name="permission_grant">Grant permissions</string>
+
+    <string name="permission_skip">Continue without permissions</string>
+
+    <string name="permission_warning">Prayer time notifications and Athan may not work properly!</string>
 </resources>

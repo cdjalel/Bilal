@@ -23,6 +23,7 @@ package com.djalel.android.bilal.activities;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
 
@@ -37,6 +38,7 @@ import androidx.preference.ListPreference;
 import com.djalel.android.bilal.PrayerTimesApp;
 import com.djalel.android.bilal.PrayerTimesManager;
 import com.djalel.android.bilal.R;
+import com.djalel.android.bilal.helpers.PermissionsDialog;
 import com.djalel.android.bilal.helpers.UserSettings;
 import com.djalel.android.bilal.helpers.WakeLocker;
 import com.djalel.android.bilal.services.AthanService;
@@ -51,6 +53,8 @@ public class SettingsActivity extends AppCompatActivity implements
         PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
 
     private static final String TITLE_TAG = "settingsActivityTitle";
+
+    private static PermissionsDialog mPermissionsDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,7 +78,11 @@ public class SettingsActivity extends AppCompatActivity implements
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            mPermissionsDialog = new PermissionsDialog(this);
+        }
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle back arrow click
@@ -343,7 +351,14 @@ public class SettingsActivity extends AppCompatActivity implements
 
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-            setPreferencesFromResource(R.xml.notifications_preferences, rootKey);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                // Inflate preference XML for SDK version 23 (M) or higher
+                setPreferencesFromResource(R.xml.notifications_preferences_v23, rootKey);
+            } else {
+                // Inflate preference XML for SDK version below 21
+                setPreferencesFromResource(R.xml.notifications_preferences_legacy, rootKey);
+            }
 
             // Bind prayer time pref to its change listener
             Preference pref = findPreference("notifications_prayer_time");
@@ -363,6 +378,22 @@ public class SettingsActivity extends AppCompatActivity implements
                 Timber.e("No such preference notifications_muezzin!");
                 // Set summary to current value
                 //setListPrefSummary(pref, UserSettings.getMuezzin(pref.getContext()));
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                pref = findPreference("notifications_permissions");
+                if (pref != null) {
+                    pref.setOnPreferenceClickListener(preference -> {
+                        AppCompatActivity activity = (AppCompatActivity) getActivity();
+                        if (null!= activity) {
+                            mPermissionsDialog.showPermissionsDialog();
+                        }
+                        return true;
+                    });
+                }
+                else {
+                    Timber.e("No such preference notifications_permissions!");
+                }
             }
         }
 

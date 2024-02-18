@@ -29,13 +29,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-//import android.content.res.Configuration;
 import android.graphics.Typeface;
 
 import android.os.Build;
 import android.os.Bundle;
-//import android.support.design.widget.FloatingActionButton;
-//import android.support.design.widget.Snackbar;
 
 import android.os.Handler;
 
@@ -54,14 +51,17 @@ import android.view.animation.Animation;
 import android.view.View;
 import android.widget.TextView;
 
+
+import com.djalel.android.bilal.R;
+
 import com.djalel.android.bilal.PrayerTimesApp;
+import com.djalel.android.bilal.PrayerTimesManager;
+import com.djalel.android.bilal.helpers.PermissionsDialog;
 import com.djalel.android.bilal.helpers.PrayerTimes;
+import com.djalel.android.bilal.helpers.UserSettings;
 import com.djalel.android.bilal.services.AthanService;
 
 import org.arabeyes.prayertime.*;
-import com.djalel.android.bilal.PrayerTimesManager;
-import com.djalel.android.bilal.R;
-import com.djalel.android.bilal.helpers.UserSettings;
 
 import java.text.DateFormat;
 import java.util.GregorianCalendar;
@@ -93,7 +93,9 @@ public class MainActivity extends AppCompatActivity {
     private Handler mCountHandler;
     private Runnable mUpdateCount;
 
-    ActivityResultLauncher<Intent> mSearchCityActivityResultLauncher;
+    ActivityResultLauncher<Intent> mSearchCityActivityLauncher;
+
+    private PermissionsDialog mPermissionsDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,15 +123,13 @@ public class MainActivity extends AppCompatActivity {
 
         PreferenceManager.setDefaultValues(this, R.xml.general_preferences, false);
         PreferenceManager.setDefaultValues(this, R.xml.location_preferences, false);
-        PreferenceManager.setDefaultValues(this, R.xml.notifications_preferences, false);
+        PreferenceManager.setDefaultValues(this, R.xml.notifications_preferences_legacy, false);
         //PreferenceManager.setDefaultValues(this, R.xml.pref_data_sync, false);
 
-        // TODO force SearchCityActivity on 1st run with an intermediate explanatory dialogue
-
-        mSearchCityActivityResultLauncher = registerForActivityResult(
+        mSearchCityActivityLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
-                    Timber.d("onActivityResult");
+                    Timber.d("SearchCity onActivityResult");
                     if (result.getResultCode() == Activity.RESULT_OK) {
                         // There are no request codes
                         // Intent data = result.getData();
@@ -139,13 +139,22 @@ public class MainActivity extends AppCompatActivity {
                         // here from the intent
                     }
                 });
-        
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            mPermissionsDialog = new PermissionsDialog(this);
+            if (UserSettings.isNotificationEnabled(this) && !UserSettings.userPermissionsAsked(this)) {
+                UserSettings.setUserPermissionsAsked(this, true);
+                mPermissionsDialog.showPermissionsDialog();
+            }
+        }
+
         createNotificationChannel();
 
         initReceiver();
         loadViews();
+
     }
-    
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -187,18 +196,27 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         Timber.d("OnResume");
         super.onResume();
-        if (UserSettings.isNotificationEnabled(this) && !mUVReceiverRegistered) {
-            if (Build.VERSION.SDK_INT >= 33) {
-                registerReceiver(mUpdateViewsReceiver, new IntentFilter(UPDATE_VIEWS), RECEIVER_EXPORTED);
+        boolean notify = UserSettings.isNotificationEnabled(this);
+        if (notify) {
+            if (!mUVReceiverRegistered) {
+                if (Build.VERSION.SDK_INT >= 33) {
+                    registerReceiver(mUpdateViewsReceiver, new IntentFilter(UPDATE_VIEWS), RECEIVER_EXPORTED);
+                } else {
+                    registerReceiver(mUpdateViewsReceiver, new IntentFilter(UPDATE_VIEWS));
+                }
+                mUVReceiverRegistered = true;
             }
-            else {
-                registerReceiver(mUpdateViewsReceiver, new IntentFilter(UPDATE_VIEWS));
+
+            if (!UserSettings.userPermissionsAsked(this)) {
+                UserSettings.setUserPermissionsAsked(this, true);
+                PermissionsDialog dialog = new PermissionsDialog(this);
+                dialog.showPermissionsDialog();
             }
-            mUVReceiverRegistered = true;
         }
+
         AlarmManager alarmMgr = (AlarmManager)getSystemService(ALARM_SERVICE);
         if (null != alarmMgr && Build.VERSION.SDK_INT >= 31 && alarmMgr.canScheduleExactAlarms()) {
-            PrayerTimesManager.updatePrayerTimes(this, true);
+            PrayerTimesManager.updatePrayerTimes(this, notify);
         }
         else {
             PrayerTimesManager.updatePrayerTimes(this, false);
@@ -261,7 +279,7 @@ public class MainActivity extends AppCompatActivity {
         View.OnClickListener cityListener = v -> {
             Intent intent = new Intent(v.getContext(), SearchCityActivity.class);
             //startActivityForResult(intent, REQUEST_SEARCH_CITY);
-            mSearchCityActivityResultLauncher.launch(intent);
+            mSearchCityActivityLauncher.launch(intent);
         };
         mTextViewCity.setOnClickListener(cityListener);
         mTextViewDate.setOnClickListener(cityListener);
