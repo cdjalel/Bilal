@@ -202,10 +202,9 @@ getString(R.string.app_name)
     <string name="permission_title">Required User Permissions Warning</string>
 
     <string name="permission_message">
-Please grant this app permission to set precise alarms to ensure you receive timely notifications for prayers and Athan.
+Please grant this app permission to show \"notifications\" and set precise alarms to remind you about prayer time and play Athan.
 In \"Alarms &amp; reminders\" settings, select \"Athan Bilal\" from the apps list,
-then check \"Allow settings alarms and reminders\" and press the Back button twice.
-Additionally, it is  necessary to not optimize battery for this app, it does not consume lot of energy.
+then check \"Allow settings alarms and reminders\" and press the Back button twice.\n
 In \"Battery optimization\" settings: choose All apps, select \"Athan Bilal\", check \"Don\'t optimize\", then press \"Done\" and the Back button.\n
 Denying these permissions may result in delayed notifications for prayer times and Athan
 when your device enters deep sleep mode.\n
@@ -216,5 +215,5 @@ You can always manage these permissions in the app Settings -> Notifications -> 
 
     <string name="permission_skip">Continue without permissions</string>
 
-    <string name="permission_warning">Prayer time notifications and Athan may not work properly!</string>
+    <string name="permission_warning">Prayer time notifications and/or Athan may not work properly!</string>
 </resources>

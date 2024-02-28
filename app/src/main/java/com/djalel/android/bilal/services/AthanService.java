@@ -169,7 +169,6 @@ public class AthanService extends Service implements
                 .setCategory(NotificationCompat.CATEGORY_ALARM)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setAutoCancel(true)
-                .setLargeIcon(largeIconBmp)
                 .setShowWhen(false) //.setUsesChronometer(true)
                 //.setSound starts Athan which is stopped by system prematurely!
                 ;

@@ -14,6 +14,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationManagerCompat;
 
 import com.djalel.android.bilal.R;
 
@@ -21,11 +22,26 @@ import timber.log.Timber;
 
 public class PermissionsDialog {
     private final AppCompatActivity mContext;
+
+    private final ActivityResultLauncher<Intent> mAskNotifPermissionActivityLauncher;
     private final ActivityResultLauncher<Intent> mAskAlarmPermissionActivityLauncher;
-    private ActivityResultLauncher<Intent> mAskBatteryExemptionActivityLauncher;
+    private final ActivityResultLauncher<Intent> mAskBatteryExemptionActivityLauncher;
 
     public PermissionsDialog(AppCompatActivity context) {
         mContext = context;
+
+        mAskBatteryExemptionActivityLauncher = context.registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    Timber.d("AskBatteryExemption onActivityResult");
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+                        if (null == powerManager || !powerManager.isIgnoringBatteryOptimizations(context.getPackageName())) {
+                            showMalFunctionToast();
+                        }
+                    }
+                }
+        );
 
         mAskAlarmPermissionActivityLauncher = context.registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -45,19 +61,27 @@ public class PermissionsDialog {
                 }
         );
 
-        mAskBatteryExemptionActivityLauncher = context.registerForActivityResult(
+        mAskNotifPermissionActivityLauncher = context.registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
-                    Timber.d("AskBatteryExemption onActivityResult");
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-                        if (null == powerManager || !powerManager.isIgnoringBatteryOptimizations(context.getPackageName())) {
+                    Timber.d("AskNotifPermission onActivityResult");
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(context);
+                        final boolean areNotificationsEnabled = notificationManagerCompat.areNotificationsEnabled();
+                        if (!areNotificationsEnabled) {
                             showMalFunctionToast();
                         }
                     }
+                    if  (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        mAskAlarmPermissionActivityLauncher.launch(
+                                new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM));
+                    }
+                    else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        mAskBatteryExemptionActivityLauncher.launch(
+                                new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS));
+                    }
                 }
         );
-
     }
 
     private void showMalFunctionToast() {
@@ -77,7 +101,12 @@ public class PermissionsDialog {
                 .setTitle(title)
                 .setCancelable(false)
                 .setPositiveButton(grant, (dialog, id) -> {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        Intent intent = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
+                        intent.putExtra(Settings.EXTRA_APP_PACKAGE, mContext.getPackageName());
+                        mAskNotifPermissionActivityLauncher.launch(intent);
+                    }
+                    else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                         mAskAlarmPermissionActivityLauncher.launch(new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM));
                     }
                     else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

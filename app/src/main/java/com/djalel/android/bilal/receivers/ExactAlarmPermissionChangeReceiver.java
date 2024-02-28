@@ -26,7 +26,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.djalel.android.bilal.PrayerTimesManager;
-import com.djalel.android.bilal.activities.MainActivity;
+import com.djalel.android.bilal.helpers.UserSettings;
 
 import timber.log.Timber;
 
@@ -39,6 +39,8 @@ public class ExactAlarmPermissionChangeReceiver extends BroadcastReceiver {
         if (null != action) {
             if (action.equals(AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED))
             {
+                // following line triggers a permissions request the next time main activity is displayed
+                UserSettings.setUserPermissionsAsked(context, false);
                 PrayerTimesManager.updatePrayerTimes(context, true);
             }
         }
