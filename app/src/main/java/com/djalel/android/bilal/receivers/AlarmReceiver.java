@@ -20,6 +20,7 @@
 
 package com.djalel.android.bilal.receivers;
 
+import android.app.AlarmManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -42,7 +43,7 @@ public class AlarmReceiver extends BroadcastReceiver
     public void onReceive(Context context, Intent intent)
     {
         int prayer = intent.getIntExtra(AthanService.EXTRA_PRAYER, 2);
-        Timber.i("=============== Athan alarm is ON: " + prayer);
+        Timber.i("=============== Athan alarm is ON: %d", prayer);
 
         if (UserSettings.isNotificationEnabled(context)) {
             WakeLocker.acquire(context);
@@ -50,11 +51,25 @@ public class AlarmReceiver extends BroadcastReceiver
             athanIntent.setAction(AthanService.ACTION_NOTIFY_ATHAN);
             athanIntent.putExtra(AthanService.EXTRA_PRAYER, prayer);
             athanIntent.putExtra(AthanService.EXTRA_MUEZZIN, UserSettings.getMuezzin(context));
-            if (Build.VERSION.SDK_INT >= 26) {
-                context.startForegroundService(athanIntent);
+
+            try {
+                if (Build.VERSION.SDK_INT >= 31) {
+                    AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+                    if (alarmManager != null && alarmManager.canScheduleExactAlarms()) {
+                        context.startForegroundService(athanIntent);
+                    } else {
+                        // Permission missing, cannot start foreground service from background.
+                        // Fallback to regular startService which may also fail but we'll catch it.
+                        context.startService(athanIntent);
+                    }
+                } else if (Build.VERSION.SDK_INT >= 26) {
+                    context.startForegroundService(athanIntent);
+                } else {
+                    context.startService(athanIntent);
                 }
-            else {
-                context.startService(athanIntent);
+            } catch (Exception e) {
+                Timber.e(e, "Failed to start AthanService from background");
+                WakeLocker.release();
             }
         }
         else {

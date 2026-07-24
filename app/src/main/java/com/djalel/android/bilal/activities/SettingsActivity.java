@@ -20,15 +20,23 @@
 
 package com.djalel.android.bilal.activities;
 
+import android.app.AlarmManager;
+import static android.content.Context.ALARM_SERVICE;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
+import android.provider.Settings;
 import android.view.MenuItem;
+import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -60,6 +68,10 @@ public class SettingsActivity extends AppCompatActivity implements
 
     private static PermissionsDialog mPermissionsDialog;
 
+    private ActivityResultLauncher<Intent> mAskNotifPermissionActivityLauncher;
+    private ActivityResultLauncher<Intent> mAskAlarmPermissionActivityLauncher;
+    private ActivityResultLauncher<Intent> mAskBatteryExemptionActivityLauncher;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         EdgeToEdge.enable(this);
@@ -88,8 +100,62 @@ public class SettingsActivity extends AppCompatActivity implements
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
+
+        mAskBatteryExemptionActivityLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    Timber.d("AskBatteryExemption onActivityResult");
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+                        if (null == powerManager || !powerManager.isIgnoringBatteryOptimizations(getPackageName())) {
+                            Toast.makeText(this, getString(R.string.permission_warning), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+
+        mAskAlarmPermissionActivityLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    Timber.d("AskAlarmPermission onActivityResult");
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        AlarmManager alarmMgr = (AlarmManager) getSystemService(ALARM_SERVICE);
+                        if (null == alarmMgr || !alarmMgr.canScheduleExactAlarms()) {
+                            Toast.makeText(this, getString(R.string.permission_warning), Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                    }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        mAskBatteryExemptionActivityLauncher.launch(
+                                new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS));
+                    }
+                });
+
+        mAskNotifPermissionActivityLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    Timber.d("AskNotifPermission onActivityResult");
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
+                        final boolean areNotificationsEnabled = notificationManagerCompat.areNotificationsEnabled();
+                        if (!areNotificationsEnabled) {
+                            Toast.makeText(this, getString(R.string.permission_warning), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        mAskAlarmPermissionActivityLauncher.launch(
+                                new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM));
+                    }
+                    else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        mAskBatteryExemptionActivityLauncher.launch(
+                                new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS));
+                    }
+                });
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            mPermissionsDialog = new PermissionsDialog(this);
+            mPermissionsDialog = new PermissionsDialog(this,
+                    mAskNotifPermissionActivityLauncher,
+                    mAskAlarmPermissionActivityLauncher,
+                    mAskBatteryExemptionActivityLauncher);
         }
     }
 

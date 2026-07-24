@@ -21,6 +21,7 @@
 package com.djalel.android.bilal;
 
 import android.app.AlarmManager;
+import android.app.AlarmManager.AlarmClockInfo;
 import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
@@ -35,6 +36,7 @@ import org.arabeyes.prayertime.PTLocation;
 import org.arabeyes.prayertime.Prayer;
 import org.arabeyes.prayertime.PrayerTime;
 
+import com.djalel.android.bilal.activities.MainActivity;
 import com.djalel.android.bilal.helpers.PrayerTimes;
 import com.djalel.android.bilal.helpers.UserSettings;
 import com.djalel.android.bilal.datamodels.City;
@@ -344,7 +346,11 @@ public class PrayerTimesManager {
         if (null != alarmMgr) {
             if (Build.VERSION.SDK_INT >= 31) {
                 if (alarmMgr.canScheduleExactAlarms()) {
-                    alarmMgr.setExact(AlarmManager.RTC_WAKEUP, sPrayerTimes.getNext().getTimeInMillis(), sAlarmIntent);
+                    Intent showIntent = new Intent(context, MainActivity.class);
+                    PendingIntent showPendingIntent = PendingIntent.getActivity(context, 0, showIntent, PendingIntent.FLAG_IMMUTABLE);
+                    alarmMgr.setAlarmClock(
+                            new AlarmManager.AlarmClockInfo(sPrayerTimes.getNext().getTimeInMillis(), showPendingIntent),
+                            sAlarmIntent);
                 }
                 else {
                     alarmMgr.set(AlarmManager.RTC_WAKEUP, sPrayerTimes.getNext().getTimeInMillis(), sAlarmIntent);

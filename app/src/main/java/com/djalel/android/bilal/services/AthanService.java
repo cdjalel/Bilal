@@ -81,6 +81,10 @@ public class AthanService extends Service implements
     private final int mNotificationId = 5;
 
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (intent == null) {
+            Timber.w("onStartCommand with null intent");
+            return Service.START_NOT_STICKY;
+        }
         String action = intent.getAction();
         Timber.d("onStartCommand action = %s", action);
 
@@ -211,14 +215,18 @@ public class AthanService extends Service implements
                 }
                 mAudioPlayer.setVolume(1.0f, 1.0f);
                 Timber.d("Audio player prepared asynchronously");
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                Timber.e(e, "Failed to initialize media player");
             }
         }
     }
 
     /** Called when MediaPlayer is ready */
     public void onPrepared(MediaPlayer player) {
+        if (mAudioPlayer == null) {
+            Timber.w("onPrepared called but mAudioPlayer is null");
+            return;
+        }
         mAudioPlayer.start();
         mAudioPlayer.setOnCompletionListener(this);
         Timber.i("Audio started playing. Duration = %s", mAudioPlayer.getDuration());
@@ -269,22 +277,24 @@ public class AthanService extends Service implements
 
             case AudioManager.AUDIOFOCUS_LOSS:
                 // Lost focus for an unbounded amount of time: stop playback and release media player
-                if (mAudioPlayer.isPlaying()) mAudioPlayer.stop();
-                mAudioPlayer.release();
-                mAudioPlayer = null;
+                if (mAudioPlayer != null) {
+                    if (mAudioPlayer.isPlaying()) mAudioPlayer.stop();
+                    mAudioPlayer.release();
+                    mAudioPlayer = null;
+                }
                 break;
 
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
                 // Lost focus for a short time, but we have to stop
                 // playback. We don't release the media player because playback
                 // is likely to resume
-                if (mAudioPlayer.isPlaying()) mAudioPlayer.pause();
+                if (mAudioPlayer != null && mAudioPlayer.isPlaying()) mAudioPlayer.pause();
                 break;
 
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
                 // Lost focus for a short time, but it's ok to keep playing
                 // at an attenuated level
-                if (mAudioPlayer.isPlaying()) mAudioPlayer.setVolume(0.1f, 0.1f);
+                if (mAudioPlayer != null && mAudioPlayer.isPlaying()) mAudioPlayer.setVolume(0.1f, 0.1f);
                 break;
         }
     }
@@ -331,13 +341,16 @@ public class AthanService extends Service implements
 
     public static void stopAthanAction(Context context) {
         Intent stopIntent = new Intent(context, AthanService.class);
-        stopIntent.setAction(AthanService.ACTION_STOP_ATHAN);
-        context.startService(stopIntent);
+        // Using stopService instead of startService with ACTION_STOP_ATHAN
+        // to avoid BackgroundServiceStartNotAllowedException on Android 12+
+        context.stopService(stopIntent);
     }
 
     public void onDestroy() {
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotificationManager.cancel(mNotificationId);
+        if (mNotificationManager != null) {
+            mNotificationManager.cancel(mNotificationId);
+        }
 
         Timber.d("onDestroy");
         if (!isStopped) {               // in case android call this when it forces a kill
