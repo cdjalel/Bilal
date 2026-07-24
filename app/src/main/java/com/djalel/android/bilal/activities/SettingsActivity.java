@@ -27,9 +27,13 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
 
+import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
@@ -58,8 +62,14 @@ public class SettingsActivity extends AppCompatActivity implements
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings_activity);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.settings_root), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
         if (savedInstanceState == null) {
             getSupportFragmentManager()
                     .beginTransaction()
@@ -87,7 +97,7 @@ public class SettingsActivity extends AppCompatActivity implements
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle back arrow click
         if (item.getItemId() == android.R.id.home) {
-            onBackPressed(); // Navigate back to main activity
+            getOnBackPressedDispatcher().onBackPressed(); // Navigate back to main activity
             return true;
         }
         return super.onOptionsItemSelected(item);

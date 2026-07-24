@@ -36,8 +36,12 @@ import android.os.Bundle;
 
 import android.os.Handler;
 
+import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.preference.PreferenceManager;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -100,6 +104,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Timber.d("onCreate");
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
 
         // MainActivity launch mode is default, so its task is :
@@ -109,6 +114,11 @@ public class MainActivity extends AppCompatActivity {
         //   starts this Main one with Intent.FLAG_ACTIVITY_NEW_TASK when Language changes to force UI refresh.
 
         setContentView(R.layout.activity_main);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         setTitle(R.string.app_name);

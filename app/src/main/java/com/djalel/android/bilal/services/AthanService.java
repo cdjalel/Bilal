@@ -320,7 +320,7 @@ public class AthanService extends Service implements
         }
         if (isForeground) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                stopForeground(STOP_FOREGROUND_DETACH);
+                stopForeground(Service.STOP_FOREGROUND_REMOVE);
             }
             else {
                 stopForeground(true);

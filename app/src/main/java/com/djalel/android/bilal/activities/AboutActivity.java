@@ -20,10 +20,16 @@
 
 package com.djalel.android.bilal.activities;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+
+import androidx.activity.EdgeToEdge;
 import androidx.annotation.Keep;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
 import android.text.method.ScrollingMovementMethod;
 import android.widget.TextView;
 
@@ -31,12 +37,19 @@ import com.djalel.android.bilal.PrayerTimesApp;
 import com.djalel.android.bilal.R;
 
 @Keep
-public class AboutActivity extends Activity {
+public class AboutActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.about_root), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
 
         TextView tv = findViewById(R.id.about_textview);
         tv.setMovementMethod(new ScrollingMovementMethod());

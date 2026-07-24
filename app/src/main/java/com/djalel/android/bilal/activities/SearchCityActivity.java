@@ -24,11 +24,18 @@ import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
+
 import androidx.appcompat.widget.SearchView;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -54,8 +61,14 @@ public class SearchCityActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_city);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.search_city_root), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
         setTitle(getString(R.string.app_name));
 
         mDBHelper = new LocationsDBHelper(this);
