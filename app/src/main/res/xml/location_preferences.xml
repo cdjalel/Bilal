@@ -1,7 +1,7 @@
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
     <Preference
-        app:key="location_search_city"
+        app:key="locations_search_city"
         app:title="@string/pref_title_search_city" >
         <intent
             android:action="android.intent.action.VIEW"
@@ -10,7 +10,7 @@
     </Preference>
 
     <ListPreference
-        app:key="location_method"
+        app:key="locations_method"
         app:title="@string/pref_title_method"
         app:defaultValue="10"
         app:entries="@array/pref_method_list_titles"
@@ -20,7 +20,7 @@
         app:useSimpleSummaryProvider="true"/>
 
     <SwitchPreference
-        app:key="location_mathhab_hanafi"
+        app:key="locations_mathhab_hanafi"
         app:title="@string/pref_title_mathhab_hanafi"
         app:summary="@string/pref_description_mathhab_hanafi"
         app:defaultValue="false" />
