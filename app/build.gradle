@@ -20,7 +20,7 @@ android {
         applicationId = "com.djalel.android.bilal"
         minSdk = 23
         targetSdk = 37
-        versionCode = 15
+        versionCode = 16
         versionName = "2.6"
     }
     buildTypes {
