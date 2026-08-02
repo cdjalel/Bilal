@@ -202,7 +202,6 @@ public class AthanService extends Service implements
                 mAudioPlayer.setOnPreparedListener(this);
                 mAudioPlayer.setOnErrorListener(this);
 //                mAudioPlayer.setWakeMode(this, PowerManager.PARTIAL_WAKE_LOCK);
-                mAudioPlayer.prepareAsync(); // prepare async to not block main thread
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     mAudioPlayer.setAudioAttributes(
                             new AudioAttributes
@@ -213,6 +212,7 @@ public class AthanService extends Service implements
                 else {
                     mAudioPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
                 }
+                mAudioPlayer.prepareAsync(); // prepare async to not block main thread
                 mAudioPlayer.setVolume(1.0f, 1.0f);
                 Timber.d("Audio player prepared asynchronously");
             } catch (Exception e) {
