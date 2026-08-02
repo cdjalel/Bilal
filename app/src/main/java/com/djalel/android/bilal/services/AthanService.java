@@ -33,12 +33,15 @@ import android.content.pm.ServiceInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.AudioAttributes;
+import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+//import android.os.PowerManager;
+
 import androidx.core.app.NotificationCompat;
 
 import timber.log.Timber;
@@ -201,26 +204,60 @@ public class AthanService extends Service implements
                 mAudioPlayer.setDataSource(this, Uri.parse(mAthanFile));
                 mAudioPlayer.setOnPreparedListener(this);
                 mAudioPlayer.setOnErrorListener(this);
-//                mAudioPlayer.setWakeMode(this, PowerManager.PARTIAL_WAKE_LOCK);
+                // WakeLock is handled globally by WakeLocker class, 
+                // so mAudioPlayer.setWakeMode(this, PowerManager.PARTIAL_WAKE_LOCK) is not needed here.
 
+                AudioAttributes audioAttributes = null;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    mAudioPlayer.setAudioAttributes(
-                            new AudioAttributes
-                                    .Builder()
-                                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                                    .setUsage(AudioAttributes.USAGE_ALARM)
-                                    .build());
-                }
-                else {
+                    audioAttributes = new AudioAttributes.Builder()
+                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                            .setUsage(AudioAttributes.USAGE_ALARM)
+                            .build();
+                    mAudioPlayer.setAudioAttributes(audioAttributes);
+                } else {
                     mAudioPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
                 }
                 mAudioPlayer.setVolume(1.0f, 1.0f);
+
+                requestAudioFocus(audioAttributes);
 
                 mAudioPlayer.prepareAsync(); // prepare async to not block main thread
                 Timber.d("Audio player prepared asynchronously");
             } catch (Exception e) {
                 Timber.e(e, "Failed to initialize media player");
             }
+        }
+    }
+
+    private void requestAudioFocus(AudioAttributes playbackAttributes) {
+        AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        if (am == null) return;
+
+        int result;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Use the attributes created in initMediaPlayer if available
+            if (playbackAttributes == null) {
+                playbackAttributes = new AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_ALARM)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .build();
+            }
+
+            AudioFocusRequest focusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                    .setAudioAttributes(playbackAttributes)
+                    .setAcceptsDelayedFocusGain(true)
+                    .setOnAudioFocusChangeListener(this)
+                    .build();
+
+            result = am.requestAudioFocus(focusRequest);
+        } else {
+            result = am.requestAudioFocus(this, AudioManager.STREAM_ALARM, AudioManager.AUDIOFOCUS_GAIN);
+        }
+
+        if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+            Timber.d("Audio focus granted");
+        } else {
+            Timber.w("Audio focus not granted: %d", result);
         }
     }
 
